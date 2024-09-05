@@ -1,0 +1,37 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace BusinessObject.Models;
+
+public partial class Plant
+{
+    public int PlantId { get; set; }
+
+    public int UserId { get; set; }
+
+    public string PlantName { get; set; } = null!;
+
+    public int CategoryId { get; set; }
+
+    public string Description { get; set; } = null!;
+
+    public decimal Price { get; set; }
+
+    public string ImageUrl { get; set; } = null!;
+
+    public int? Stock { get; set; }
+
+    public int? Status { get; set; }
+
+    public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
+
+    public virtual Category Category { get; set; } = null!;
+
+    public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+
+    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+
+    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+
+    public virtual User User { get; set; } = null!;
+}
