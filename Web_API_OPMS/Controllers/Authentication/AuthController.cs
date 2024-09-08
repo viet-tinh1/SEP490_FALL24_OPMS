@@ -89,7 +89,7 @@ namespace Web_API_OPMS.Controllers.Authentication
         }
     }
 
-    // Lớp LoginRequest để đăng nhập
+    // Lớp LoginRequest để đăng nhập 
     public class LoginRequest
     {
         public string Username { get; set; } = null!;
