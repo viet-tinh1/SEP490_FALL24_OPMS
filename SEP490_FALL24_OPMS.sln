@@ -5,11 +5,15 @@ VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BusinessObject", "BusinessObject\BusinessObject.csproj", "{A0958A58-A6BA-43DB-A4EB-443D00173271}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web_API_OPMS", "Web_API_OPMS\Web_API_OPMS.csproj", "{727414F2-94F0-47CA-941C-698EBBB6E94B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web_API_OPMS", "Web_API_OPMS\Web_API_OPMS.csproj", "{727414F2-94F0-47CA-941C-698EBBB6E94B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess.csproj", "{39C574BD-5985-4611-B83B-9E631721B7AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccess", "DataAccess\DataAccess.csproj", "{39C574BD-5985-4611-B83B-9E631721B7AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repositories", "Repositories\Repositories.csproj", "{6A5A5831-19D7-4AD2-B651-C57323D26C54}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Repositories", "Repositories\Repositories.csproj", "{6A5A5831-19D7-4AD2-B651-C57323D26C54}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{D7FD4800-FEB1-4938-86AF-F461F75DDDCD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "API", "API", "{00707411-DC5A-48EA-B4D2-E438F34CDE9A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,6 +40,12 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A0958A58-A6BA-43DB-A4EB-443D00173271} = {D7FD4800-FEB1-4938-86AF-F461F75DDDCD}
+		{727414F2-94F0-47CA-941C-698EBBB6E94B} = {00707411-DC5A-48EA-B4D2-E438F34CDE9A}
+		{39C574BD-5985-4611-B83B-9E631721B7AD} = {D7FD4800-FEB1-4938-86AF-F461F75DDDCD}
+		{6A5A5831-19D7-4AD2-B651-C57323D26C54} = {D7FD4800-FEB1-4938-86AF-F461F75DDDCD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {678AD981-1039-4051-8F69-2DDEB121EFAD}
