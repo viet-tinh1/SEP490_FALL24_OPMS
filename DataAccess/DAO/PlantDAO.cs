@@ -68,5 +68,10 @@ namespace DataAccess.DAO
             return _context.Plants.FirstOrDefault(x => x.PlantId == id); // Trả về Plant có ID tương ứng.
 
         }
+        public Plant getPlanttByName(string name)
+        {
+            return _context.Plants.FirstOrDefault(x => x.PlantName == name); // Trả về Plant có ID tương ứng.
+
+        }
     }
 }
