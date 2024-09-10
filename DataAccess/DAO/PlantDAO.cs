@@ -75,6 +75,12 @@ namespace DataAccess.DAO
                            .Where(p => p.PlantName.ToLower().Contains(name.ToLower()))
                            .ToList();
         }
-
+        public List<Plant> searchPlantByCategory(int categoryId)
+        {
+            // Tìm kiếm những Plant có tên chứa chuỗi `name` (không phân biệt chữ hoa/chữ thường).
+            return _context.Plants
+                  .Where(p => p.CategoryId == categoryId)
+                  .ToList();
+        }
     }
 }
