@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace BusinessObject.Models;
 
 public partial class Plant
 {
     public int PlantId { get; set; }
-
+    [Required]
     public int UserId { get; set; }
 
     public string PlantName { get; set; } = null!;
-
+    [Required]
     public int CategoryId { get; set; }
 
     public string Description { get; set; } = null!;
