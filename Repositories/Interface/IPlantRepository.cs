@@ -20,6 +20,7 @@ namespace Repositories.Interface
         // Lấy một Plant dựa trên ID.
         Plant getPlantById(int id);
         List<Plant> searchPlantByName(string name);
+        List<Plant> searchPlantByCategory(int categoryId);
         // List<ReportSale> getStaticReportSale(DateTime startDate, DateTime endDate);
     }
 }

@@ -64,10 +64,15 @@ namespace Web_API_OPMS.Controllers
             return plantRepository.getPlantById(id);
         }
 
-        [HttpGet("getPlantByName")]
+        [HttpGet("SearchPlantByName")]
         public ActionResult<List<Plant>> searchPlantByName(string name)
         {
             return plantRepository.searchPlantByName(name);
+        }
+        [HttpGet("SearchPlantByCategory")]
+        public ActionResult<List<Plant>> searchPlantByCategory(int categoryId)
+        {
+            return plantRepository.searchPlantByCategory(categoryId);
         }
     }
 }
