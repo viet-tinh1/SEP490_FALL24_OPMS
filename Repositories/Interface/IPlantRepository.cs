@@ -19,7 +19,7 @@ namespace Repositories.Interface
         void createPlant(Plant p);   
         // Lấy một Plant dựa trên ID.
         Plant getPlantById(int id);
-        // List<Plant> getProductsByPriceAndName(string searchName);
+        List<Plant> searchPlantByName(string name);
         // List<ReportSale> getStaticReportSale(DateTime startDate, DateTime endDate);
     }
 }

@@ -68,10 +68,13 @@ namespace DataAccess.DAO
             return _context.Plants.FirstOrDefault(x => x.PlantId == id); // Trả về Plant có ID tương ứng.
 
         }
-        public Plant getPlanttByName(string name)
+        public List<Plant> searchPlantByName(string name)
         {
-            return _context.Plants.FirstOrDefault(x => x.PlantName == name); // Trả về Plant có ID tương ứng.
-
+            // Tìm kiếm những Plant có tên chứa chuỗi `name` (không phân biệt chữ hoa/chữ thường).
+            return _context.Plants
+                           .Where(p => p.PlantName.ToLower().Contains(name.ToLower()))
+                           .ToList();
         }
+
     }
 }
