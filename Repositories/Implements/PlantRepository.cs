@@ -39,6 +39,10 @@ namespace Repositories.Implements
          {
              return plantDAO.getPlanttById(id);
          }
+         public List<Plant> searchPlantByName(string name)
+         {
+             return plantDAO.searchPlantByName(name);
+         }
 
         
     }

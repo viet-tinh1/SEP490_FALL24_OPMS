@@ -63,5 +63,11 @@ namespace Web_API_OPMS.Controllers
         {
             return plantRepository.getPlantById(id);
         }
+
+        [HttpGet("getPlantByName")]
+        public ActionResult<List<Plant>> searchPlantByName(string name)
+        {
+            return plantRepository.searchPlantByName(name);
+        }
     }
 }
