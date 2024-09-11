@@ -100,11 +100,14 @@ namespace Web_API_OPMS.Controllers
             return plantRepository.getPlantById(id);
         }
 
+        //Search plant theo tên
         [HttpGet("SearchPlantByName")]
         public ActionResult<List<Plant>> searchPlantByName(string name)
         {
             return plantRepository.searchPlantByName(name);
         }
+
+        //Search plants theo category
         [HttpGet("SearchPlantByCategory")]
         public ActionResult<List<Plant>> searchPlantByCategory(int categoryId)
         {

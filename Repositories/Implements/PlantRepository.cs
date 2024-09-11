@@ -39,10 +39,12 @@ namespace Repositories.Implements
          {
              return plantDAO.getPlanttById(id);
          }
-         public List<Plant> searchPlantByName(string name)
+        //hàm để lấy  list plant theo name
+        public List<Plant> searchPlantByName(string name)
          {
              return plantDAO.searchPlantByName(name);
          }
+        //hàm để lấy  list plant theo category
         public List<Plant> searchPlantByCategory(int categoryId)
         {
             return plantDAO.searchPlantByCategory(categoryId);
