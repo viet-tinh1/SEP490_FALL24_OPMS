@@ -2,10 +2,13 @@
 using DataAccess.DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Repositories.Implements;
 using Repositories.Interface;
 using System.Data;
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Web_API_OPMS.Controllers
 {
@@ -14,6 +17,13 @@ namespace Web_API_OPMS.Controllers
     public class UserAPI : ControllerBase
     {
         private UserRepository UserRepository = new UserRepository();
+        private readonly Db6213Context _context;
+
+        public UserAPI(Db6213Context context)
+        {
+            _context = context;
+        }
+       
         //Lấy danh sách user
         [HttpGet("getUser")]
         public ActionResult<IEnumerable<User>> getUser()
@@ -22,19 +32,24 @@ namespace Web_API_OPMS.Controllers
         }
         //Tạo 1 user mới
         [HttpPost("createUser")]
-        public IActionResult CreateUser([FromBody] UserDTO u)
+        public async Task<IActionResult> CreateUserAsync([FromBody] UserDTO u)
         {
             if (u == null || string.IsNullOrEmpty(u.Username))
             {
                 return BadRequest("Invalid plant data");
             }
-
+            else if (await _context.Users.AnyAsync(u => u.Username == u.Username))
+            {
+                return BadRequest(new { message = "Username already exists" });
+            }
             try
             {
+                // mã hóa password
+                string hashedPassword = HashPassword(u.Password);
                 User user = new User()
                 {
                     Username = u.Username,
-                    Password = u.Password,
+                    Password = hashedPassword,
                     Email = u.Email,
                     PhoneNumber = u.PhoneNumber,
                     Roles = u.Roles,
@@ -44,7 +59,7 @@ namespace Web_API_OPMS.Controllers
                     Status = u.Status
                 };
                 UserRepository.CreateUser(user);
-                return CreatedAtAction(nameof(CreateUser), new { id = user.UserId }, user);
+                return CreatedAtAction(nameof(CreateUserAsync), new { id = user.UserId }, user);
             }
             catch (Exception ex)
             {
@@ -62,6 +77,7 @@ namespace Web_API_OPMS.Controllers
 
             try
             {
+                string hashedPassword = HashPassword(u.Password);
                 // Find the existing plant in the repository
                 var existingUser = UserRepository.GetUserById(u.UserId);
                 if (existingUser == null)
@@ -71,7 +87,7 @@ namespace Web_API_OPMS.Controllers
 
                 // Update the existing plant's properties
                 existingUser.Username = u.Username;
-                existingUser.Password = u.Password;
+                existingUser.Password = hashedPassword;
                 existingUser.Email = u.Email;
                 existingUser.PhoneNumber = u.PhoneNumber;
                 existingUser.Roles = u.Roles;
@@ -101,6 +117,15 @@ namespace Web_API_OPMS.Controllers
         public ActionResult<User> getUserById(int id)
         {
             return UserRepository.GetUserById(id);
+        }
+        //hàm mã hóa password khi create user
+        private string HashPassword(string password)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                return Convert.ToBase64String(hashedBytes);
+            }
         }
     }
 }
