@@ -38,7 +38,7 @@ export default function Header() {
           <FaSun />
         </Button>
         <Link to="/sign-in">
-          <Button gradientDuoTone="redToYellow" >
+          <Button gradientDuoTone="greenToBlue" >
             Sign In
           </Button>
         </Link>
