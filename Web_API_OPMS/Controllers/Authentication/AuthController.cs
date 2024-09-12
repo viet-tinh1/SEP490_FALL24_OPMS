@@ -48,6 +48,10 @@ namespace Web_API_OPMS.Controllers.Authentication
             {
                 return Unauthorized(new { message = "Invalid username or password" });
             }
+            else if (user == null || user.Status == 0 )
+            {
+                return Unauthorized(new { message = "Your account has been locked " });
+            }
 
             // Kiểm tra vai trò của người dùng và trả về thông báo tương ứng
             string roleMessage;
