@@ -13,17 +13,17 @@ public partial class User
 
     public string Email { get; set; } = null!;
 
-    public string PhoneNumber { get; set; } = null!;
+    public string? PhoneNumber { get; set; }
 
     public int Roles { get; set; }
 
-    public string FullName { get; set; } = null!;
+    public string? FullName { get; set; }
 
-    public string Address { get; set; } = null!;
+    public string? Address { get; set; }
 
     public DateTime? CreatedDate { get; set; }
 
-    public string UserImage { get; set; } = null!;
+    public string? UserImage { get; set; }
 
     public int? Status { get; set; }
 
