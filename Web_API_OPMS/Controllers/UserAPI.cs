@@ -38,7 +38,7 @@ namespace Web_API_OPMS.Controllers
             {
                 return BadRequest("Invalid plant data");
             }
-            else if (await _context.Users.AnyAsync(u => u.Username == u.Username))
+            else if (await _context.Users.AnyAsync(us => us.Username == u.Username))
             {
                 return BadRequest(new { message = "Username already exists" });
             }
@@ -51,15 +51,13 @@ namespace Web_API_OPMS.Controllers
                     Username = u.Username,
                     Password = hashedPassword,
                     Email = u.Email,
-                    PhoneNumber = u.PhoneNumber,
+                   
                     Roles = u.Roles,
-                    FullName = u.FullName,
-                    Address = u.Address,
-                    UserImage = u.UserImage,
+                   
                     Status = u.Status
                 };
                 UserRepository.CreateUser(user);
-                return CreatedAtAction(nameof(CreateUserAsync), new { id = user.UserId }, user);
+                return CreatedAtAction(nameof(getUserById), new { id = user.UserId }, user);
             }
             catch (Exception ex)
             {
@@ -116,8 +114,14 @@ namespace Web_API_OPMS.Controllers
         [HttpGet("getUserById")]
         public ActionResult<User> getUserById(int id)
         {
-            return UserRepository.GetUserById(id);
+            var user = UserRepository.GetUserById(id);
+            if (user == null)
+            {
+                return NotFound(); // Return 404 if the user isn't found
+            }
+            return Ok(user);
         }
+        
         //hàm mã hóa password khi create user
         private string HashPassword(string password)
         {
