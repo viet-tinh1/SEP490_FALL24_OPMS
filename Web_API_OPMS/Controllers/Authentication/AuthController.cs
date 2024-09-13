@@ -41,37 +41,19 @@ namespace Web_API_OPMS.Controllers.Authentication
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             // Tìm người dùng theo tên đăng nhập
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
 
             // Kiểm tra nếu không tìm thấy người dùng hoặc mật khẩu không hợp lệ
             if (user == null || !VerifyPassword(request.Password, user.Password))
             {
-                return Unauthorized(new { message = "Invalid username or password" });
+                return Unauthorized(new { message = "Invalid email or password" });
             }
             else if (user == null || user.Status == 0 )
             {
                 return Unauthorized(new { message = "Your account has been locked " });
             }
-
-            // Kiểm tra vai trò của người dùng và trả về thông báo tương ứng
-            string roleMessage;
-            switch (user.Roles)
-            {
-                case 1:
-                    roleMessage = "Tôi là admin";
-                    break;
-                case 2:
-                    roleMessage = "Tôi là user";
-                    break;
-                case 3:
-                    roleMessage = "Tôi là seller";
-                    break;
-                default:
-                    return Content("Role is not recognized", "text/plain");
-            }
-
-            // Trả về thông báo đăng nhập thành công cùng với thông báo về vai trò
-            return Ok(new { message = "Login successful", roleMessage = roleMessage });
+            
+            return Ok(new { message = "Login successful", role = user.Roles });
         }
 
        
@@ -96,7 +78,7 @@ namespace Web_API_OPMS.Controllers.Authentication
     // Lớp LoginRequest để đăng nhập 
     public class LoginRequest
     {
-        public string Username { get; set; } = null!;
+        public string Email { get; set; } = null!;
         public string Password { get; set; } = null!;
     }
 }
