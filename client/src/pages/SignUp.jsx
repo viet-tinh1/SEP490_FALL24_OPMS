@@ -87,6 +87,7 @@ export default function Signup() {
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                required
               />
             </div>
             <div>
@@ -97,6 +98,7 @@ export default function Signup() {
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
               />
             </div>
             <div>
@@ -107,6 +109,7 @@ export default function Signup() {
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
               />
             </div>
             {error && (
