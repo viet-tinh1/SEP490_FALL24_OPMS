@@ -8,13 +8,37 @@ export default function Signup() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-
+  const validatePassword = (password) => {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{6,}$/;
+    return passwordRegex.test(password);
+  };
+  const handlePasswordChange = (e) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+console.log(newPassword);
+    // Kiểm tra mật khẩu có hợp lệ hay không
+    if (newPassword.length === 0) {
+      setPasswordError('');
+    }
+    // Kiểm tra mật khẩu có hợp lệ hay không
+    else if (!validatePassword(newPassword)) {
+      setPasswordError('Password must be at least 6 characters, contain one uppercase letter, one lowercase letter, and one special character.');
+    } 
+    else {
+      setPasswordError(''); // Nếu hợp lệ, xóa thông báo lỗi
+    }
+  };
   const handleSubmit = async (e) => {
     e.preventDefault(); // Ngăn không cho form reload lại trang
-
+    // Kiểm tra mật khẩu trước khi gửi
+    if (!validatePassword(password)) {
+      setPasswordError('Password must be at least 6 characters, contain one uppercase letter, one lowercase letter, and one special character.');
+      return;
+    }
     setLoading(true); // Bắt đầu hiển thị spinner hoặc trạng thái loading
     setError(null); // Reset lỗi trước khi gửi
 
@@ -87,6 +111,7 @@ export default function Signup() {
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                required
               />
             </div>
             <div>
@@ -97,6 +122,7 @@ export default function Signup() {
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
               />
             </div>
             <div>
@@ -106,8 +132,11 @@ export default function Signup() {
                 placeholder="Password"
                 id="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={handlePasswordChange}
+                required
               />
+              {/* Hiển thị lỗi nếu mật khẩu không hợp lệ */}
+              {passwordError && <p style={{ color: 'red' }}>{passwordError}</p>}
             </div>
             {error && (
             <Alert color="failure" withBorderAccent>
