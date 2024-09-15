@@ -9,34 +9,92 @@ export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  //Regex Password
   const validatePassword = (password) => {
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{6,}$/;
+    const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])\S{8,50}$/;
     return passwordRegex.test(password);
   };
+  //Regex Username
+  const validateUsername = (username) => {
+    const usernameRegex = /^[a-z0-9]{1,50}$/;
+    return usernameRegex.test(username);
+  };
+  // Regex Email
+  const validateEmail = (email) => {
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    return emailRegex.test(email);
+  };
+  //kiểm tra password
   const handlePasswordChange = (e) => {
     const newPassword = e.target.value;
     setPassword(newPassword);
-console.log(newPassword);
+    console.log(newPassword);
     // Kiểm tra mật khẩu có hợp lệ hay không
     if (newPassword.length === 0) {
       setPasswordError('');
     }
     // Kiểm tra mật khẩu có hợp lệ hay không
     else if (!validatePassword(newPassword)) {
-      setPasswordError('Password must be at least 6 characters, contain one uppercase letter, one lowercase letter, and one special character.');
+      setPasswordError('Password must be at least 8 characters, contain one uppercase letter, one lowercase letter, one number, and no spaces.');
     } 
     else {
       setPasswordError(''); // Nếu hợp lệ, xóa thông báo lỗi
+    }
+  };
+  //kiểm tra username
+  const handleUsernameChange = (e) => {
+    const newUsername = e.target.value;
+    setUsername(newUsername);
+    console.log(newUsername);
+    // Kiểm tra username có hợp lệ hay không
+    if (newUsername.length === 0) {
+      setUsernameError('');
+    }
+    // Kiểm tra username có hợp lệ hay không
+    else if (!validateUsername(newUsername)) {
+      setUsernameError('Username must be 1-50 characters and contain only lowercase letters and numbers.');
+    } 
+    else {
+      setUsernameError(''); // Nếu hợp lệ, xóa thông báo lỗi
+    }
+  };
+  //kiểm tra email
+  const handleEmailChange = (e) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+    console.log(newEmail);
+    // Kiểm tra username có hợp lệ hay không
+    if (newEmail.length === 0) {
+      setEmailError('');
+    }
+    // Kiểm tra mật khẩu có hợp lệ hay không
+    else if (!validateEmail(newEmail)) {
+      setEmailError('Email must be a valid format, e.g. example@domain.com.');
+    } 
+    else {
+      setEmailError(''); // Nếu hợp lệ, xóa thông báo lỗi
     }
   };
   const handleSubmit = async (e) => {
     e.preventDefault(); // Ngăn không cho form reload lại trang
     // Kiểm tra mật khẩu trước khi gửi
     if (!validatePassword(password)) {
-      setPasswordError('Password must be at least 6 characters, contain one uppercase letter, one lowercase letter, and one special character.');
+      setPasswordError('Password must be at least 8 characters, contain one uppercase letter, one lowercase letter, one number, and no spaces.');
+      return;
+    }
+    //kiểm tra username trước khi gửi
+    if (!validateUsername(username)) {
+      setUsernameError('Username must be 1-50 characters and contain only lowercase letters and numbers.');
+      return;
+    }
+    //kiểm tra email trước khi gửi
+    if (!validateEmail(email)) {
+      setEmailError('Email must be a valid format, e.g. example@domain.com.');
       return;
     }
     setLoading(true); // Bắt đầu hiển thị spinner hoặc trạng thái loading
@@ -110,9 +168,11 @@ console.log(newPassword);
                 placeholder="Username"
                 id="username"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={handleUsernameChange}             
                 required
               />
+              {/* Hiển thị lỗi nếu username không hợp lệ */}
+              {usernameError && <p style={{ color: 'red' }}>{usernameError}</p>}
             </div>
             <div>
               <Label value="Your email" />
@@ -121,9 +181,11 @@ console.log(newPassword);
                 placeholder="name@company.com"
                 id="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={handleEmailChange}                
                 required
               />
+              {/* Hiển thị lỗi nếu mật khẩu không hợp lệ */}
+              {emailError && <p style={{ color: 'red' }}>{emailError}</p>}
             </div>
             <div>
               <Label value="Your password" />
