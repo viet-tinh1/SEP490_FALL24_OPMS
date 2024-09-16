@@ -16,6 +16,8 @@ namespace Web_API_OPMS.Controllers
     [ApiController]
     public class OrderAPI : ControllerBase
     {
+        private PlantRepository PlantRepository = new PlantRepository();
+        private CartRepository CartRepository = new CartRepository();
         private OrderRepository OrderRepository = new OrderRepository();
         private readonly Db6213Context _context;
 
@@ -32,24 +34,46 @@ namespace Web_API_OPMS.Controllers
         }
         //Tạo 1 order  mới
         [HttpPost("createOrder")]
-        public  IActionResult CreateOrderAsync([FromBody] OrderDTO o)
+        public IActionResult CreateOrderAsync([FromBody] OrderDTO o)
         {
-            if (o == null )
+            if (o == null)
             {
                 return BadRequest("Invalid order data");
             }
-            
+
             try
             {
-               
+                // Retrieve the cart details by CartId
+                var cart = CartRepository.GetSingleCartById(o.CartId);
+                if (cart == null)
+                {
+                    return NotFound("Cart not found.");
+                }
+
+                // Retrieve the plant details by PlantId from the cart
+                var plant = PlantRepository.getPlantById(cart.PlantId);
+                if (plant == null)
+                {
+                    return NotFound("Plant not found.");
+                }
+
+                // Calculate the total amount (plant price * cart quantity)
+                var totalAmount = plant.Price * cart.Quantity;
+
+                // Create the order object with Status = 1
                 Order order = new Order()
                 {
                     CartId = o.CartId,
                     OrderDate = o.OrderDate,
-                    TotalAmount = o.TotalAmount,
-                    Status = o.Status,
+                    TotalAmount = totalAmount,  // Automatically calculated total
+                    Status = "1",  // Automatically set Status to 1
+                    UserId= o.UserId
                 };
+
+                // Save the order to the repository
                 OrderRepository.CreateOrder(order);
+
+                // Return the created order
                 return CreatedAtAction(nameof(GetOrderById), new { id = order.OrderId }, order);
             }
             catch (Exception ex)
@@ -57,6 +81,7 @@ namespace Web_API_OPMS.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
+
         // Chỉnh sửa Order đã tạo
         [HttpPost("updateOrder")]
         public IActionResult UpdateOrder([FromBody] OrderDTO o)

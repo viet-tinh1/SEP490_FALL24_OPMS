@@ -1,5 +1,7 @@
 ﻿using BusinessObject.Models;
 using DataAccess.DAO;
+using DataAccess.DTO;
+using Microsoft.EntityFrameworkCore;
 using Repositories.Interface;
 using System.Collections.Generic;
 
@@ -9,6 +11,17 @@ namespace Repositories.Implements
     {
         // Khởi tạo đối tượng CartDAO để tương tác với cơ sở dữ liệu qua DAO.
         private CartDAO cartDAO = new CartDAO();
+        readonly Db6213Context _context = new Db6213Context();
+
+        // Inject YourDbContext vào constructor của repository
+        public CartRepository(Db6213Context context)
+        {
+            _context = context;
+        }
+
+        public CartRepository()
+        {
+        }
 
         // Phương thức xóa một Cart theo ID.
         public void DeleteCart(int id)
@@ -33,16 +46,14 @@ namespace Repositories.Implements
         {
             cartDAO.UpdateCart(cart);
         }
-
-        // Phương thức để lấy một Cart theo ID.
-        public Cart GetCartById(int id)
+        public Cart GetSingleCartById(int id)
         {
-            return cartDAO.GetCartById(id); // Trả về Cart có ID tương ứng.
+            return cartDAO.GetCartById(id); // Trả về Cart có ID tương ứng hoặc null nếu không tìm thấy
         }
-
-        User ICartRepository.GetCartById(int id)
+        // Phương thức để lấy một Cart theo ID.
+        public List<Cart> GetCartById(List<int?> cartIds)
         {
-            throw new NotImplementedException();
+            return _context.Carts.Where(c => cartIds.Contains(c.CartId)).ToList(); // Trả về danh sách các Cart tương ứng
         }
     }
 }
