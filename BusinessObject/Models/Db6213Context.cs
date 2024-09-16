@@ -68,9 +68,9 @@ public partial class Db6213Context : DbContext
 
         modelBuilder.Entity<CartUser>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("CartUser");
+            entity.ToTable("CartUser");
+
+            entity.HasKey(e => new { e.CartId, e.UserId }); // Khóa chính kết hợp giữa CartId và UserId
 
             entity.Property(e => e.UserId).HasColumnName("UserID");
 
@@ -149,6 +149,9 @@ public partial class Db6213Context : DbContext
                 .HasForeignKey(d => d.CartId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Orders__CartId__4CA06362");
+            entity.HasOne(d => d.User).WithMany(p => p.Orders)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_Orders_Users");
         });
 
         modelBuilder.Entity<OrderDetail>(entity =>
