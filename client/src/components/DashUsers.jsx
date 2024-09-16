@@ -149,7 +149,7 @@ export default function DashUsers() {
                 Yes
               </Button>
               <Button color="gray" onClick={handleCancel}>
-                No
+                No..
               </Button>
             </div>
           </div>
