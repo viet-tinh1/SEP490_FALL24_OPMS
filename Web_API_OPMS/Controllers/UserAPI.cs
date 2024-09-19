@@ -112,16 +112,27 @@ namespace Web_API_OPMS.Controllers
             return NoContent();
         }
         [HttpGet("getUserById")]
-        public ActionResult<User> getUserById(int id)
+        
+        public ActionResult<User> getUserById()
         {
-            var user = UserRepository.GetUserById(id);
+            // Lấy ID người dùng từ session
+            var userId = HttpContext.Session.GetInt32("UserId");
+
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "User not logged in" });
+            }
+
+            var user = UserRepository.GetUserById(userId.Value);
+
             if (user == null)
             {
-                return NotFound(); // Return 404 if the user isn't found
+                return NotFound(new { message = "User not found" });
             }
+
             return Ok(user);
         }
-        
+
         //hàm mã hóa password khi create user
         private string HashPassword(string password)
         {
