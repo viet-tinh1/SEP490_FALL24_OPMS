@@ -21,6 +21,13 @@ namespace Web_API_OPMS
                            .AllowAnyHeader();
                 });
             });
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -36,7 +43,7 @@ namespace Web_API_OPMS
             }
 
             app.UseHttpsRedirection();
-
+            app.UseSession();
             app.UseAuthorization();
             app.UseCors("AllowAllOrigins");
 
