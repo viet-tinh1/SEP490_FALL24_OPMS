@@ -101,17 +101,31 @@ namespace Web_API_OPMS.Controllers
         }
 
         //Search plant theo tên
-        [HttpGet("SearchPlantByName")]
-        public ActionResult<List<Plant>> searchPlantByName(string name)
-        {
-            return plantRepository.searchPlantByName(name);
-        }
+        //[HttpGet("SearchPlantByName")]
+        //public ActionResult<List<Plant>> searchPlantByName(string name)
+        //{
+        //    return plantRepository.searchPlantByName(name);
+        //}
 
-        //Search plants theo category
-        [HttpGet("SearchPlantByCategory")]
-        public ActionResult<List<Plant>> searchPlantByCategory(int categoryId)
+        ////Search plants theo category
+        //[HttpGet("SearchPlantByCategory")]
+        //public ActionResult<List<Plant>> searchPlantByCategory(int categoryId)
+        //{
+        //    return plantRepository.searchPlantByCategory(categoryId);
+        //}
+        //[HttpGet("searchPlantByPrice")]
+        //public ActionResult<List<Plant>> searchPlantByPrice( decimal minPrice, decimal maxPrice)
+        //{
+        //    return plantRepository.searchPlantByPrice( minPrice,  maxPrice);
+        //}
+        [HttpGet("searchPlants")]
+        public IActionResult SearchPlants([FromQuery] string name = null, [FromQuery] int? categoryId = null, [FromQuery] decimal? minPrice = null, [FromQuery] decimal? maxPrice = null)
         {
-            return plantRepository.searchPlantByCategory(categoryId);
+            // Gọi phương thức tìm kiếm trong PlantRepository và truyền các tham số
+            var plants = plantRepository.searchPlants(name, categoryId, minPrice, maxPrice);
+
+            // Trả về kết quả dưới dạng JSON
+            return Ok(plants);
         }
     }
 }
