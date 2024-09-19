@@ -36,18 +36,15 @@ namespace Repositories.Implements
         }
         //hàm để lấy  1 plant theo id
         public Plant getPlantById(int id)
-         {
-             return plantDAO.getPlanttById(id);
-         }
-        //hàm để lấy  list plant theo name
-        public List<Plant> searchPlantByName(string name)
-         {
-             return plantDAO.searchPlantByName(name);
-         }
-        //hàm để lấy  list plant theo category
-        public List<Plant> searchPlantByCategory(int categoryId)
         {
-            return plantDAO.searchPlantByCategory(categoryId);
+            return plantDAO.getPlanttById(id);
+        }
+        //hàm để lấy  list plant theo name , price , category 
+        
+        public List<Plant> searchPlants(string name = null, int? categoryId = null, decimal? minPrice = null, decimal? maxPrice = null)
+        {
+            // Gọi phương thức searchPlants từ PlantDAO với các tham số có thể là null
+            return plantDAO.searchPlants(name, categoryId, minPrice, maxPrice);
         }
 
     }

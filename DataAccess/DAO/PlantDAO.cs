@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -31,9 +30,6 @@ namespace DataAccess.DAO
         // Phương thức xóa một Plant theo ID.
         public void deletePlant(int id)
         {
-            /*var od = _context.OrderDetails.Where(x => x.PlantId == id);
-            _context.OrderDetails.RemoveRange(od);*/
-
             var p = _context.Plants.FirstOrDefault(x => x.PlantId == id); // Tìm Plant với ID.
             _context.Plants.Remove(p); // Xóa Plant.
             _context.SaveChanges(); // Lưu thay đổi vào cơ sở dữ liệu.
@@ -44,7 +40,6 @@ namespace DataAccess.DAO
         {
             _context.Plants.Add(p); // Thêm Plant vào database.
             _context.SaveChanges(); // Lưu thay đổi vào cơ sở dữ liệu.
-
         }
 
         // Phương thức cập nhật một Plant đã có.
@@ -57,7 +52,7 @@ namespace DataAccess.DAO
             plant.Price = p.Price;
             plant.ImageUrl = p.ImageUrl;
             plant.Stock = p.Stock;
-            plant.Status = p.Status;        
+            plant.Status = p.Status;
             _context.Plants.Update(plant); // Cập nhật Plant trong cơ sở dữ liệu.
             _context.SaveChanges(); // Lưu thay đổi vào cơ sở dữ liệu.
         }
@@ -66,21 +61,40 @@ namespace DataAccess.DAO
         public Plant getPlanttById(int id)
         {
             return _context.Plants.FirstOrDefault(x => x.PlantId == id); // Trả về Plant có ID tương ứng.
+        }
 
-        }
-        public List<Plant> searchPlantByName(string name)
+        // Phương thức tìm kiếm Plant theo tên, category, và giá.
+        public List<Plant> searchPlants(string name = null, int? categoryId = null, decimal? minPrice = null, decimal? maxPrice = null)
         {
-            // Tìm kiếm những Plant có tên chứa chuỗi `name` (không phân biệt chữ hoa/chữ thường).
-            return _context.Plants
-                           .Where(p => p.PlantName.ToLower().Contains(name.ToLower()))
-                           .ToList();
-        }
-        public List<Plant> searchPlantByCategory(int categoryId)
-        {
-            // Tìm kiếm những Plant có cùng category
-            return _context.Plants
-                  .Where(p => p.CategoryId == categoryId)
-                  .ToList();
+            // Khởi tạo query cơ bản
+            var query = _context.Plants.AsQueryable();
+
+            // Điều kiện tìm kiếm theo tên nếu có tham số name
+            if (!string.IsNullOrEmpty(name))
+            {
+                query = query.Where(p => p.PlantName.ToLower().Contains(name.ToLower()));
+            }
+
+            // Điều kiện tìm kiếm theo category nếu có tham số categoryId
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == categoryId.Value);
+            }
+
+            // Điều kiện tìm kiếm theo giá tối thiểu nếu có tham số minPrice
+            if (minPrice.HasValue)
+            {
+                query = query.Where(p => p.Price >= minPrice.Value);
+            }
+
+            // Điều kiện tìm kiếm theo giá tối đa nếu có tham số maxPrice
+            if (maxPrice.HasValue)
+            {
+                query = query.Where(p => p.Price <= maxPrice.Value);
+            }
+
+            // Trả về danh sách các kết quả phù hợp
+            return query.ToList();
         }
     }
 }
