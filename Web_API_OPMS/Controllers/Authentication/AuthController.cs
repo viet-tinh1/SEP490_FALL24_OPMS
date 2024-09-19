@@ -52,11 +52,17 @@ namespace Web_API_OPMS.Controllers.Authentication
             {
                 return Unauthorized(new { message = "Your account has been locked " });
             }
-            
+            HttpContext.Session.SetInt32("UserId", user.UserId);
+            HttpContext.Session.SetInt32("UserRole", user.Roles);
             return Ok(new { message = "Login successful", role = user.Roles });
         }
 
-       
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear(); // Xóa tất cả các session hiện tại
+            return Ok(new { message = "Logout successful" });
+        }
 
         // Hàm hash mật khẩu
         private string HashPassword(string password)
