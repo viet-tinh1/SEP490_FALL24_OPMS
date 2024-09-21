@@ -1,192 +1,230 @@
-import { Modal, Table, Button } from "flowbite-react";
-import { useState } from "react";
-import { HiOutlineExclamationCircle } from "react-icons/hi";
-import { TbLock, TbLockOpen } from "react-icons/tb"; // Import the lock icons
-import { TextInput } from "flowbite-react";
-import { AiOutlineSearch } from "react-icons/ai";
+import { FaCloudArrowUp } from "react-icons/fa6";
+import { MdOutlineSell } from "react-icons/md";
+
 export default function DashProfile() {
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      dateCreated: "2023-09-01",
-      userImage: "https://via.placeholder.com/40",
-      username: "john_doe",
-      email: "john@example.com",
-      phoneNumber: "123-456-7890", // New phone number field
-      roles: "User", // New roles field
-      fullName: "John Doe", // New full name field
-      address: "123 Main St, Springfield", // New address field
-      blocked: false, // Blocked state
-    },
-    {
-      id: 2,
-      dateCreated: "2023-09-02",
-      userImage: "https://via.placeholder.com/40",
-      username: "jane_smith",
-      email: "jane@example.com",
-      phoneNumber: "987-654-3210",
-      roles: "Admin",
-      fullName: "Jane Smith",
-      address: "456 Elm St, Shelbyville",
-      blocked: false,
-    },
-    {
-      id: 3,
-      dateCreated: "2023-09-03",
-      userImage: "https://via.placeholder.com/40",
-      username: "samuel_lee",
-      email: "samuel@example.com",
-      phoneNumber: "555-123-4567",
-      roles: "Seller",
-      fullName: "Samuel Lee",
-      address: "789 Oak St, Ogdenville",
-      blocked: false,
-    },
-    // Additional users...
-  ]);
-
-  const [showModal, setShowModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null); // Store selected user
-
-  const handleToggle = (user) => {
-    setSelectedUser(user); // Set the current user
-    setShowModal(true); // Show the modal
-  };
-
-  const handleConfirmBlock = () => {
-    // Update the blocked state of the selected user
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === selectedUser.id ? { ...user, blocked: !user.blocked } : user
-      )
-    );
-    setShowModal(false); // Close the modal
-  };
-
-  const handleCancel = () => {
-    setShowModal(false); // Close the modal without making changes
-  };
-
   return (
-    <main className="overflow-x-auto md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
-      {/*overflow-x-auto :Hide scroll*/}
-      {/*overflow-x-scroll : Open scroll*/}
-      <div className="shadow-md md:mx-auto p-3  rounded-lg bg-white dark:bg-gray-800 my-4">
-        <div className="mb-1 w-full">
-          <div className=" mb-4">
-            <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl">All User</h1>
-            <div className="sm:flex">
-              <div className="hidden items-center mb-3 sm:flex sm:divide-x sm:divide-gray-100 sm:mb-0">
-                <form>
-                  <TextInput
-                    type="text"
-                    placeholder="Search..."
-                    rightIcon={AiOutlineSearch}
-                    className="hidden lg:inline"
-                  />
-                </form>
-              </div>
-              <div className="flex items-center ml-auto space-x-2 sm:space-x-3">
-                <Button>Add User</Button>
+    <div className="flex overflow-hidden bg-white pt-16 w-full">
+      <main className="w-full">
+        <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-6 w-full">
+          {/* User Settings */}
+          <div className="col-span-full mb-4 xl:mb-0">
+            <div className="mb-1 w-full">
+              <div className="mb-4">
+                <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl">
+                  User settings
+                </h1>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="table-auto ">
-        <Table hoverable className="shadow-md">
-          <Table.Head>
-            <Table.HeadCell>DateCreated</Table.HeadCell>
-            <Table.HeadCell>Imgage</Table.HeadCell>{" "}
-            {/* New Full Name Column */}
-            <Table.HeadCell>Username</Table.HeadCell>
-            <Table.HeadCell>Email</Table.HeadCell>
-            <Table.HeadCell>PhoneNumber</Table.HeadCell>{" "}
-            {/* New Phone Column */}
-            <Table.HeadCell>Roles</Table.HeadCell> {/* New Roles Column */}
-            <Table.HeadCell>Address</Table.HeadCell> {/* New Address Column */}
-            <Table.HeadCell>Status</Table.HeadCell>
-          </Table.Head>
-          <Table.Body className="divide-y">
-            {users.map((user) => (
-              <Table.Row
-                className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
-                key={user.id}
-              >
-                <Table.Cell className="py-4">{user.dateCreated}</Table.Cell>
-                <Table.Cell className="py-4 flex items-center">
-                  <img
-                    src={user.userImage}
-                    alt={user.username}
-                    className="h-10 w-10 object-cover bg-gray-500 rounded-full"
-                  />
-                </Table.Cell>
-                <Table.Cell className="py-4">{user.username}</Table.Cell>
-                <Table.Cell className="py-4">{user.email}</Table.Cell>
-                <Table.Cell className="py-4">
-                  {user.phoneNumber}
-                </Table.Cell>{" "}
-                {/* Phone Number */}
-                <Table.Cell className="py-4">{user.roles}</Table.Cell>{" "}
-                {/* Roles */}
-                <Table.Cell className="py-4">{user.address}</Table.Cell>{" "}
-                {/* Address */}
-                <Table.Cell>
-                  <label className="inline-flex items-center mb-5 cursor-pointer">
-                    {/* Conditionally render lock or lock-open icon and the label */}
-                    <span className="text-2xl  hover:underline cursor-pointer">
-                      {user.blocked ? (
-                        <>
-                          <TbLock className="inline-block mr-2 text-red-500" />
-                        </>
-                      ) : (
-                        <>
-                          <TbLockOpen className="inline-block mr-2 text-green-500" />
-                        </>
-                      )}
-                    </span>
+          {/* Profile Picture */}
+          <div className="col-span-full xl:col-auto">
+            <div className="bg-white shadow-lg shadow-gray-200 rounded-2xl p-4 mb-6">
+              <div className="items-center sm:flex xl:block 2xl:flex sm:space-x-4 xl:space-x-0 2xl:space-x-4">
+                <img
+                  className="mb-4 w-28 h-28 rounded-lg sm:mb-0 xl:mb-4 2xl:mb-0 shadow-lg shadow-gray-300"
+                  src="https://demos.creative-tim.com/soft-ui-flowbite-pro/images/users/jese-leos-2x.png"
+                  alt="IMG"
+                />
+                <div>
+                  <h3 className="mb-1 text-2xl font-bold text-gray-900">
+                    Alec Thompson
+                  </h3>
 
-                    <input
-                      type="checkbox"
-                      className="sr-only peer"
-                      checked={user.blocked}
-                      onChange={() => handleToggle(user)} // Pass the specific user
-                    />
-                    <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                    <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300"></span>
-                  </label>
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table>
+                  <div className="mb-4 text-base font-normal text-gray-500">
+                    Roll / User
+                  </div>
 
-        {/* Modal for Block/Unblock */}
-        <Modal show={showModal} onClose={handleCancel}>
-          <Modal.Header>
-            {selectedUser?.blocked ? "Unblock User" : "Block User"}
-          </Modal.Header>
-          <Modal.Body>
-            <div className="text-center">
-              <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
-              <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
-                Are you sure you want to{" "}
-                {selectedUser?.blocked ? "Unblock" : "Block"}{" "}
-                {selectedUser?.username}?
-              </h3>
-              <div className="flex justify-center gap-4">
-                <Button color="failure" onClick={handleConfirmBlock}>
-                  Yes
-                </Button>
-                <Button color="gray" onClick={handleCancel}>
-                  No..
-                </Button>
+                  <a
+                    href="#"
+                    className="inline-flex items-center py-2 px-3 text-sm font-medium text-center text-white bg-gradient-to-br from-pink-500 to-purple-500 rounded-lg shadow-md shadow-gray-300 hover:scale-[1.02] transition-transform"
+                  >
+                    <FaCloudArrowUp className="mr-2 -ml-1 w-4 h-4" />
+                    Change picture
+                  </a>
+                </div>
               </div>
             </div>
-          </Modal.Body>
-        </Modal>
-      </div>
-    </main>
+
+            {/* Register to become seller */}
+            <div className="bg-white shadow-lg shadow-gray-200 rounded-2xl p-4 mb-6">
+              <div className="text-sm font-medium">
+                *Register to become seller
+              </div>
+              <a
+                href="/dashboard?tab=DashRegisterSeller"
+                className="inline-flex items-center py-2 px-3 text-sm font-medium text-center text-white bg-gradient-to-br from-pink-500 to-purple-500 rounded-lg shadow-md shadow-gray-300 hover:scale-[1.02] transition-transform"
+              >
+                <MdOutlineSell className="mr-2 -ml-1 w-4 h-4" />
+                Register Seller
+              </a>
+            </div>
+          </div>
+
+          {/* General Information Form */}
+          <div className="col-span-2">
+            <div className="bg-white shadow-lg shadow-gray-200 rounded-2xl p-4 mb-6">
+              <h3 className="mb-4 text-xl font-bold">General information</h3>
+              <form action="#">
+                <div className="grid grid-cols-6 gap-6">
+                  <div className="col-span-6 sm:col-span-3">
+                    <label className="block mb-2 text-sm font-medium text-gray-900">
+                      User Name
+                    </label>
+                    <input
+                      type="text"
+                      name="user-name"
+                      id="user-name"
+                      className="shadow-lg-sm border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-2 focus:ring-pink-100 focus:border-pink-300 block w-full p-2.5"
+                      placeholder="Bonnie"
+                      required
+                    />
+                  </div>
+
+                  <div className="col-span-6 sm:col-span-3">
+                    <label className="block mb-2 text-sm font-medium text-gray-900">
+                      Your name
+                    </label>
+                    <input
+                      type="text"
+                      name="your-name"
+                      id="your-name"
+                      className="shadow-lg-sm border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-2 focus:ring-pink-100 focus:border-pink-300 block w-full p-2.5"
+                      placeholder="Green"
+                      required
+                    />
+                  </div>
+
+                  <div className="col-span-6 sm:col-span-3">
+                    <label className="block mb-2 text-sm font-medium text-gray-900">
+                      Address
+                    </label>
+                    <input
+                      type="text"
+                      name="address"
+                      id="address"
+                      className="shadow-lg-sm border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-2 focus:ring-pink-100 focus:border-pink-300 block w-full p-2.5"
+                      placeholder="United States"
+                      required
+                    />
+                  </div>
+
+                  <div className="col-span-6 sm:col-span-3">
+                    <label className="block mb-2 text-sm font-medium text-gray-900">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      id="email"
+                      className="shadow-lg-sm border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-2 focus:ring-pink-100 focus:border-pink-300 block w-full p-2.5"
+                      placeholder="example@company.com"
+                      required
+                    />
+                  </div>
+
+                  <div className="col-span-6 sm:col-span-3">
+                    <label className="block mb-2 text-sm font-medium text-gray-900">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      id="phone"
+                      className="shadow-lg-sm border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-2 focus:ring-pink-100 focus:border-pink-300 block w-full p-2.5"
+                      placeholder="e.g. +(12)3456 789"
+                      required
+                    />
+                  </div>
+
+                  <div className="col-span-6 sm:col-span-3">
+                    <label className="block mb-2 text-sm font-medium text-gray-900">
+                      Created Date
+                    </label>
+                    <input
+                      type="text"
+                      name="birthday"
+                      id="birthday"
+                      className="shadow-lg-sm border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-2 focus:ring-pink-100 focus:border-pink-300 block w-full p-2.5"
+                      placeholder="15/08/1990"
+                      required
+                    />
+                  </div>
+
+                  <div className="col-span-6">
+                    <button
+                      className="text-white bg-gradient-to-br from-green-500 to-blue-500 rounded-lg shadow-md shadow-gray-300 hover:scale-[1.02] transition-transform font-medium text-sm px-5 py-2.5 text-center"
+                      type="submit"
+                    >
+                      Save all
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            {/* Password information*/}
+
+            <div className="bg-white shadow-lg shadow-gray-200 rounded-2xl p-4 mb-6">
+              <h3 className="mb-4 text-xl font-bold">Password information</h3>
+              <form action="#">
+                <div className="grid grid-cols-6 gap-6">
+                  <div className="col-span-6 sm:col-span-3">
+                    <label className="block mb-2 text-sm font-medium text-gray-900">
+                      Current password
+                    </label>
+                    <input
+                      type="password"
+                      name="first-name"
+                      id="first-name"
+                      className="shadow-lg-sm border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-2 focus:ring-pink-100 focus:border-pink-300 block w-full p-2.5"
+                      placeholder="••••••••"
+                      required
+                    />
+                  </div>
+
+                  <div className="col-span-6 sm:col-span-3">
+                    <label className="block mb-2 text-sm font-medium text-gray-900">
+                      New password
+                    </label>
+                    <input
+                      type="password"
+                      name="last-name"
+                      id="last-name"
+                      className="shadow-lg-sm border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-2 focus:ring-pink-100 focus:border-pink-300 block w-full p-2.5"
+                      placeholder="••••••••"
+                      required
+                    />
+                  </div>
+
+                  <div className="col-span-6 sm:col-span-3">
+                    <label className="block mb-2 text-sm font-medium text-gray-900">
+                      Confirm password
+                    </label>
+                    <input
+                      type="password"
+                      name="country"
+                      id="country"
+                      className="shadow-lg-sm border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-2 focus:ring-pink-100 focus:border-pink-300 block w-full p-2.5"
+                      placeholder="••••••••"
+                      required
+                    />
+                  </div>
+
+                  <div className="col-span-6">
+                    <button
+                      className="text-white bg-gradient-to-br from-green-500 to-blue-500 rounded-lg shadow-md shadow-gray-300 hover:scale-[1.02] transition-transform font-medium text-sm px-5 py-2.5 text-center"
+                      type="submit"
+                    >
+                      Save all
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }

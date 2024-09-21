@@ -6,7 +6,7 @@ import DashPosts from '../components/DashPosts';
 import DashUsers from '../components/DashUsers';
 import DashComments from '../components/DashComments';
 import Dashproduct from '../components/Dashproduct';
-
+import DashRegisterSeller from '../components/DashRegisterSeller';
 export default function Dashboard() {
   const location = useLocation();
   const [tab, setTab] = useState('');
@@ -33,7 +33,8 @@ export default function Dashboard() {
       {tab === 'comments' && <DashComments />}
       {/* dashboard Product */}
       {tab === 'product' && <Dashproduct />}
-   
+      {/* dashboard Product */}
+      {tab === 'DashRegisterSeller' && <DashRegisterSeller />}
     </div>
   );
 }
