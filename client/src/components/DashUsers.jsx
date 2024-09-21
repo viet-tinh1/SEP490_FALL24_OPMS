@@ -4,6 +4,7 @@ import { HiOutlineExclamationCircle } from "react-icons/hi";
 import { TbLock, TbLockOpen } from "react-icons/tb"; // Import the lock icons
 import { TextInput } from "flowbite-react";
 import { AiOutlineSearch } from "react-icons/ai";
+import ReactPaginate from "react-paginate"; // Import the pagination library
 
 export default function DashUsers() {
   const [users, setUsers] = useState([
@@ -43,11 +44,26 @@ export default function DashUsers() {
       address: "789 Oak St, Ogdenville",
       blocked: false,
     },
+    {
+      id: 4,
+      dateCreated: "2023-09-04",
+      userImage: "https://via.placeholder.com/40",
+      username: "linda_jones",
+      email: "linda@example.com",
+      phoneNumber: "111-222-3333",
+      roles: "User",
+      fullName: "Linda Jones",
+      address: "555 Pine St, Springfield",
+      blocked: false,
+    },
     // Additional users...
   ]);
 
   const [showModal, setShowModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null); // Store selected user
+  const [currentPage, setCurrentPage] = useState(0); // Track current page
+  const usersPerPage = 3; // Limit the number of users per page
+
 
   const handleToggle = (user) => {
     setSelectedUser(user); // Set the current user
@@ -67,6 +83,21 @@ export default function DashUsers() {
   const handleCancel = () => {
     setShowModal(false); // Close the modal without making changes
   };
+
+
+   // Pagination: Calculate the number of pages
+   const pageCount = Math.ceil(users.length / usersPerPage);
+  
+   // Handle page click
+   const handlePageClick = ({ selected }) => {
+     setCurrentPage(selected);
+   };
+ 
+   // Get users to display on the current page
+   const usersToDisplay = users.slice(
+     currentPage * usersPerPage,
+     (currentPage + 1) * usersPerPage
+   );
 
   return (
     <main className="overflow-x-auto md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
@@ -99,7 +130,7 @@ export default function DashUsers() {
         <Table hoverable className="shadow-md">
           <Table.Head>
             <Table.HeadCell>DateCreated</Table.HeadCell>
-            <Table.HeadCell>FullName</Table.HeadCell>{" "}
+            <Table.HeadCell>Imgage</Table.HeadCell>{" "}
             {/* New Full Name Column */}
             <Table.HeadCell>Username</Table.HeadCell>
             <Table.HeadCell>Email</Table.HeadCell>
@@ -110,7 +141,7 @@ export default function DashUsers() {
             <Table.HeadCell>Status</Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y">
-            {users.map((user) => (
+            {usersToDisplay.map((user) => (
               <Table.Row
                 className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
                 key={user.id}
@@ -162,6 +193,20 @@ export default function DashUsers() {
             ))}
           </Table.Body>
         </Table>
+
+          {/* Pagination Component */}
+          <div className="mt-4">
+          <ReactPaginate
+            previousLabel={"← Previous"}
+            nextLabel={"Next →"}
+            pageCount={pageCount}
+            onPageChange={handlePageClick}
+            containerClassName={"flex justify-center space-x-4"}
+            pageLinkClassName={"py-2 px-4 border rounded"}
+            activeClassName={"bg-blue-600 text-white"}
+            disabledClassName={"opacity-50 cursor-not-allowed"}
+          />
+        </div>
 
         {/* Modal for Block/Unblock */}
         <Modal show={showModal} onClose={handleCancel}>
