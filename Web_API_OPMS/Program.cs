@@ -1,6 +1,7 @@
 
 using BusinessObject.Models;
 using Microsoft.EntityFrameworkCore;
+using Repositories.Implements;
 
 namespace Web_API_OPMS
 {
@@ -11,6 +12,7 @@ namespace Web_API_OPMS
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddDbContext<Db6213Context>(options =>
                     options.UseSqlServer(builder.Configuration.GetConnectionString("OPMSConnection")));
+
             // Add services to the container.
             builder.Services.AddCors(options =>
             {

@@ -19,6 +19,7 @@ namespace Web_API_OPMS.Controllers
         private PlantRepository PlantRepository = new PlantRepository();
         private CartRepository CartRepository = new CartRepository();
         private OrderRepository OrderRepository = new OrderRepository();
+        private CartUserRepository CartUserRepository = new CartUserRepository();
         private readonly Db6213Context _context;
 
         public OrderAPI(Db6213Context context)
@@ -36,49 +37,71 @@ namespace Web_API_OPMS.Controllers
         [HttpPost("createOrder")]
         public IActionResult CreateOrderAsync([FromBody] OrderDTO o)
         {
+            // Kiểm tra nếu dữ liệu order (o) là null, trả về lỗi BadRequest
             if (o == null)
             {
                 return BadRequest("Invalid order data");
             }
-
-            try
+            // Sử dụng transaction để đảm bảo nếu một trong các bước thất bại, tất cả các thay đổi sẽ bị hủy bỏ
+            using (var transaction = _context.Database.BeginTransaction())
             {
-                // Retrieve the cart details by CartId
-                var cart = CartRepository.GetSingleCartById(o.CartId);
-                if (cart == null)
+
+                try
                 {
-                    return NotFound("Cart not found.");
+                    // Lấy thông tin chi tiết của cart dựa trên CartId
+                    var cart = CartRepository.GetSingleCartById(o.CartId);
+                    // Kiểm tra nếu cart không tồn tại, trả về lỗi NotFound
+                    if (cart == null)
+                    {
+                        return NotFound("Cart not found.");
+                    }
+
+                    // Lấy thông tin chi tiết của plant dựa trên PlantId có trong cart
+                    var plant = PlantRepository.getPlantById(cart.PlantId);
+                    if (plant == null)
+                    {
+                        return NotFound("Plant not found.");
+                    }
+
+                    // Tính toán tổng số tiền cho đơn hàng (giá của plant * số lượng trong cart)
+                    var totalAmount = plant.Price * cart.Quantity;
+
+                    // Tạo một đối tượng order với trạng thái là "1" (đơn hàng thành công)
+                    Order order = new Order()
+                    {
+                        CartId = o.CartId,               // Gán CartId từ dữ liệu đầu vào
+                        OrderDate = o.OrderDate,         // Ngày tạo order
+                        TotalAmount = totalAmount,       // Tổng số tiền được tính toán tự động
+                        Status = "1",                    // Đặt trạng thái đơn hàng là "1" (thành công)
+                        UserId = o.UserId                // Gán UserId từ dữ liệu đầu vào
+                    };
+
+                    // Lưu đơn hàng mới vào repository
+                    OrderRepository.CreateOrder(order);
+
+                    // Thực hiện xóa CartUser
+                    try
+                    {
+                        CartUserRepository.DeleteCartUser(o.CartId);
+                    }
+                    catch (Exception ex)
+                    {
+                        return BadRequest($"Error deleting CartUser: {ex.Message}");
+                    }
+
+                    // Commit transaction sau khi tất cả các bước trên thành công
+                    transaction.Commit();
+
+                    // Trả về phản hồi với mã 201 (Created) và thông tin đơn hàng vừa tạo
+                    return CreatedAtAction(nameof(GetOrderById), new { id = order.OrderId }, order);
                 }
-
-                // Retrieve the plant details by PlantId from the cart
-                var plant = PlantRepository.getPlantById(cart.PlantId);
-                if (plant == null)
+                catch (Exception ex)
                 {
-                    return NotFound("Plant not found.");
+                    // Nếu có lỗi xảy ra, rollback transaction để hủy bỏ tất cả thay đổi đã thực hiện
+                    transaction.Rollback();
+
+                    return StatusCode(500, "Internal server error: " + ex.Message);
                 }
-
-                // Calculate the total amount (plant price * cart quantity)
-                var totalAmount = plant.Price * cart.Quantity;
-
-                // Create the order object with Status = 1
-                Order order = new Order()
-                {
-                    CartId = o.CartId,
-                    OrderDate = o.OrderDate,
-                    TotalAmount = totalAmount,  // Automatically calculated total
-                    Status = "1",  // Automatically set Status to 1
-                    UserId= o.UserId
-                };
-
-                // Save the order to the repository
-                OrderRepository.CreateOrder(order);
-
-                // Return the created order
-                return CreatedAtAction(nameof(GetOrderById), new { id = order.OrderId }, order);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
 

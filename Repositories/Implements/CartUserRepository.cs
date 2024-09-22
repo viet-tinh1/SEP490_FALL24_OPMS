@@ -27,11 +27,22 @@ namespace Repositories.Implements
         }
 
         // Phương thức xóa một Cart theo ID.
-        public void DeleteCartUser(int id)
+        public void DeleteCartUser(int cartId)
         {
-            cartuserDAO.DeleteCartUser(id);
-        }
+            // Lấy danh sách các liên kết giữa Cart và User từ bảng CartUser
+            var cartUsers = _context.CartUsers.Where(cu => cu.CartId == cartId).ToList();
 
+            // Kiểm tra xem có tồn tại bất kỳ liên kết nào không
+            if (cartUsers == null || !cartUsers.Any())
+            {
+                throw new Exception($"CartId {cartId} không tồn tại trong bảng CartUser.");
+            }
+                // Nếu tìm thấy các bản ghi CartUser, xóa toàn bộ các bản ghi đó khỏi bảng CartUser
+                _context.CartUsers.RemoveRange(cartUsers);
+
+                // Lưu các thay đổi vào csdl sau khi xóa
+                _context.SaveChanges();
+            }
         // Phương thức lấy tất cả Cart.
         public List<CartUser> GetCartUsers()
         {

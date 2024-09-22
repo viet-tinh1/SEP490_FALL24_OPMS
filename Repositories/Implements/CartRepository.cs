@@ -24,9 +24,20 @@ namespace Repositories.Implements
         }
 
         // Phương thức xóa một Cart theo ID.
-        public void DeleteCart(int id)
+        public void DeleteCart(int cartId)
         {
-            cartDAO.DeleteCart(id);
+            // Tìm một đối tượng Cart duy nhất trong bảng Carts với CartId khớp với cartId được truyền vào
+            var cart = _context.Carts.SingleOrDefault(c => c.CartId == cartId);
+
+            // Ktra  nếu tìm thấy cart (cart khác null)
+            if (cart != null)
+            {
+                // Nếu tìm thấy cart, thực hiện xóa cart đó khỏi bảng Carts
+                _context.Carts.Remove(cart);
+
+                // Lưu các thay đổi vào cơ sở dữ liệu sau khi xóa
+                _context.SaveChanges();
+            }
         }
 
         // Phương thức lấy tất cả Cart.
