@@ -1,4 +1,5 @@
 import { Sidebar } from 'flowbite-react';
+
 import {
   HiUser,
   HiArrowSmRight,
@@ -80,6 +81,15 @@ export default function DashSidebar() {
                 as='div'
               >
                 Comments
+              </Sidebar.Item>
+            </Link>
+            <Link to='/dashboard?tab=product'>
+              <Sidebar.Item
+                active={tab === 'product'}
+                icon={HiAnnotation}
+                as='div'
+              >
+                Product
               </Sidebar.Item>
             </Link>
           </>

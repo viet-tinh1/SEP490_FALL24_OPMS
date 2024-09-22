@@ -5,8 +5,8 @@ import DashProfile from '../components/DashProfile';
 import DashPosts from '../components/DashPosts';
 import DashUsers from '../components/DashUsers';
 import DashComments from '../components/DashComments';
-
-
+import Dashproduct from '../components/Dashproduct';
+import DashRegisterSeller from '../components/DashRegisterSeller';
 export default function Dashboard() {
   const location = useLocation();
   const [tab, setTab] = useState('');
@@ -31,8 +31,10 @@ export default function Dashboard() {
       {tab === 'users' && <DashUsers />}
       {/* comments  */}
       {tab === 'comments' && <DashComments />}
-      {/* dashboard comp */}
-   
+      {/* dashboard Product */}
+      {tab === 'product' && <Dashproduct />}
+      {/* dashboard Product */}
+      {tab === 'DashRegisterSeller' && <DashRegisterSeller />}
     </div>
   );
 }
