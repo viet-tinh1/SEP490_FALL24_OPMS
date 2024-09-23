@@ -1,5 +1,5 @@
 import Banner from "../components/Banner";
-import PlantIteam from "../components/PlantIteam";
+import PlantItem from "../components/PlantIteam";
 import { Link } from "react-router-dom";
 export default function Home() {
   return (
@@ -21,7 +21,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="flex flex-wrap gap-4">
-            <PlantIteam />
+            <PlantItem />
           </div>
          
         </div>
