@@ -23,10 +23,14 @@ export default function PlantIteam() {
               Haewon
             </p>
             <div className="flex items-center gap-1">
-              <MdLocationOn className="h-4 w-4 text-green-700" />
-              <p className="text-sm text-gray-600 truncate w-full">Address 2</p>
+              <p className="text-sm text-gray-600 truncate w-full">
+                Cây trầu bà - trầu bà đế vương{" "}
+              </p>
             </div>
-            <p className="text-sm text-gray-600 line-clamp-2">Description 2</p>
+            <p className="text-sm text-gray-600 line-clamp-2">
+              đỏ cao 50-60cm cây phong thủy sức sống khỏe cây nội thất trồng để
+              bàn và ban công
+            </p>
           </div>
           <div className="p-2 flex items-center">
             <svg
