@@ -18,7 +18,7 @@ export default function Product() {
   const [products] = useState([
     {
       id: 1,
-      name: "1",
+      name: "Combo 70 cây chuỗi ngọc trồng hàng rào trang trí cảnh quan, cây giống mắt ngọc",
       productImage:
         "https://firebasestorage.googleapis.com/v0/b/project-team-7-blog.appspot.com/o/459575711_945200750961543_4220295711316204168_n.jpg?alt=media&token=d3c1e587-ca9f-46b5-a9ef-62de57ae0aea",
       price: "25.000",
@@ -185,7 +185,7 @@ export default function Product() {
                       {product.name}
                     </p>*/}
                     <div className="flex items-center gap-1">
-                      <p className="text-sm text-gray-600 line-clamp-2 w-full">
+                      <p className="text-sm font-medium text-gray-600 line-clamp-2 w-full">
                         {product.name}
                       </p>
                     </div>
