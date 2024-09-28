@@ -20,6 +20,6 @@ namespace Repositories.Interface
         // Lấy một Plant dựa trên ID.
         Plant getPlantById(int id);
         // Lấy list  Plant dựa trên name , category, price    
-        List<Plant> searchPlants(string name = null, int? categoryId = null, decimal? minPrice = null, decimal? maxPrice = null);
+        List<Plant> searchPlants(string name = null, List<int> categoryId = null, decimal? minPrice = null, decimal? maxPrice = null);
     }
 }
