@@ -229,37 +229,38 @@ export default function Product() {
               </div>
             ))}
 
-            {/* Pagination Component */}
-            <div className="mt-4">
+                       {/* Pagination Component */}
+                       <div className="bottom-0 left-0 right-0 p-4 flex justify-center">
               <ReactPaginate
                 previousLabel={<IoArrowBackCircle />} // Arrow for previous page
                 nextLabel={<IoArrowForwardCircle />} // Arrow for next page
                 breakLabel={"..."} // Dots for skipped pages
                 pageCount={pageCount} // Total number of pages
                 onPageChange={handlePageClick} // Function to handle page click
-                containerClassName={"flex justify-center space-x-2 mt-4"} // Container styling for pagination
+                containerClassName={"flex justify-center space-x-4"} // Container styling for pagination
                 pageClassName={
-                  "flex items-center justify-center w-10 h-10 rounded-full border border-gray-400"
+                  "flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-200 cursor-pointer transition duration-300"
                 } // Circular page buttons
                 activeClassName={
-                  "bg-gray-700 text-white border border-gray-700"
-                } // Styling for active page
+                  "bg-black text-white" // Match active page to image (dark background, white text)
+                }
                 pageLinkClassName={
                   "w-full h-full flex items-center justify-center"
                 } // Center the page number
-                breakClassName={"flex items-center justify-center w-10 h-10"} // Dots between numbers
+                breakClassName={"flex items-center justify-center w-8 h-8"} // Dots between numbers
                 breakLinkClassName={
                   "w-full h-full flex items-center justify-center"
                 } // Center the dots
                 previousClassName={
-                  "flex items-center justify-center w-10 h-10 rounded-full border border-gray-400"
+                  "flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-200 cursor-pointer transition duration-300"
                 } // Previous button styling
                 nextClassName={
-                  "flex items-center justify-center w-10 h-10 rounded-full border border-gray-400"
+                  "flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-200 cursor-pointer transition duration-300"
                 } // Next button styling
                 disabledClassName={"opacity-50 cursor-not-allowed"} // Disabled button styling
               />
             </div>
+
           </div>
         </div>
       </div>
