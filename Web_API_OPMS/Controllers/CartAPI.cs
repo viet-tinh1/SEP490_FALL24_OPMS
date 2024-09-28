@@ -33,10 +33,15 @@ namespace Web_API_OPMS.Controllers
             return CartRepository.GetCarts();
         }
         [HttpGet("getCartByUser")]
-        public ActionResult<IEnumerable<CartUser>> GetCartByUser(int userId)
+        public ActionResult<IEnumerable<CartUser>> GetCartByUser()
         {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)  // If the user is not logged in or session expired
+            {
+                return Unauthorized("User is not logged in.");
+            }
             // Lấy danh sách các CartId từ bảng CartUser theo UserId
-            var cartUsers = CartUserRepository.GetCartUsersByUserId(userId);
+            var cartUsers = CartUserRepository.GetCartUsersByUserId(userId.Value);
 
             if (cartUsers == null || !cartUsers.Any())  // Kiểm tra danh sách có rỗng hay không
             {
@@ -57,6 +62,12 @@ namespace Web_API_OPMS.Controllers
         [HttpPost("createCart")]
         public IActionResult CreateCartAsync([FromBody] CartDTO c)
         {
+            //using session userId from login api 
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)// If the user is not logged in or session expired
+            {
+                return Unauthorized(new { message = "User not logged in" });
+            }
             if (c == null)
             {
                 return BadRequest("Invalid Cart data");
@@ -77,9 +88,9 @@ namespace Web_API_OPMS.Controllers
                     return BadRequest("Not enough stock available.");
                 }
 
-                // Deduct the quantity from the plant's stock
-                plant.Stock -= c.Quantity;
-                PlantRepository.updatePlant(plant); // Update the plant stock in the database
+                //// Deduct the quantity from the plant's stock
+                //plant.Stock -= c.Quantity;
+                //PlantRepository.updatePlant(plant); // Update the plant stock in the database
 
 
                 Cart cart = new Cart()
@@ -89,10 +100,11 @@ namespace Web_API_OPMS.Controllers
                     Quantity = c.Quantity
                 };
                 CartRepository.CreateCart(cart);
+             
                 CartUser cartUser = new CartUser()
                 {
                     CartId = cart.CartId,
-                    UserId = 1 // Gán giá trị UserId mặc định là 1
+                    UserId = userId // Gán giá trị UserId from session
                 };
                 CartUserRepository.CreateCartUser(cartUser);
                 return CreatedAtAction(nameof(GetCartById), new { id = cart.CartId }, cart);

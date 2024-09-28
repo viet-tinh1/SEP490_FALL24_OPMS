@@ -66,14 +66,21 @@ namespace Web_API_OPMS.Controllers
                     // Tính toán tổng số tiền cho đơn hàng (giá của plant * số lượng trong cart)
                     var totalAmount = plant.Price * cart.Quantity;
 
+                    // using session userId from login api 
+                    var userId = HttpContext.Session.GetInt32("UserId");
+
+                    if (userId == null)  // If the user is not logged in or session expired
+                    {
+                        return Unauthorized("User is not logged in.");
+                    }
                     // Tạo một đối tượng order với trạng thái là "1" (đơn hàng thành công)
                     Order order = new Order()
                     {
                         CartId = o.CartId,               // Gán CartId từ dữ liệu đầu vào
                         OrderDate = o.OrderDate,         // Ngày tạo order
                         TotalAmount = totalAmount,       // Tổng số tiền được tính toán tự động
-                        Status = "1",                    // Đặt trạng thái đơn hàng là "1" (thành công)
-                        UserId = o.UserId                // Gán UserId từ dữ liệu đầu vào
+                        Status = "Pending",              // Đặt trạng thái đơn hàng là "1" (thành công)
+                        UserId = userId                // Gán UserId from session
                     };
 
                     // Lưu đơn hàng mới vào repository
@@ -88,7 +95,9 @@ namespace Web_API_OPMS.Controllers
                     {
                         return BadRequest($"Error deleting CartUser: {ex.Message}");
                     }
-
+                    // Deduct the quantity from the plant's stock
+                    plant.Stock -= cart.Quantity;
+                    PlantRepository.updatePlant(plant);
                     // Commit transaction sau khi tất cả các bước trên thành công
                     transaction.Commit();
 
@@ -107,7 +116,7 @@ namespace Web_API_OPMS.Controllers
 
         // Chỉnh sửa Order đã tạo
         [HttpPost("updateOrder")]
-        public IActionResult UpdateOrder([FromBody] OrderDTO o)
+        public IActionResult UpdateOrder([FromBody] OrderDTOU o)
         {
             if (o == null)
             {

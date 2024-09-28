@@ -22,6 +22,12 @@ namespace Web_API_OPMS.Controllers
         [HttpPost("createPlant")]
         public IActionResult CreatePlant([FromBody] PlantDTO p)
         {
+            //using session userId from login api 
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)// If the user is not logged in or session expired
+            {
+                return Unauthorized(new { message = "User not logged in" });
+            }
             if (p == null || string.IsNullOrEmpty(p.PlantName))
             {
                 return BadRequest("Invalid plant data");
@@ -31,7 +37,7 @@ namespace Web_API_OPMS.Controllers
             {              
                 Plant plant = new Plant()
                 {
-                    UserId = p.UserId,
+                    UserId = userId.Value,
                     PlantName = p.PlantName,
                     CategoryId = p.CategoryId,
                     Description = p.Description,
@@ -50,7 +56,7 @@ namespace Web_API_OPMS.Controllers
         }
         // Chỉnh sửa plant đã tạo
         [HttpPost("updatePlant")]
-        public IActionResult UpdatePlant([FromBody] PlantDTO p)
+        public IActionResult UpdatePlant([FromBody] PlantDTOU p)
         {
             if (p == null || string.IsNullOrEmpty(p.PlantName))
             {
@@ -99,28 +105,13 @@ namespace Web_API_OPMS.Controllers
         {
             return plantRepository.getPlantById(id);
         }
-
-        //Search plant theo tên
-        //[HttpGet("SearchPlantByName")]
-        //public ActionResult<List<Plant>> searchPlantByName(string name)
-        //{
-        //    return plantRepository.searchPlantByName(name);
-        //}
-
-        ////Search plants theo category
-        //[HttpGet("SearchPlantByCategory")]
-        //public ActionResult<List<Plant>> searchPlantByCategory(int categoryId)
-        //{
-        //    return plantRepository.searchPlantByCategory(categoryId);
-        //}
-        //[HttpGet("searchPlantByPrice")]
-        //public ActionResult<List<Plant>> searchPlantByPrice( decimal minPrice, decimal maxPrice)
-        //{
-        //    return plantRepository.searchPlantByPrice( minPrice,  maxPrice);
-        //}
+        
         [HttpGet("searchPlants")]
-        public IActionResult SearchPlants([FromQuery] string name = null, [FromQuery] int? categoryId = null, [FromQuery] decimal? minPrice = null, [FromQuery] decimal? maxPrice = null)
+
+        public IActionResult SearchPlants([FromQuery] string name = null, [FromQuery] List<int> categoryId= null, [FromQuery] decimal? minPrice = null, [FromQuery] decimal? maxPrice = null)
         {
+            categoryId ??= new List<int>();
+
             // Gọi phương thức tìm kiếm trong PlantRepository và truyền các tham số
             var plants = plantRepository.searchPlants(name, categoryId, minPrice, maxPrice);
 
