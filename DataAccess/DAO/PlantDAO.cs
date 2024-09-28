@@ -64,7 +64,9 @@ namespace DataAccess.DAO
         }
 
         // Phương thức tìm kiếm Plant theo tên, category, và giá.
+
         public List<Plant> searchPlants(string name = null, List<int> categoryId = null, decimal? minPrice = null, decimal? maxPrice = null)
+
         {
             // Khởi tạo query cơ bản
             var query = _context.Plants.AsQueryable();
@@ -76,9 +78,11 @@ namespace DataAccess.DAO
             }
 
             // Điều kiện tìm kiếm theo category nếu có tham số categoryId
+
             if (categoryId != null && categoryId.Count > 0)
             {
                 query = query.Where(p => categoryId.Contains(p.CategoryId));
+
             }
 
             // Điều kiện tìm kiếm theo giá tối thiểu nếu có tham số minPrice

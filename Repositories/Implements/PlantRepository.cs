@@ -40,8 +40,8 @@ namespace Repositories.Implements
             return plantDAO.getPlanttById(id);
         }
         //hàm để lấy  list plant theo name , price , category 
-        
         public List<Plant> searchPlants(string name = null, List<int> categoryId = null, decimal? minPrice = null, decimal? maxPrice = null)
+
         {
             // Gọi phương thức searchPlants từ PlantDAO với các tham số có thể là null
             return plantDAO.searchPlants(name, categoryId, minPrice, maxPrice);
