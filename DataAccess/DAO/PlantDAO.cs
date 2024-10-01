@@ -21,12 +21,25 @@ namespace DataAccess.DAO
             _context = context;
         }
 
-        // Phương thức lấy tất cả Plant từ cơ sở dữ liệu.
+        // Phương thức lấy tất cả Plant đã Verfied từ cơ sở dữ liệu.
         public List<Plant> getPlant()
         {
             return _context.Plants.ToList(); // Trả về danh sách tất cả Plant.
         }
-
+        //lấy tất cả plant đã Verified
+        public List<Plant> getVerifiedPlants()
+        {
+            return _context.Plants
+                           .Where(p => p.IsVerfied == 1) // Only return plants with isVerfied = 1
+                           .ToList();
+        }
+        //lấy tất cả plant chưa Verified
+        public List<Plant> getNonVerifiedPlants()
+        {
+            return _context.Plants
+                           .Where(p => p.IsVerfied == 0) // Only return plants with isVerfied = 0
+                           .ToList();
+        }
         // Phương thức xóa một Plant theo ID.
         public void deletePlant(int id)
         {
@@ -70,6 +83,8 @@ namespace DataAccess.DAO
         {
             // Khởi tạo query cơ bản
             var query = _context.Plants.AsQueryable();
+            // Chỉ lấy những sản phẩm có IsVerfied == 1
+            query = query.Where(p => p.IsVerfied == 1);
 
             // Điều kiện tìm kiếm theo tên nếu có tham số name
             if (!string.IsNullOrEmpty(name))
