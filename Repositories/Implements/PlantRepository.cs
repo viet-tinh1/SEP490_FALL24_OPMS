@@ -24,6 +24,18 @@ namespace Repositories.Implements
             return plantDAO.getPlant();
 
         }
+        //hàm để lấy tất cả  plant đã Verified
+        public List<Plant> getVerifiedPlants()
+        {
+            return plantDAO.getVerifiedPlants();
+
+        }
+        //hàm để lấy tất cả  plant chưa Verified
+        public List<Plant> getNonVerifiedPlants()
+        {
+            return plantDAO.getNonVerifiedPlants();
+
+        }
         //hàm để tạo 1 plant
         public void createPlant(Plant p)
         {

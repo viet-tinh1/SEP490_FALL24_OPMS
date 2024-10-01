@@ -24,6 +24,7 @@ public partial class Plant
 
     public int? Status { get; set; }
 
+    public int? IsVerfied { get; set; }
     public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
 
     public virtual Category Category { get; set; } = null!;

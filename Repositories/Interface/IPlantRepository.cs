@@ -11,6 +11,8 @@ namespace Repositories.Interface
     {
         // Trả về danh sách tất cả Plant.
         List<Plant> getPlant();
+        List<Plant> getVerifiedPlants();
+        List<Plant> getNonVerifiedPlants();
         // Xóa một Plant dựa trên ID.
         void deletePlant(int id);
         // Cập nhật thông tin của một Plant.
