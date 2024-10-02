@@ -275,15 +275,28 @@ namespace Web_API_OPMS.Controllers
         
         [HttpGet("searchPlants")]
 
-        public IActionResult SearchPlants([FromQuery] string name = null, [FromQuery] List<int> categoryId= null, [FromQuery] decimal? minPrice = null, [FromQuery] decimal? maxPrice = null)
+        public IActionResult SearchPlants([FromQuery] string name = null, [FromQuery] List<int> categoryId = null, [FromQuery] decimal? minPrice = null, [FromQuery] decimal? maxPrice = null)
         {
             categoryId ??= new List<int>();
+
+            // Kiểm tra nếu minPrice lớn hơn maxPrice
+            if (minPrice.HasValue && maxPrice.HasValue && minPrice > maxPrice)
+            {
+                return BadRequest("Giá trị tối thiểu không thể lớn hơn giá trị tối đa.");
+            }
 
             // Gọi phương thức tìm kiếm trong PlantRepository và truyền các tham số
             var plants = plantRepository.searchPlants(name, categoryId, minPrice, maxPrice);
 
+            // Kiểm tra nếu không có kết quả
+            if (plants == null || plants.Count == 0)
+            {
+                return NotFound("Không có kết quả theo yêu cầu.");
+            }
+
             // Trả về kết quả dưới dạng JSON
             return Ok(plants);
         }
+
     }
 }
