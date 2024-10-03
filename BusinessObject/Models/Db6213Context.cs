@@ -245,6 +245,7 @@ public partial class Db6213Context : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("ImageURL");
+            entity.Property(e => e.IsVerfied).HasDefaultValueSql("((0))");
             entity.Property(e => e.PlantName)
                 .HasMaxLength(100)
                 .IsUnicode(false);
