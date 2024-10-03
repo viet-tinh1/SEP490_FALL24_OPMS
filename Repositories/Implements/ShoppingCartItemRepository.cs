@@ -7,19 +7,19 @@ using System.Collections.Generic;
 
 namespace Repositories.Implements
 {
-    public class CartRepository : ICartRepository
+    public class ShoppingCartItemRepository : IShoppingCartItemRepository
     {
         // Khởi tạo đối tượng CartDAO để tương tác với cơ sở dữ liệu qua DAO.
-        private CartDAO cartDAO = new CartDAO();
+        private ShoppingCartItemDAO cartDAO = new ShoppingCartItemDAO();
         readonly Db6213Context _context = new Db6213Context();
 
         // Inject YourDbContext vào constructor của repository
-        public CartRepository(Db6213Context context)
+        public ShoppingCartItemRepository(Db6213Context context)
         {
             _context = context;
         }
 
-        public CartRepository()
+        public ShoppingCartItemRepository()
         {
         }
 
@@ -27,13 +27,13 @@ namespace Repositories.Implements
         public void DeleteCart(int cartId)
         {
             // Tìm một đối tượng Cart duy nhất trong bảng Carts với CartId khớp với cartId được truyền vào
-            var cart = _context.Carts.SingleOrDefault(c => c.CartId == cartId);
+            var cart = _context.ShoppingCartItems.SingleOrDefault(c => c.ShoppingCartItemId == cartId);
 
             // Ktra  nếu tìm thấy cart (cart khác null)
             if (cart != null)
             {
                 // Nếu tìm thấy cart, thực hiện xóa cart đó khỏi bảng Carts
-                _context.Carts.Remove(cart);
+                _context.ShoppingCartItems.Remove(cart);
 
                 // Lưu các thay đổi vào cơ sở dữ liệu sau khi xóa
                 _context.SaveChanges();
@@ -41,30 +41,30 @@ namespace Repositories.Implements
         }
 
         // Phương thức lấy tất cả Cart.
-        public List<Cart> GetCarts()
+        public List<ShoppingCartItem> GetCarts()
         {
             return cartDAO.GetCarts(); // Lấy danh sách tất cả Cart từ DAO.
         }
 
         // Phương thức để tạo mới một Cart.
-        public void CreateCart(Cart cart)
+        public void CreateCart(ShoppingCartItem cart)
         {
             cartDAO.CreateCart(cart);
         }
 
         // Phương thức để cập nhật thông tin một Cart.
-        public void UpdateCart(Cart cart)
+        public void UpdateCart(ShoppingCartItem cart)
         {
             cartDAO.UpdateCart(cart);
         }
-        public Cart GetSingleCartById(int id)
+        public ShoppingCartItem GetSingleCartById(int id)
         {
             return cartDAO.GetCartById(id); // Trả về Cart có ID tương ứng hoặc null nếu không tìm thấy
         }
         // Phương thức để lấy một Cart theo ID.
-        public List<Cart> GetCartById(List<int?> cartIds)
+        public List<ShoppingCartItem> GetCartById(List<int?> cartIds)
         {
-            return _context.Carts.Where(c => cartIds.Contains(c.CartId)).ToList(); // Trả về danh sách các Cart tương ứng
+            return _context.ShoppingCartItems.Where(c => cartIds.Contains(c.ShoppingCartItemId)).ToList(); // Trả về danh sách các Cart tương ứng
         }
     }
 }
