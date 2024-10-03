@@ -17,9 +17,9 @@ namespace Web_API_OPMS.Controllers
     public class OrderAPI : ControllerBase
     {
         private PlantRepository PlantRepository = new PlantRepository();
-        private CartRepository CartRepository = new CartRepository();
+        private ShoppingCartItemRepository ShoppingCartItemRepository = new ShoppingCartItemRepository();
         private OrderRepository OrderRepository = new OrderRepository();
-        private CartUserRepository CartUserRepository = new CartUserRepository();
+        private ShoppingCartRepository ShoppingCartRepository = new ShoppingCartRepository();
         private readonly Db6213Context _context;
 
         public OrderAPI(Db6213Context context)
@@ -49,7 +49,7 @@ namespace Web_API_OPMS.Controllers
                 try
                 {
                     // Lấy thông tin chi tiết của cart dựa trên CartId
-                    var cart = CartRepository.GetSingleCartById(o.CartId);
+                    var cart = ShoppingCartItemRepository.GetSingleCartById(o.ShoppingCartItemId);
                     // Kiểm tra nếu cart không tồn tại, trả về lỗi NotFound
                     if (cart == null)
                     {
@@ -76,7 +76,7 @@ namespace Web_API_OPMS.Controllers
                     // Tạo một đối tượng order với trạng thái là "1" (đơn hàng thành công)
                     Order order = new Order()
                     {
-                        CartId = o.CartId,               // Gán CartId từ dữ liệu đầu vào
+                        ShoppingCartItemId = o.ShoppingCartItemId,  // Gán CartId từ dữ liệu đầu vào
                         OrderDate = o.OrderDate,         // Ngày tạo order
                         TotalAmount = totalAmount,       // Tổng số tiền được tính toán tự động
                         Status = "Pending",              // Đặt trạng thái đơn hàng là "1" (thành công)
@@ -89,7 +89,7 @@ namespace Web_API_OPMS.Controllers
                     // Thực hiện xóa CartUser
                     try
                     {
-                        CartUserRepository.DeleteCartUser(o.CartId);
+                        ShoppingCartRepository.DeleteCartUser(o.ShoppingCartItemId);
                     }
                     catch (Exception ex)
                     {
@@ -133,7 +133,7 @@ namespace Web_API_OPMS.Controllers
                 }
 
                 // Update the existing order properties
-                existingOrder.CartId = o.CartId;
+                existingOrder.ShoppingCartItemId = o.ShoppingCartItemId;
                 existingOrder.OrderDate = DateTime.Now;
                 existingOrder.TotalAmount = o.TotalAmount;
                 existingOrder.Status = o.Status;

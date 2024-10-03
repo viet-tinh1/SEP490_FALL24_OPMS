@@ -7,22 +7,22 @@ using System.Threading.Tasks;
 
 namespace Repositories.Interface
 {
-    public interface ICartUserRepository
+    public interface IShoppingCartItemRepository
     {
         // Phương thức lấy tất cả Carts.
-        List<CartUser> GetCartUsers();
+        List<ShoppingCartItem> GetCarts();
 
         // Phương thức xóa một Cart theo ID.
-        void DeleteCartUser(int id);
+        void DeleteCart(int id);
 
         // Phương thức cập nhật thông tin của một Cart.
-        void UpdateCartUser(CartUser cartuser);
+        void UpdateCart(ShoppingCartItem cart);
 
         // Phương thức tạo mới một Cart.
-        void CreateCartUser(CartUser cartuser);
-
-        // Phương thức lấy một Cart theo ID.
-        CartUser GetCartUserById(int id);
-        List<CartUser> GetCartUsersByUserId(int userId);
+        void CreateCart(ShoppingCartItem cart);
+        ShoppingCartItem GetSingleCartById(int id);
+        // Phương thức lấy một Cart theo ID.       
+        List<ShoppingCartItem> GetCartById(List<int?> cartIds);
     }
 }
+

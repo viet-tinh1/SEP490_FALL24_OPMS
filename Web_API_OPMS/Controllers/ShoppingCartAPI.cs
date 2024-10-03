@@ -1,5 +1,6 @@
 ﻿using BusinessObject.Models;
 using DataAccess.DTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using Repositories.Implements;
 using Repositories.Interface;
 using System.Data;
 using System.Net;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -14,53 +16,53 @@ namespace Web_API_OPMS.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CartAPI : ControllerBase
+    public class ShoppingCartAPI : ControllerBase
     {
         private PlantRepository PlantRepository = new PlantRepository();
-        private CartRepository CartRepository = new CartRepository();
-        private CartUserRepository CartUserRepository = new CartUserRepository();
+        private ShoppingCartItemRepository ShoppingCartItemRepository = new ShoppingCartItemRepository();
+        private ShoppingCartRepository ShoppingCartRepository = new ShoppingCartRepository();
         private readonly Db6213Context _context;
 
-        public CartAPI(Db6213Context context)
+        public ShoppingCartAPI(Db6213Context context)
         {
             _context = context;
         }
 
         //Lấy danh sách Cart
-        [HttpGet("getCart")]
-        public ActionResult<IEnumerable<Cart>> getCart()
+        [HttpGet("getShoppingCart")]
+        public ActionResult<IEnumerable<ShoppingCartItem>> getShoppingCart()
         {
-            return CartRepository.GetCarts();
+            return ShoppingCartItemRepository.GetCarts();
         }
-        [HttpGet("getCartByUser")]
-        public ActionResult<IEnumerable<CartUser>> GetCartByUser()
-        {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null)  // If the user is not logged in or session expired
-            {
-                return Unauthorized("User is not logged in.");
-            }
-            // Lấy danh sách các CartId từ bảng CartUser theo UserId
-            var cartUsers = CartUserRepository.GetCartUsersByUserId(userId.Value);
 
-            if (cartUsers == null || !cartUsers.Any())  // Kiểm tra danh sách có rỗng hay không
+        [HttpGet("getShoppingCartByUser")]
+        public ActionResult<IEnumerable<ShoppingCart>> GetShoppingCartByUser([FromQuery] int userId)
+        {
+            // If userId is not provided
+            if (userId == 0)
             {
-                return NotFound("No carts found for the given user.");
+                return BadRequest(new { message = "User ID is required." });
+            }
+
+            // Retrieve the shopping cart for the user
+            var shoppingCart = ShoppingCartRepository.GetCartUsersByUserId(userId);
+
+            if (shoppingCart == null || !shoppingCart.Any())  // Kiểm tra danh sách có rỗng hay không
+            {
+                return BadRequest(new { message = "No carts found for the given user." });
             }
 
             // Lấy danh sách các CartId từ CartUser
-            var cartIds = cartUsers.Select(cu => cu.CartId).ToList(); // Chọn CartId từ CartUser
+            var cartIds = shoppingCart.Select(cu => cu.ShoppingCartItemId).ToList(); // Chọn CartId từ CartUser
 
             // Lấy danh sách các Cart từ bảng Cart dựa trên các CartId
-            var carts = CartRepository.GetCartById(cartIds);
+            var carts = ShoppingCartItemRepository.GetCartById(cartIds);
 
             return Ok(carts);
-
-
         }
         //Tạo 1 Cart  mới
-        [HttpPost("createCart")]
-        public IActionResult CreateCartAsync([FromBody] CartDTO c)
+        [HttpPost("createShoppingCart")]
+        public IActionResult CreateShoppingCartAsync([FromBody] ShoppingCartItemDTO c)
         {
             //using session userId from login api 
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -93,21 +95,21 @@ namespace Web_API_OPMS.Controllers
                 //PlantRepository.updatePlant(plant); // Update the plant stock in the database
 
 
-                Cart cart = new Cart()
+                ShoppingCartItem cart = new ShoppingCartItem()
                 {
-                    CartId = c.CartId,
+                    ShoppingCartItemId = c.ShoppingCartItemId,
                     PlantId = c.PlantId,
                     Quantity = c.Quantity
                 };
-                CartRepository.CreateCart(cart);
-             
-                CartUser cartUser = new CartUser()
+                ShoppingCartItemRepository.CreateCart(cart);
+
+                ShoppingCart shoppingCart = new ShoppingCart()
                 {
-                    CartId = cart.CartId,
+                    ShoppingCartItemId = cart.ShoppingCartItemId,
                     UserId = userId // Gán giá trị UserId from session
                 };
-                CartUserRepository.CreateCartUser(cartUser);
-                return CreatedAtAction(nameof(GetCartById), new { id = cart.CartId }, cart);
+                ShoppingCartRepository.CreateCartUser(shoppingCart);
+                return CreatedAtAction(nameof(GetShoppingCartById), new { id = cart.ShoppingCartItemId }, cart);
             }
             catch (Exception ex)
             {
@@ -115,8 +117,8 @@ namespace Web_API_OPMS.Controllers
             }
         }
         // Chỉnh sửa Cart đã tạo
-        [HttpPost("updateCart")]
-        public IActionResult UpdateCart([FromBody] CartDTO c)
+        [HttpPost("updateShoppingCart")]
+        public IActionResult UpdateShoppingCart([FromBody] ShoppingCartItemDTO c)
         {
             if (c == null)
             {
@@ -126,7 +128,7 @@ namespace Web_API_OPMS.Controllers
             try
             {
 
-                var existingCart = CartRepository.GetSingleCartById(c.CartId);
+                var existingCart = ShoppingCartItemRepository.GetSingleCartById(c.ShoppingCartItemId);
                 if (existingCart == null)
                 {
                     return NotFound($"Cart not found");
@@ -134,12 +136,12 @@ namespace Web_API_OPMS.Controllers
 
                 // Update the existing cart properties
                
-                existingCart.CartId = c.CartId;
+                existingCart.ShoppingCartItemId = c.ShoppingCartItemId;
                 existingCart.PlantId = c.PlantId;
                 existingCart.Quantity = c.Quantity;
 
                 // Save changes
-                CartRepository.UpdateCart(existingCart);
+                ShoppingCartItemRepository.UpdateCart(existingCart);
 
                 return NoContent(); // 204 No Content on successful update
             }
@@ -149,16 +151,16 @@ namespace Web_API_OPMS.Controllers
             }
         }
         //Xóa 1 Cart 
-        [HttpGet("deleteCart")]
-        public IActionResult DeleteCart(int CartId)
+        [HttpGet("deleteShoppingCart")]
+        public IActionResult DeleteShoppingCart(int CartId)
         {
             try
             {
                 // Xóa tất cả các bản ghi trong bảng CartUser liên quan đến CartId
-                CartUserRepository.DeleteCartUser(CartId);
+                ShoppingCartRepository.DeleteCartUser(CartId);
 
                 // Xóa cart khỏi bảng Cart
-                CartRepository.DeleteCart(CartId);
+                ShoppingCartItemRepository.DeleteCart(CartId);
 
                 return NoContent(); // Trả về phản hồi không có nội dung
             }
@@ -168,10 +170,10 @@ namespace Web_API_OPMS.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
-        [HttpGet("getCartById")]
-        public ActionResult<Cart> GetCartById(int id)
+        [HttpGet("getShoppingCartById")]
+        public ActionResult<ShoppingCartItem> GetShoppingCartById(int id)
         {
-            var cart = CartRepository.GetSingleCartById(id);
+            var cart = ShoppingCartItemRepository.GetSingleCartById(id);
 
             if (cart == null)
             {

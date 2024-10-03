@@ -2,7 +2,11 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -13,10 +17,12 @@ namespace Web_API_OPMS.Controllers.Authentication
     public class AuthController : ControllerBase
     {
         private readonly Db6213Context _context;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(Db6213Context context)
+        public AuthController(Db6213Context context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         // API Đăng ký
@@ -52,9 +58,10 @@ namespace Web_API_OPMS.Controllers.Authentication
             {
                 return Unauthorized(new { message = "Your account has been locked " });
             }
+            var token = GenerateJwtToken(user);
             HttpContext.Session.SetInt32("UserId", user.UserId);
             HttpContext.Session.SetInt32("UserRole", user.Roles);
-            return Ok(new { message = "Login successful", role = user.Roles });
+            return Ok(new { message = "Login successful", role = user.Roles, token = token, userId=user.UserId });
         }
 
         [HttpPost("logout")]
@@ -78,6 +85,24 @@ namespace Web_API_OPMS.Controllers.Authentication
         private bool VerifyPassword(string enteredPassword, string storedPassword)
         {
             return HashPassword(enteredPassword) == storedPassword;
+        }
+        private string GenerateJwtToken(User user)
+        {
+            // JWT token generation logic
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_configuration["JwtConfig:Secret"]);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+            new Claim(ClaimTypes.Name, user.UserId.ToString()),
+            new Claim(ClaimTypes.Role, user.Roles.ToString())
+                }),
+                Expires = DateTime.UtcNow.AddHours(1),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
     }
 
