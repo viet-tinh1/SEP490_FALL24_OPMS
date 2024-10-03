@@ -44,7 +44,9 @@ namespace Web_API_OPMS.Controllers
                     Price = p.Price,
                     ImageUrl = p.ImageUrl,
                     Stock = p.Stock,
-                    Status = p.Status
+                    Status = p.Status,
+                    IsVerfied = 0,
+                    Discount = p.Discount
                 };
                 plantRepository.createPlant(plant);
                 return CreatedAtAction(nameof(CreatePlant), new { id = plant.PlantId}, plant);
@@ -81,6 +83,7 @@ namespace Web_API_OPMS.Controllers
                 existingPlant.ImageUrl = p.ImageUrl;
                 existingPlant.Stock = p.Stock;
                 existingPlant.Status = p.Status;
+                
 
                 // Save changes
                 plantRepository.updatePlant(existingPlant);

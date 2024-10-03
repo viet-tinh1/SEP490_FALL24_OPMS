@@ -51,7 +51,7 @@ namespace DataAccess.DAO
             var order = _context.Orders.FirstOrDefault(x => x.OrderId == o.OrderId); // Tìm Order theo ID.
             if (order != null)
             {
-                order.CartId = o.CartId;
+                order.ShoppingCartItemId = o.ShoppingCartItemId;
                 order.OrderDate = o.OrderDate;
                 order.TotalAmount = o.TotalAmount;
                 order.Status = o.Status;

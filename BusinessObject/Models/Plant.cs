@@ -24,7 +24,9 @@ public partial class Plant
 
     public int? Status { get; set; }
 
-    public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
+    public int? IsVerfied { get; set; }
+    public decimal? Discount { get; set; }
+    public virtual ICollection<ShoppingCartItem> ShoppingCartItems { get; set; } = new List<ShoppingCartItem>();
 
     public virtual Category Category { get; set; } = null!;
 

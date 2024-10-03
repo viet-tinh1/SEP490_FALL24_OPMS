@@ -16,9 +16,9 @@ public partial class Db6213Context : DbContext
     {
     }
 
-    public virtual DbSet<Cart> Carts { get; set; }
+    public virtual DbSet<ShoppingCart> ShoppingCarts { get; set; }
 
-    public virtual DbSet<CartUser> CartUsers { get; set; }
+    public virtual DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
 
     public virtual DbSet<Category> Categories { get; set; }
 
@@ -37,6 +37,7 @@ public partial class Db6213Context : DbContext
     public virtual DbSet<Review> Reviews { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+    public virtual DbSet<Voucher> Vouchers { get; set; }
 
     /*protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
@@ -52,36 +53,67 @@ public partial class Db6213Context : DbContext
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Cart>(entity =>
+        modelBuilder.Entity<ShoppingCart>(entity =>
         {
-            entity.HasKey(e => e.CartId).HasName("PK__Cart__51BCD7B7E3ACDBAD");
-
-            entity.ToTable("Cart");
-
-            entity.Property(e => e.PlantId).HasColumnName("PlantID");
-
-            entity.HasOne(d => d.Plant).WithMany(p => p.Carts)
-                .HasForeignKey(d => d.PlantId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Cart__PlantID__45F365D3");
-        });
-
-        modelBuilder.Entity<CartUser>(entity =>
-        {
-            entity.ToTable("CartUser");
-
-            entity.HasKey(e => new { e.CartId, e.UserId }); // Khóa chính kết hợp giữa CartId và UserId
+            entity
+                .HasNoKey()
+                .ToTable("Shopping_Cart");
+            entity.HasKey(e => new { e.ShoppingCartItemId, e.UserId });
 
             entity.Property(e => e.UserId).HasColumnName("UserID");
 
-            entity.HasOne(d => d.Cart).WithMany()
-                .HasForeignKey(d => d.CartId)
+            entity.HasOne(d => d.ShoppingCartItem).WithMany()
+                .HasForeignKey(d => d.ShoppingCartItemId)
                 .HasConstraintName("FK__CartUser__CartId__48CFD27E");
 
             entity.HasOne(d => d.User).WithMany()
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK__CartUser__UserID__47DBAE45");
         });
+
+        modelBuilder.Entity<ShoppingCartItem>(entity =>
+        {
+            entity.HasKey(e => e.ShoppingCartItemId).HasName("PK__Cart__51BCD7B7E3ACDBAD");
+
+            entity.ToTable("Shopping_Cart_Item");
+
+            entity.Property(e => e.PlantId).HasColumnName("PlantID");
+
+            entity.HasOne(d => d.Plant).WithMany(p => p.ShoppingCartItems)
+                .HasForeignKey(d => d.PlantId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Cart__PlantID__45F365D3");
+        });
+        //modelBuilder.Entity<Cart>(entity =>
+        //{
+        //    entity.HasKey(e => e.CartId).HasName("PK__Cart__51BCD7B7E3ACDBAD");
+
+        //    entity.ToTable("Cart");
+
+        //    entity.Property(e => e.PlantId).HasColumnName("PlantID");
+
+        //    entity.HasOne(d => d.Plant).WithMany(p => p.Carts)
+        //        .HasForeignKey(d => d.PlantId)
+        //        .OnDelete(DeleteBehavior.ClientSetNull)
+        //        .HasConstraintName("FK__Cart__PlantID__45F365D3");
+        //});
+
+        //modelBuilder.Entity<CartUser>(entity =>
+        //{
+        //    entity.ToTable("CartUser");
+
+        //    entity.HasKey(e => new { e.CartId, e.UserId }); // Khóa chính kết hợp giữa CartId và UserId
+
+        //    entity.Property(e => e.UserId).HasColumnName("UserID");
+
+        //    entity.HasOne(d => d.Cart).WithMany()
+        //        .HasForeignKey(d => d.CartId)
+        //        .HasConstraintName("FK__CartUser__CartId__48CFD27E");
+
+        //    entity.HasOne(d => d.User).WithMany()
+        //        .HasForeignKey(d => d.UserId)
+        //        .HasConstraintName("FK__CartUser__UserID__47DBAE45");
+        //});
 
         modelBuilder.Entity<Category>(entity =>
         {
@@ -145,8 +177,8 @@ public partial class Db6213Context : DbContext
                 .HasDefaultValueSql("('Pending')");
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(10, 2)");
 
-            entity.HasOne(d => d.Cart).WithMany(p => p.Orders)
-                .HasForeignKey(d => d.CartId)
+            entity.HasOne(d => d.ShoppingCartItem).WithMany(p => p.Orders)
+                .HasForeignKey(d => d.ShoppingCartItemId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Orders__CartId__4CA06362");
             entity.HasOne(d => d.User).WithMany(p => p.Orders)
@@ -206,6 +238,9 @@ public partial class Db6213Context : DbContext
             entity.Property(e => e.PlantId).HasColumnName("PlantID");
             entity.Property(e => e.CategoryId).HasColumnName("CategoryID");
             entity.Property(e => e.Description).HasMaxLength(255);
+            entity.Property(e => e.Discount)
+                .HasColumnType("decimal(5, 2)")
+                .HasColumnName("discount");
             entity.Property(e => e.ImageUrl)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -278,6 +313,34 @@ public partial class Db6213Context : DbContext
             entity.Property(e => e.Username)
                 .HasMaxLength(50)
                 .IsUnicode(false);
+        });
+        modelBuilder.Entity<Voucher>(entity =>
+        {
+            entity.HasKey(e => e.VoucherId).HasName("PK__Voucher__80B6FFA86981BAF1");
+
+            entity.ToTable("Voucher");
+
+            entity.Property(e => e.VoucherId).HasColumnName("voucher_id");
+            entity.Property(e => e.Amount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("amount");
+            entity.Property(e => e.CloseDate)
+                .HasColumnType("datetime")
+                .HasColumnName("close_date");
+            entity.Property(e => e.CreateDate)
+                .HasColumnType("datetime")
+                .HasColumnName("create_date");
+            entity.Property(e => e.OpenDate)
+                .HasColumnType("datetime")
+                .HasColumnName("open_date");
+            entity.Property(e => e.Status).HasColumnName("status");
+            entity.Property(e => e.VoucherName)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("voucher_name");
+            entity.Property(e => e.VoucherPercent)
+                .HasColumnType("decimal(5, 2)")
+                .HasColumnName("voucher_percent");
         });
 
         OnModelCreatingPartial(modelBuilder);

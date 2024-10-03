@@ -53,6 +53,7 @@ namespace DataAccess.DAO
             plant.ImageUrl = p.ImageUrl;
             plant.Stock = p.Stock;
             plant.Status = p.Status;
+            plant.Discount = p.Discount;
             _context.Plants.Update(plant); // Cập nhật Plant trong cơ sở dữ liệu.
             _context.SaveChanges(); // Lưu thay đổi vào cơ sở dữ liệu.
         }

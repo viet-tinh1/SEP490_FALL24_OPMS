@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace DataAccess.DTO
 {
-    public class CartDTO
+    public class ShoppingCartItemDTO
     {
-        public int CartId { get; set; }
+        public int ShoppingCartItemId { get; set; }
 
         public int PlantId { get; set; }
 

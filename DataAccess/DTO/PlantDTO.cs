@@ -16,6 +16,8 @@ namespace DataAccess.DTO
         public string ImageUrl { get; set; } = null!;
         public int? Stock { get; set; }
         public int? Status { get; set; }
+        public int? IsVerfied { get; set; }
+        public decimal? Discount { get; set; }
     }
     public class PlantDTOU
     {
@@ -28,5 +30,6 @@ namespace DataAccess.DTO
         public string ImageUrl { get; set; } = null!;
         public int? Stock { get; set; }
         public int? Status { get; set; }
+        public decimal? Discount { get; set; }
     }
 }
