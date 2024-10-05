@@ -1,3 +1,4 @@
+import { Checkbox } from "flowbite-react";
 import { useState } from "react";
 export default function Cart() {
   const [quantity, setQuantity] = useState(0);
@@ -21,6 +22,7 @@ export default function Cart() {
             <div className="space-y-6">
               <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:p-6">
                 <div className="space-y-4 md:flex md:items-center md:justify-between md:gap-6 md:space-y-0">
+                 <Checkbox/>
                   <a href="#" className="shrink-0 md:order-1">
                     <img
                       className="h-20 w-20 dark:hidden"
@@ -93,7 +95,7 @@ export default function Cart() {
                     </div>
                     <div className="text-end md:order-4 md:w-32">
                       <p className="text-base font-bold text-gray-900 dark:text-white">
-                        $1,499
+                        VND 1,499
                       </p>
                     </div>
                   </div>
@@ -152,7 +154,7 @@ export default function Cart() {
                       Original price
                     </dt>
                     <dd className="text-base font-medium text-gray-900 dark:text-white">
-                      $7,592.00
+                      VND 7,592.00
                     </dd>
                   </dl>
 
@@ -161,7 +163,7 @@ export default function Cart() {
                       Savings
                     </dt>
                     <dd className="text-base font-medium text-green-600">
-                      -$299.00
+                      -VND 299.00
                     </dd>
                   </dl>
 
@@ -170,7 +172,7 @@ export default function Cart() {
                       Store Pickup
                     </dt>
                     <dd className="text-base font-medium text-gray-900 dark:text-white">
-                      $99
+                      VND 99
                     </dd>
                   </dl>
 
@@ -179,7 +181,7 @@ export default function Cart() {
                       Tax
                     </dt>
                     <dd className="text-base font-medium text-gray-900 dark:text-white">
-                      $799
+                      VND 799
                     </dd>
                   </dl>
                 </div>
@@ -189,7 +191,7 @@ export default function Cart() {
                     Total
                   </dt>
                   <dd className="text-base font-bold text-gray-900 dark:text-white">
-                    $8,191.00
+                    VND 8,191.00
                   </dd>
                 </dl>
               </div>
@@ -206,7 +208,7 @@ export default function Cart() {
                   or
                 </span>
                 <a
-                  href="#"
+                  href="/product"
                   className="inline-flex items-center gap-2 text-sm font-medium text-primary-700 underline hover:no-underline dark:text-primary-500"
                 >
                   Continue Shopping

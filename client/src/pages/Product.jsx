@@ -171,7 +171,7 @@ export default function Product() {
                 key={product.id}
                 className="bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto"
               >
-                <Link>
+                <Link >
                   <div className="relative p-2.5 overflow-hidden rounded-xl bg-clip-border">
                     <img
                       src={product.productImage} // Use the dynamic product image

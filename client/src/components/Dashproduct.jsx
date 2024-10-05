@@ -137,7 +137,7 @@ export default function Dashproduct() {
                 <Table.Cell className="py-4 flex space-x-2">
                   {/* Edit Button */}
                   <Button  size="sm" color="info" onClick={() => handleEdit(user)}>
-                    <MdEdit className="mr-2" /> Edit
+                    <MdEdit  className="mr-2" /> Edit
                   </Button>
                   {/* Delete Button */}
                   <Button  size="sm" color="failure" onClick={() => handleDelete(user)}>
