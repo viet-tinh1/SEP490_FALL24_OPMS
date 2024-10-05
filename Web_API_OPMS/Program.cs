@@ -1,8 +1,9 @@
-using BusinessObject.Models;
+﻿using BusinessObject.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Repositories.Implements;
+using Repositories.Interface;
 using System.Text;
 
 namespace Web_API_OPMS
@@ -62,7 +63,8 @@ namespace Web_API_OPMS
             // Swagger for API documentation
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
+            // Đăng ký IVoucherRepository với implement là VoucherRepository
+            builder.Services.AddScoped<IVoucherRepository, VoucherRepository>();
             var app = builder.Build();
 
             // Enable Swagger UI in development mode
