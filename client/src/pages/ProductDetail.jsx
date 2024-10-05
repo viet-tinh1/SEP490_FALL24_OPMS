@@ -9,17 +9,17 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1); // Initial quantity
 
   // Function to handle increment
-  const incrementQuantity = () => {
+  const incrementQuantity  = () => {
     setQuantity((prevQuantity) => prevQuantity + 1);
   };
 
   // Function to handle decrement
-  const decrementQuantity = () => {
+  const decrementQuantity  = () => {
     setQuantity((prevQuantity) => (prevQuantity > 1 ? prevQuantity - 1 : 1));
   };
 
   // Function to handle manual input
-  const handleQuantityChange = (e) => {
+  const handleQuantityChange  = (e) => {
     const value = parseInt(e.target.value, 10);
     if (!isNaN(value) && value > 0) {
       setQuantity(value);
@@ -29,13 +29,13 @@ export default function ProductDetail() {
   };
 
   // Reset empty input to 1 on blur
-  const handleBlur = () => {
+  const handleBlur  = () => {
     if (!quantity) {
       setQuantity(1);
     }
   };
 
-  const handleReasonSelect = (reason) => {
+  const handleReasonSelect  = (reason) => {
     setSelectedReason(reason);
     setIsReasonModalOpen(false);
     setIsFormModalOpen(true);
@@ -89,7 +89,7 @@ export default function ProductDetail() {
 
             <div className="mt-6 sm:mt-8 lg:mt-0">
               <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
-                Apple iMac 24" All-In-One Computer, Apple M1, 8GB RAM, 256GB
+                Apple iMac All-In-One Computer, Apple M1, 8GB RAM, 256GB
                 SSD, Mac OS, Pink
               </h1>
 
