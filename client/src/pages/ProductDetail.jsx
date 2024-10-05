@@ -3,9 +3,9 @@ import { TiShoppingCart } from "react-icons/ti";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import { AiFillLike } from "react-icons/ai";
 export default function ProductDetail() {
-  const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-  const [selectedReason, setSelectedReason] = useState("");
+  const [isReasonModalOpen, setIsReasonModalOpen] =  useState(false);
+  const [isFormModalOpen, setIsFormModalOpen] =  useState(false);
+  const [selectedReason, setSelectedReason] =  useState("");
   const [quantity, setQuantity] = useState(1); // Initial quantity
 
   // Function to handle increment
@@ -35,7 +35,7 @@ export default function ProductDetail() {
     }
   };
 
-  const handleReasonSelect  = (reason) => {
+  const handleReasonSelect   = (reason) => {
     setSelectedReason(reason);
     setIsReasonModalOpen(false);
     setIsFormModalOpen(true);
