@@ -71,7 +71,9 @@ export default function Dashproduct() {
 
   const handleConfirmDelete = () => {
     // Remove the selected user
-    setUsers((prevUsers) => prevUsers.filter((user) => user.id !== selectedUser.id));
+    setUsers((prevUsers) =>
+      prevUsers.filter((user) => user.id !== selectedUser.id)
+    );
     setShowModal(false); // Close the modal
   };
 
@@ -88,18 +90,28 @@ export default function Dashproduct() {
   };
 
   // Get users to display on the current page
-  const usersToDisplay = users.slice(currentPage * usersPerPage, (currentPage + 1) * usersPerPage);
+  const usersToDisplay = users.slice(
+    currentPage * usersPerPage,
+    (currentPage + 1) * usersPerPage
+  );
 
   return (
     <main className="overflow-x-auto md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
       <div className="shadow-md md:mx-auto p-3 rounded-lg bg-white dark:bg-gray-800 my-4">
         <div className="mb-1 w-full">
           <div className="mb-4">
-            <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl">All Products</h1>
+            <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl">
+              All Products
+            </h1>
             <div className="sm:flex">
               <div className="hidden items-center mb-3 sm:flex sm:divide-x sm:divide-gray-100 sm:mb-0">
                 <form>
-                  <TextInput type="text" placeholder="Search..." rightIcon={AiOutlineSearch} className="hidden lg:inline" />
+                  <TextInput
+                    type="text"
+                    placeholder="Search..."
+                    rightIcon={AiOutlineSearch}
+                    className="hidden lg:inline"
+                  />
                 </form>
               </div>
               <div className="flex items-center ml-auto space-x-2 sm:space-x-3">
@@ -120,14 +132,21 @@ export default function Dashproduct() {
             <Table.HeadCell>Phone Number</Table.HeadCell>
             <Table.HeadCell>Roles</Table.HeadCell>
             <Table.HeadCell>Address</Table.HeadCell>
-            <Table.HeadCell>Actions</Table.HeadCell>
+            <Table.HeadCell>Edit / Delete</Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y">
             {usersToDisplay.map((user) => (
-              <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle" key={user.id}>
+              <Table.Row
+                className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
+                key={user.id}
+              >
                 <Table.Cell className="py-4">{user.dateCreated}</Table.Cell>
                 <Table.Cell className="py-4 flex items-center">
-                  <img src={user.userImage} alt={user.username} className="h-10 w-10 object-cover bg-gray-500 rounded-full" />
+                  <img
+                    src={user.userImage}
+                    alt={user.username}
+                    className="h-10 w-10 object-cover bg-gray-500 rounded-full"
+                  />
                 </Table.Cell>
                 <Table.Cell className="py-4">{user.username}</Table.Cell>
                 <Table.Cell className="py-4">{user.email}</Table.Cell>
@@ -135,14 +154,29 @@ export default function Dashproduct() {
                 <Table.Cell className="py-4">{user.roles}</Table.Cell>
                 <Table.Cell className="py-4">{user.address}</Table.Cell>
                 <Table.Cell className="py-4 flex space-x-2">
-                  {/* Edit Button */}
-                  <Button  size="sm" color="info" onClick={() => handleEdit(user)}>
-                    <MdEdit  className="mr-2" /> Edit
-                  </Button>
-                  {/* Delete Button */}
-                  <Button  size="sm" color="failure" onClick={() => handleDelete(user)}>
-                    <MdDelete className="mr-2" /> Delete
-                  </Button>
+                  {/* Edit Icon */}
+                  <span
+                    onClick={() => handleEdit(user)}
+                    style={{
+                      cursor: "pointer",
+                      fontSize: "20px",
+                      color: "blue",
+                    }}
+                  >
+                    <MdEdit className="mr-2" />
+                  </span>
+
+                  {/* Delete Icon */}
+                  <span
+                    onClick={() => handleDelete(user)}
+                    style={{
+                      cursor: "pointer",
+                      fontSize: "20px",
+                      color: "red",
+                    }}
+                  >
+                    <MdDelete className="mr-2" />
+                  </span>
                 </Table.Cell>
               </Table.Row>
             ))}
