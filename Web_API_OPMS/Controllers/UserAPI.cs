@@ -36,7 +36,7 @@ namespace Web_API_OPMS.Controllers
         {
             if (u == null || string.IsNullOrEmpty(u.Username))
             {
-                return BadRequest("Invalid plant data");
+                return BadRequest("Invalid user data");
             }
             else if (await _context.Users.AnyAsync(us => us.Username == u.Username))
             {
@@ -44,17 +44,17 @@ namespace Web_API_OPMS.Controllers
             }
             try
             {
-                // mã hóa password
+                // Mã hóa password
                 string hashedPassword = HashPassword(u.Password);
                 User user = new User()
                 {
                     Username = u.Username,
                     Password = hashedPassword,
                     Email = u.Email,
-                   
                     Roles = u.Roles,
-                   
-                    Status = u.Status
+                    Status = u.Status,
+                    // Kiểm tra nếu CreatedDate không được đặt từ trước thì sẽ gán ngày hiện tại
+                    CreatedDate = u.CreatedDate ?? DateTime.Now
                 };
                 UserRepository.CreateUser(user);
                 return CreatedAtAction(nameof(getUserById), new { id = user.UserId }, user);
@@ -63,6 +63,38 @@ namespace Web_API_OPMS.Controllers
             {
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
+        }
+
+        [HttpPost("changePassword")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO changePasswordDto)
+        {
+            if (changePasswordDto.Id == 0)
+            {
+                return BadRequest(new { message = "Id is required" });
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == changePasswordDto.Id);
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
+            string currentHashedPassword = HashPassword(changePasswordDto.CurrentPassword);
+            if (user.Password != currentHashedPassword)
+            {
+                return BadRequest(new { message = "Current password is incorrect" });
+            }
+
+            string newHashedPassword = HashPassword(changePasswordDto.NewPassword);
+            if (newHashedPassword == user.Password)
+            {
+                return BadRequest(new { message = "New password cannot be the same as the old password" });
+            }
+
+            user.Password = newHashedPassword;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Password changed successfully" });
         }
         // Chỉnh sửa user đã tạo
         [HttpPost("updateUser")]
