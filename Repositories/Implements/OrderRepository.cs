@@ -39,5 +39,11 @@ namespace Repositories.Implements
         {
             return orderDAO.GetOrderById(id); // Trả về Order có ID tương ứng.
         }
+        //  lấy đơn hàng theo UserId
+        public List<Order> GetOrdersByUserId(int userId)
+        {
+            return orderDAO.GetOrdersByUserId(userId); // Gọi phương thức từ DAO để lấy danh sách đơn hàng
+        }
+
     }
 }
