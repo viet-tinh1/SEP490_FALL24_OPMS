@@ -9,6 +9,8 @@ namespace Repositories.Interface
 {
     internal interface IOrderRepository
     {
+        // phương thức lấy danh sách Order của một người dùng dựa trên UserId
+        List<Order> GetOrdersByUserId(int userId);
         // Phương thức lấy tất cả Order.
         List<Order> GetOrders();
 
