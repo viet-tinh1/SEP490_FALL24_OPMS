@@ -102,9 +102,9 @@ namespace Web_API_OPMS.Controllers
                     ImageUrl = p.ImageUrl,
                     Stock = p.Stock,
                     Status = p.Status,
-
                     IsVerfied = 0,
                     Discount = p.Discount
+
                 };
                 plantRepository.createPlant(plant);
                 return CreatedAtAction(nameof(CreatePlant), new { id = plant.PlantId}, plant);

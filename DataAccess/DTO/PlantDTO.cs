@@ -20,6 +20,7 @@ namespace DataAccess.DTO
 
         public decimal? Discount { get; set; }
 
+
     }
     public class PlantDTOU
     {
