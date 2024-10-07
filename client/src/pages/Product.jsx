@@ -2,86 +2,121 @@ import { Sidebar } from "flowbite-react";
 import { TbShoppingBagSearch } from "react-icons/tb";
 import { Link } from "react-router-dom";
 import { PiShoppingCartLight } from "react-icons/pi";
-import ReactPaginate from "react-paginate"; // Import the pagination library
-import { useState, useEffect } from "react"; // Import useState and useEffect
+import ReactPaginate from "react-paginate";
+import { useState, useEffect } from "react";
 import { IoArrowBackCircle, IoArrowForwardCircle } from "react-icons/io5";
 
 export default function Product() {
-
- 
-  const [products, setProducts] = useState([]); // State for fetched products
-  const [categories, setCategories] = useState([]); // State for fetched categories
-
-  const [currentPage, setCurrentPage] = useState(0); // Initialize with 0 for the first page
-  const usersPerPage = 5; // Limit the number of products per page
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(null); // Error state
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const usersPerPage = 5;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
-    // Fetch products and categories from APIs
     const fetchProductsAndCategories = async () => {
       try {
-        // Fetch products
-        const productResponse = await fetch("https://localhost:7098/api/PlantAPI/getPlants");
+        const productResponse = await fetch(
+          "https://localhost:7098/api/PlantAPI/getVerifiedPlants"
+        );
+        const productsData = await productResponse.json();
+
         if (!productResponse.ok) {
           throw new Error("Failed to fetch plants");
         }
-        const productsData = await productResponse.json();
+
+        if (productsData.message === "No plants available currently.") {
+          setNotification("No plants available currently.");
+          setProducts([]);
+          setLoading(false);
+          return;
+        }
         setProducts(productsData);
 
-        // Fetch categories
-        const categoryResponse = await fetch("https://localhost:7098/api/CategoryAPI/getCategory");
+        const categoryResponse = await fetch(
+          "https://localhost:7098/api/CategoryAPI/getCategory"
+        );
         if (!categoryResponse.ok) {
           throw new Error("Failed to fetch categories");
         }
         const categoryData = await categoryResponse.json();
         setCategories(categoryData);
 
-        setLoading(false); // Set loading to false once data is fetched
+        setLoading(false);
       } catch (err) {
         setError(err.message);
-        setLoading(false); // Set loading to false in case of error
+        setLoading(false);
       }
     };
 
     fetchProductsAndCategories();
-  }, []); // The empty array ensures this runs only once on component mount
+  }, []);
 
-  // Pagination: Calculate the number of pages
+  const searchPlants = async (selectedCategoryIds = []) => {
+    try {
+      const categoryIdsQuery = selectedCategoryIds
+        .map((id) => `categoryId=${id}`)
+        .join("&");
+      const query = `${categoryIdsQuery}`;
+
+      const productResponse = await fetch(
+        `https://localhost:7098/api/PlantAPI/searchPlants?${query}`
+      );
+      const productsData = await productResponse.json();
+      if (!productResponse.ok) {
+        
+        if(productResponse.status==404 && productsData.message == "Không có kết quả theo yêu cầu."){
+          setError("Plant is not found or non-verify.");
+        }
+        throw new Error("Failed to fetch filtered plants");
+      }
+     
+     
+
+      
+      setProducts(productsData);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleCheckboxChange = (e, categoryId) => {
+    let updatedCategories = [...selectedCategories];
+
+    if (e.target.checked) {
+      updatedCategories.push(categoryId);
+    } else {
+      updatedCategories = updatedCategories.filter((id) => id !== categoryId);
+    }
+
+    setSelectedCategories(updatedCategories);
+    searchPlants(updatedCategories);
+  };
+
   const pageCount = Math.ceil(products.length / usersPerPage);
-
-  // Handle page click
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
   };
 
-  // Calculate products to display
   const productsToDisplay = products.slice(
     currentPage * usersPerPage,
     (currentPage + 1) * usersPerPage
   );
 
-  // Find category name by categoryId
   const getCategoryName = (categoryId) => {
     const category = categories.find((cat) => cat.categoryId === categoryId);
     return category ? category.categoryName : "Unknown Category";
   };
-  const handleCheckboxChange = (e, categoryId) => {
-    if (e.target.checked) {
-      // Logic to add the category ID to a selected list
-      console.log(`Selected category ID: ${categoryId}`);
-    } else {
-      // Logic to remove the category ID from the selected list
-      console.log(`Deselected category ID: ${categoryId}`);
-    }
-  };
 
   if (loading) {
-    return <div>Loading...</div>; // Loading indicator
+    return <div>Loading...</div>;
   }
 
   if (error) {
-    return <div>Error: {error}</div>; // Display error message if fetching fails
+    return <div>Error: {error}</div>;
   }
 
   return (
@@ -94,30 +129,26 @@ export default function Product() {
                 <Sidebar.Item icon={TbShoppingBagSearch} as="div">
                   Search by category
                 </Sidebar.Item>
-
-                  {/* Hiển thị danh sách loại cây  */}               
                 <ul className="ml-6 mt-2 space-y-2">
                   {categories.map((category) => (
                     <li
-                    key={category.categoryId} value={category.categoryId}
+                      key={category.categoryId}
                       className="flex items-center justify-between"
                     >
-                      {/* Checkbox bên trái */}
-                      <div className="flex items-center gap-2">                        
+                      <div className="flex items-center gap-2">
                         <input
                           type="checkbox"
                           className="form-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded"
-                          value={category.categoryId} // Set value for the checkbox
-                          // Optionally, add an onChange handler to handle checkbox state
-                          onChange={(e) => handleCheckboxChange(e, category.categoryId)}
+                          value={category.categoryId}
+                          checked={selectedCategories.includes(
+                            category.categoryId
+                          )}
+                          onChange={(e) =>
+                            handleCheckboxChange(e, category.categoryId)
+                          }
                         />
                         <span>{category.categoryName}</span>
                       </div>
-
-                      {/* Số lượng hoa */}
-                      <span className=" text-sm text-gray-500">
-                        ({category.quantity ||"N/A"})
-                      </span>
                     </li>
                   ))}
                 </ul>
@@ -128,82 +159,87 @@ export default function Product() {
 
         <div className="flex flex-wrap gap-4">
           <div className="flex flex-wrap justify-center gap-3 p-5">
-            {/* Card */}
-            {productsToDisplay.map((product) => (
-              <div
-                key={product.plantId}
-                className="bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto"
-              >
-                <Link>
-                  <div className="relative p-2.5 overflow-hidden rounded-xl bg-clip-border">
-                    <img
-                      src={product.imageUrl} // Use the dynamic product image
-                      alt="listing cover"
-                      className="w-[175px] h-[200px] object-cover rounded-md hover:scale-105 transition-scale duration-300 mx-auto"
-                    />
-                  </div>
-
-                  <div className="p-2 flex flex-col gap-2 w-full">
-                     {/*     <p className="truncate text-md font-semibold text-slate-700">
-                      {product.name}
-                    </p>*/}
-                    <div className="flex items-center gap-1">
-                      <p className="text-sm font-medium text-gray-600 line-clamp-2 w-full">
-
-                        {product.plantName}
-
-                      </p>
+            {productsToDisplay.length === 0 ? (
+              <div className="text-center text-green-600 font-semibold">
+                {notification || "No products available."}
+              </div>
+            ) : (
+              productsToDisplay.map((product) => (
+                <div
+                  key={product.plantId}
+                  className="bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto"
+                >
+                  <Link to={`/productdetail/${product.plantId}`}>
+                    <div className="relative p-2.5 overflow-hidden rounded-xl bg-clip-border">
+                      <img
+                        src={product.imageUrl}
+                        alt={product.plantName}
+                        className="w-[175px] h-[200px] object-cover rounded-md hover:scale-105 transition-scale duration-300 mx-auto"
+                      />
                     </div>
-                  </div>
-                  <div className="p-2 flex flex-col gap-2 w-full">
-                    <div className="flex items-center gap-1">
-                      {/* Use getCategoryName to display the category name */}
-                      <p className="text-sm text-gray-600 line-clamp-2 w-full">
-                        {getCategoryName(product.categoryId)}
-                      </p>
+
+                    <div className="p-2 flex flex-col gap-2 w-full">
+                      <div className="flex items-center gap-1">
+                        <p className="text-sm font-medium text-gray-600 line-clamp-2 w-full">
+                          {product.plantName}
+                        </p>
+                      </div>
                     </div>
-                  </div>                                    
-                  <div className="p-2 flex items-center">
-                    <svg
-                      className="h-4 w-4 text-yellow-300"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    <span className="ml-2 rounded bg-cyan-100 px-2 py-0.5 text-xs font-semibold text-cyan-800 dark:bg-cyan-200 dark:text-cyan-800">
-                      {product.rating || "4.5"}
-                    </span>
-                  </div>
-                  {/* Price */}
+                    <div className="p-2 flex flex-col gap-2 w-full">
+                      <div className="flex items-center gap-1">
+                        <p className="text-sm text-gray-600 line-clamp-2 w-full">
+                          {getCategoryName(product.categoryId)}
+                        </p>
+                      </div>
+                    </div>
+
+                   {/*} <div className="rounded bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800 dark:bg-red-200 dark:text-red-800">
+                      {product.isVerfied === 1 ? "Đã verify" : "Chưa verify"}
+                    </div>*/}
+
+                    <div className="p-2 flex items-center">
+                      <svg
+                        className="h-4 w-4 text-yellow-300"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      <span className="ml-2 rounded bg-cyan-100 px-2 py-0.5 text-xs font-semibold text-cyan-800 dark:bg-cyan-200 dark:text-cyan-800">
+                        {product.rating || "4.5"}
+                      </span>
+                    </div>
+                  </Link>
                   <div className="p-2 flex items-center justify-between">
                     <div className="truncate flex items-baseline text-red-600">
                       <span className="text-xs font-medium mr-px space-y-14">
                         ₫
                       </span>
                       <span className="font-medium text-xl truncate">
-                        {product.price}
+                        {(
+                          product.price -
+                          product.price * (product.discount / 100 || 0)
+                        ).toFixed(3)}
                       </span>
                     </div>
-                    {/* Discount */}
                     <div className="rounded bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800 dark:bg-red-200 dark:text-red-800">
-                      {product.discount || "0%"}
+                      {product.discount ? `${product.discount}%` : "0%"}
                     </div>
 
-                    <a
-                      href="#"
+                    <Link
+                      to="/cart"
                       className="rounded-lg bg-cyan-700 px-4 py-2 text-center text-sm font-medium text-white hover:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"
                     >
                       <PiShoppingCartLight />
-                    </a>
+                    </Link>
                   </div>
-                </Link>
-              </div>
-            ))}
+                </div>
+              ))
+            )}
+          
 
-                       {/* Pagination Component */}
-                       <div className="bottom-0 left-0 right-0 p-4 flex justify-center">
+          <div className="bottom-0 left-0 right-0 p-4 flex justify-center">
               <ReactPaginate
                 previousLabel={<IoArrowBackCircle />} // Arrow for previous page
                 nextLabel={<IoArrowForwardCircle />} // Arrow for next page
@@ -233,8 +269,7 @@ export default function Product() {
                 disabledClassName={"opacity-50 cursor-not-allowed"} // Disabled button styling
               />
             </div>
-
-          </div>
+        </div>
         </div>
       </div>
     </main>
