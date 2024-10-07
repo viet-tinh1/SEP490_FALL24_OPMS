@@ -14,13 +14,23 @@ export default function Header() {
 
   // Check localStorage for userId when the component mounts
   useEffect(() => {
+    // Get userId and role from localStorage when component mounts
+    const storedUserId = localStorage.getItem("userId");
+    const storedRoles = localStorage.getItem("role");
+    
+    // Set initial user data to state
+    setUserId(storedUserId);
+    setURoles(storedRoles);
+  
+    // Define function to handle localStorage changes
     const handleStorageChange = () => {
-      const storedUserId = localStorage.getItem("userId");
-      const storedRoles = localStorage.getItem("role");
-      setUserId(storedUserId);
-      setURoles(storedRoles);
+      const updatedUserId = localStorage.getItem("userId");
+      const updatedRoles = localStorage.getItem("role");
+      setUserId(updatedUserId);
+      setURoles(updatedRoles);
     };
   
+    // Listen for storage changes
     window.addEventListener("storage", handleStorageChange);
   
     // Cleanup the event listener on component unmount
