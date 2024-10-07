@@ -1,14 +1,44 @@
 import { Avatar, Button, Dropdown, Navbar, TextInput } from "flowbite-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaLeaf } from "react-icons/fa";
 import { FaMoon, FaSun } from "react-icons/fa";
 import { AiOutlineSearch } from "react-icons/ai";
-import {MdOutlineShoppingCart} from "react-icons/md"
+import { MdOutlineShoppingCart } from "react-icons/md";
+import { useState, useEffect } from "react";
+
 export default function Header() {
   const path = useLocation().pathname;
+  const [userId, setUserId] = useState(null);
+  const [role, setURoles] = useState(null);
+  const navigate = useNavigate();
+
+  // Check localStorage for userId when the component mounts
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const storedUserId = localStorage.getItem("userId");
+      const storedRoles = localStorage.getItem("role");
+      setUserId(storedUserId);
+      setURoles(storedRoles);
+    };
+  
+    window.addEventListener("storage", handleStorageChange);
+  
+    // Cleanup the event listener on component unmount
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+  // Handle sign out logic
+  const handleSignOut = () => {
+    localStorage.removeItem("userId"); // Remove userId from localStorage
+    localStorage.removeItem("role"); // Remove role from localStorage
+    setUserId(null); // Update state
+    setURoles(null); // Reset role state
+    navigate("/"); // Redirect to the homepage
+  };// Redirect to the homepage
+
   return (
     <Navbar className="border-b-2">
-    
       <Link
         to="/"
         className="self-center text-sm sm:text-xl font-semibold dark:text-white"
@@ -20,7 +50,6 @@ export default function Header() {
         </div>
       </Link>
 
-      
       <form>
         <TextInput
           type="text"
@@ -37,14 +66,22 @@ export default function Header() {
         <Button className="w-12 h-10 hidden sm:inline" color="gray" pill>
           <FaSun />
         </Button>
-        <Link to="/sign-in">
-          <Button gradientDuoTone="greenToBlue" >
-            Sign In
+
+        {userId ? (
+          // Render Sign Out button if userId exists
+          <Button gradientDuoTone="greenToBlue" onClick={handleSignOut}>
+            Sign Out
           </Button>
-        </Link>
+        ) : (
+          // Render Sign In button if userId is null
+          <Link to="/sign-in">
+            <Button gradientDuoTone="greenToBlue">Sign In</Button>
+          </Link>
+        )}
+
         <Navbar.Toggle />
       </div>
-      <Navbar.Collapse >
+      <Navbar.Collapse>
         <Navbar.Link active={path === "/"} as={"div"}>
           <Link to="/">Home</Link>
         </Navbar.Link>
@@ -54,14 +91,15 @@ export default function Header() {
         <Navbar.Link active={path === "/product"} as={"div"}>
           <Link to="/product">Product</Link>
         </Navbar.Link>
-        <Navbar.Link active={path === "/dashboard"} as={"div"}>
-          <Link to="/dashboard">dashboard</Link>
-        </Navbar.Link>
+        { role === '1' && (
+          <Navbar.Link active={path === "/dashboard"} as={"div"}>
+            <Link to="/dashboard">Dashboard</Link>
+          </Navbar.Link>
+        )}
+        
         <Navbar.Link active={path === "/cart"} as={"div"}>
           <Link to="/cart" className="text-2xl">
-          
-            <MdOutlineShoppingCart/>
-        
+            <MdOutlineShoppingCart />
           </Link>
         </Navbar.Link>
       </Navbar.Collapse>

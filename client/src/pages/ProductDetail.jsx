@@ -1,13 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TiShoppingCart } from "react-icons/ti";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import { AiFillLike } from "react-icons/ai";
-export default function ProductDetail() {
-  const [isReasonModalOpen, setIsReasonModalOpen] =  useState(false);
-  const [isFormModalOpen, setIsFormModalOpen] =  useState(false);
-  const [selectedReason, setSelectedReason] =  useState("");
-  const [quantity, setQuantity] = useState(1); // Initial quantity
+import { useParams } from "react-router-dom";
 
+export default function ProductDetail() {
+  const { plantId } = useParams();// Get the plantId from the URL
+  const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [selectedReason, setSelectedReason] = useState("");
+  const [quantity, setQuantity] = useState(1); // Initial quantity
+  const [productData, setProductData] = useState(null); // New state to store product data
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // Initial quantity
+
+   // Fetch product data when the component mounts
+   useEffect(() => {
+    const fetchProductData = async () => {
+      try {
+        const response = await fetch(
+          `https://localhost:7098/api/PlantAPI/getPlantById?id=${plantId}` // Using plantId dynamically
+        );
+        console.log(plantId)
+        if (!response.ok) {
+          throw new Error("Failed to fetch product data");
+        }
+        const data = await response.json();
+        setProductData(data);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProductData(); // Fetch product data on component mount
+  }, [plantId]);
   // Function to handle increment
   const incrementQuantity  = () => {
     setQuantity((prevQuantity) => prevQuantity + 1);
@@ -40,7 +68,14 @@ export default function ProductDetail() {
     setIsReasonModalOpen(false);
     setIsFormModalOpen(true);
   };
-
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+  const { plantName, price, description, imageUrl, rating } = productData || {};
   const comments = [
     {
       id: 1,
@@ -77,25 +112,24 @@ export default function ProductDetail() {
             <div className="shrink-0 max-w-md lg:max-w-lg mx-auto">
               <img
                 className="w-full dark:hidden"
-                src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front.svg"
-                alt=""
+                src={imageUrl || "https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front.svg"} // Display dynamic image
+                alt={plantName || "Product Image"}
               />
               <img
                 className="w-full hidden dark:block"
-                src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front-dark.svg"
-                alt=""
+                src={imageUrl || "https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front-dark.svg"}
+                alt={plantName || "Product Image"}
               />
             </div>
 
             <div className="mt-6 sm:mt-8 lg:mt-0">
               <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
-                Apple iMac All-In-One Computer, Apple M1, 8GB RAM, 256GB
-                SSD, Mac OS, Pink
+                {plantName || "Product Name"} {/* Dynamic product name */}
               </h1>
 
               <div className="mt-4 sm:items-center sm:gap-4 sm:flex">
                 <p className="text-2xl font-extrabold text-gray-900 sm:text-3xl dark:text-white">
-                  $1,249.99
+                  ${((price || 0) * quantity).toFixed(2)} {/* Dynamic price multiplied by quantity */}
                 </p>
 
                 <div className="flex items-center gap-2 mt-2 sm:mt-0">
@@ -113,7 +147,7 @@ export default function ProductDetail() {
                     </svg>
                   </div>
                   <p className="text-sm font-medium leading-none text-gray-500 dark:text-gray-400">
-                    (5.0)
+                    ({rating || "5.0"}) {/* Dynamic rating */}
                   </p>
                   <a
                     href="#"
