@@ -34,6 +34,19 @@ namespace Web_API_OPMS.Controllers
             return Ok(vouchers);
         }
 
+        // Lấy Voucher theo Id
+        [HttpGet("getVoucherById")]
+        public ActionResult<Voucher> GetVoucherById(int id)
+        {
+            var voucher = VoucherRepository.GetSingleVoucherById(id);
+
+            if (voucher == null)
+            {
+                return NotFound(new { message = "Voucher not found" });
+            }
+
+            return Ok(voucher);
+        }
         // Lấy Voucher theo tên
         [HttpGet("getVoucherByName")]
         public ActionResult<Voucher> GetVoucherByName(string name)
@@ -92,7 +105,7 @@ namespace Web_API_OPMS.Controllers
 
             try
             {
-                var existingVoucher = VoucherRepository.GetSingleVoucherByName(voucherDTO.VoucherName);
+                var existingVoucher = VoucherRepository.GetSingleVoucherById(voucherDTO.VoucherId);
                 if (existingVoucher == null)
                 {
                     return NotFound($"Voucher with name {voucherDTO.VoucherName} not found.");
@@ -131,18 +144,11 @@ namespace Web_API_OPMS.Controllers
             try
             {
                 // Tìm voucher theo ID
-                var voucher = VoucherRepository.GetSingleVoucherByName(id.ToString()); // Sửa đổi để lấy theo tên nếu cần
+                var voucher = VoucherRepository.GetSingleVoucherById(id); // Sửa đổi để lấy theo tên nếu cần
                 if (voucher == null)
                 {
                     return NotFound($"Voucher with ID {id} not found.");
-                }
-
-                // Kiểm tra nếu Amount là 0, nếu không thì không cho phép xóa
-                if (voucher.Amount > 0)
-                {
-                    return BadRequest("Cannot delete voucher as the amount is greater than 0.");
-                }
-
+                }             
                 // Xóa voucher khỏi cơ sở dữ liệu
                 VoucherRepository.DeleteVoucher(id);
 

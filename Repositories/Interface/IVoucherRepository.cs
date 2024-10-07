@@ -19,5 +19,6 @@ namespace Repositories.Interface
 
         // Phương thức lấy một Voucher theo tên.
         Voucher GetSingleVoucherByName(string name);
+        Voucher GetSingleVoucherById(int id);
     }
 }

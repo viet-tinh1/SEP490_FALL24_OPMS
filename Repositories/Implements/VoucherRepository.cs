@@ -48,5 +48,9 @@ namespace Repositories.Implements
         {
             return voucherDAO.GetVoucherByName(name); // Trả về Voucher có tên tương ứng.
         }
+        public Voucher GetSingleVoucherById(int id)
+        {
+            return voucherDAO.GetVoucherById(id); // Trả về Voucher có ID tương ứng.
+        }
     }
 }
