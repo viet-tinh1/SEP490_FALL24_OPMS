@@ -8,6 +8,7 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import Product from './pages/Product'
 import Cart from './pages/Cart'
+import ProductDetail from './pages/ProductDetail'
 export default function App() {
   return (
     <BrowserRouter>
@@ -21,6 +22,7 @@ export default function App() {
           <Route path='/dashboard' element={<Dashboard/>}/>
           <Route path='/product' element={<Product/>}/>
           <Route path='/cart' element={<Cart/>}/>
+          <Route path="/productdetail/:plantId" element={<ProductDetail />} />
 
 
     </Routes>
