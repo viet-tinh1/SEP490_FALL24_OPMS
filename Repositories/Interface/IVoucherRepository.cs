@@ -17,7 +17,7 @@ namespace Repositories.Interface
         // Phương thức tạo mới một Voucher.
         void CreateVoucher(Voucher voucher);
 
-        // Phương thức lấy một Voucher theo ID.
-        Voucher GetSingleVoucherById(int id);
+        // Phương thức lấy một Voucher theo tên.
+        Voucher GetSingleVoucherByName(string name);
     }
 }

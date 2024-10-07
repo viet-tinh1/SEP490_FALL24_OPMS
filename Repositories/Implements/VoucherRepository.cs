@@ -43,10 +43,10 @@ namespace Repositories.Implements
             voucherDAO.UpdateVoucher(voucher);
         }
 
-        // Phương thức để lấy một Voucher theo ID.
-        public Voucher GetSingleVoucherById(int id)
+        // Phương thức để lấy một Voucher theo tên.
+        public Voucher GetSingleVoucherByName(string name)
         {
-            return voucherDAO.GetVoucherById(id); // Trả về Voucher có ID tương ứng.
+            return voucherDAO.GetVoucherByName(name); // Trả về Voucher có tên tương ứng.
         }
     }
 }

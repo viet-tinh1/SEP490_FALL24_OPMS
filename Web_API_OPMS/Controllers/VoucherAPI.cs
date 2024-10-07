@@ -34,11 +34,11 @@ namespace Web_API_OPMS.Controllers
             return Ok(vouchers);
         }
 
-        // Lấy Voucher theo Id
-        [HttpGet("getVoucherById")]
-        public ActionResult<Voucher> GetVoucherById(int id)
+        // Lấy Voucher theo tên
+        [HttpGet("getVoucherByName")]
+        public ActionResult<Voucher> GetVoucherByName(string name)
         {
-            var voucher = VoucherRepository.GetSingleVoucherById(id);
+            var voucher = VoucherRepository.GetSingleVoucherByName(name);
 
             if (voucher == null)
             {
@@ -73,7 +73,7 @@ namespace Web_API_OPMS.Controllers
 
                 VoucherRepository.CreateVoucher(voucher);
 
-                return CreatedAtAction(nameof(GetVoucherById), new { id = voucher.VoucherId }, voucher);
+                return CreatedAtAction(nameof(GetVoucherByName), new { name = voucher.VoucherName }, voucher);
             }
             catch (Exception ex)
             {
@@ -92,10 +92,10 @@ namespace Web_API_OPMS.Controllers
 
             try
             {
-                var existingVoucher = VoucherRepository.GetSingleVoucherById(voucherDTO.VoucherId);
+                var existingVoucher = VoucherRepository.GetSingleVoucherByName(voucherDTO.VoucherName);
                 if (existingVoucher == null)
                 {
-                    return NotFound($"Voucher with ID {voucherDTO.VoucherId} not found.");
+                    return NotFound($"Voucher with name {voucherDTO.VoucherName} not found.");
                 }
 
                 // Cập nhật các thuộc tính của voucher
@@ -123,6 +123,7 @@ namespace Web_API_OPMS.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
         // Xóa Voucher
         [HttpDelete("deleteVoucher/{id}")]
         public IActionResult DeleteVoucher(int id)
@@ -130,7 +131,7 @@ namespace Web_API_OPMS.Controllers
             try
             {
                 // Tìm voucher theo ID
-                var voucher = VoucherRepository.GetSingleVoucherById(id);
+                var voucher = VoucherRepository.GetSingleVoucherByName(id.ToString()); // Sửa đổi để lấy theo tên nếu cần
                 if (voucher == null)
                 {
                     return NotFound($"Voucher with ID {id} not found.");

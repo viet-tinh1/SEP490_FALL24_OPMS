@@ -61,10 +61,17 @@ namespace DataAccess.DAO
             }
         }
 
-        // Phương thức lấy một Voucher theo ID.
-        public Voucher GetVoucherById(int id)
+        //// Phương thức lấy một Voucher theo ID.
+        //public Voucher GetVoucherById(int id)
+        //{
+        //    return _context.Vouchers.FirstOrDefault(x => x.VoucherId == id); // Trả về Voucher có ID tương ứng.
+        //}
+
+        // Phương thức lấy một Voucher theo tên.
+        public Voucher GetVoucherByName(string name)
         {
-            return _context.Vouchers.FirstOrDefault(x => x.VoucherId == id); // Trả về Voucher có ID tương ứng.
+            return _context.Vouchers.FirstOrDefault(x => x.VoucherName == name); // Trả về Voucher có tên tương ứng.
         }
+
     }
 }
