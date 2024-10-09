@@ -11,13 +11,13 @@ export default function Home() {
         <div>
           <div className="my-3">
             <h2 className="text-2xl font-semibold text-slate-600">
-              Best Seller
+              Bán chạy nhất
             </h2>
             <Link
               className="text-sm text-blue-800 hover:underline"
               to={"/search?offer=true"}
             >
-              Show more Product
+              Xem thêm
             </Link>
           </div>
           <div className="flex flex-wrap gap-4">

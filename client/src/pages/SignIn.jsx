@@ -9,17 +9,16 @@ export default function SignIn() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  
+
   const navigate = useNavigate();
 
   // Check API Connection when component mounts
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-  
+
     try {
       const response = await fetch("https://localhost:7098/api/Auth/login", {
         method: "POST",
@@ -28,24 +27,28 @@ export default function SignIn() {
         },
         body: JSON.stringify({ email, password }),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
         // Check if the account has been locked or other errors occurred
-        if (response.status === 401 && data.message === "Your account has been locked ") {
-            setError("Your account has been locked. Please contact support.");
-        } else if (response.status === 401 && data.message !== "Your account has been locked ") {
-            setError("Invalid email or password");
+        if (
+          response.status === 401 &&
+          data.message === "Your account has been locked "
+        ) {
+          setError("Your account has been locked. Please contact support.");
+        } else if (
+          response.status === 401 &&
+          data.message !== "Your account has been locked "
+        ) {
+          setError("Invalid email or password");
         } else {
-            setError(`API Error: ${response.status}`);
+          setError(`API Error: ${response.status}`);
         }
         console.log(response.status, data.message);
         return;
-    }
-  
-      
-  
+      }
+
       // Role-based redirection
       if (data.message === "Login successful") {
         if (data.role === 1) {
@@ -76,14 +79,13 @@ export default function SignIn() {
           />
         </div>
         {/* right */}
-        <div className="flex-1">
-          
+        <div className="flex-1">  
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <div>
-              <Label value="Your email" />
+              <Label value="Email của bạn" />
               <TextInput
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Nhập Email của bạn"
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -91,7 +93,7 @@ export default function SignIn() {
               />
             </div>
             <div>
-              <Label value="Your password" />
+              <Label value="Mật khẩu của bạn" />
               <TextInput
                 type="password"
                 placeholder="**********"
@@ -101,19 +103,23 @@ export default function SignIn() {
                 required
               />
             </div>
-            <Button gradientDuoTone="greenToBlue" type="submit" disabled={loading}>
-              {loading ? <Spinner size="sm" /> : "Sign In"}
+            <Button
+              gradientDuoTone="greenToBlue"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? <Spinner size="sm" /> : "Đăng nhập"}
             </Button>
             {error && <Alert color="failure">{error}</Alert>}
             <Button type="button" gradientDuoTone="pinkToOrange" outline>
               <AiFillGoogleCircle className="w-6 h-6 mr-2" />
-              Continue with Google
+              Đăng nhập với google
             </Button>
           </form>
           <div className="flex gap-2 text-sm mt-5">
-            <span>Don't have an account?</span>
+            <span>Chưa có tài khoản ?</span>
             <Link to="/sign-up" className="text-blue-500">
-              Sign Up
+              Đăng ký
             </Link>
           </div>
         </div>

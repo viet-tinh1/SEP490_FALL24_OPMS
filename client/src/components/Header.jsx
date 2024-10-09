@@ -24,7 +24,7 @@ export default function Header() {
       <form>
         <TextInput
           type="text"
-          placeholder="Search..."
+          placeholder="Tìm kiếm..."
           rightIcon={AiOutlineSearch}
           className="hidden lg:inline"
         />
@@ -39,20 +39,20 @@ export default function Header() {
         </Button>
         <Link to="/sign-in">
           <Button gradientDuoTone="greenToBlue" >
-            Sign In
+            Đăng nhập
           </Button>
         </Link>
         <Navbar.Toggle />
       </div>
       <Navbar.Collapse >
         <Navbar.Link active={path === "/"} as={"div"}>
-          <Link to="/">Home</Link>
+          <Link to="/">Trang chủ</Link>
         </Navbar.Link>
         <Navbar.Link active={path === "/about"} as={"div"}>
-          <Link to="/about">About</Link>
+          <Link to="/about">Giới thiệu</Link>
         </Navbar.Link>
         <Navbar.Link active={path === "/product"} as={"div"}>
-          <Link to="/product">Product</Link>
+          <Link to="/product">Sản Phẩm</Link>
         </Navbar.Link>
         <Navbar.Link active={path === "/dashboard"} as={"div"}>
           <Link to="/dashboard">dashboard</Link>

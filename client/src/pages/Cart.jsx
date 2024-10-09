@@ -14,7 +14,7 @@ export default function Cart() {
     <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16">
       <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
-          Shopping Cart
+          Giỏ hàng
         </h2>
 
         <div className="mt-6 sm:mt-8 md:gap-6 lg:flex lg:items-start xl:gap-8">
@@ -22,7 +22,7 @@ export default function Cart() {
             <div className="space-y-6">
               <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:p-6">
                 <div className="space-y-4 md:flex md:items-center md:justify-between md:gap-6 md:space-y-0">
-                 <Checkbox/>
+                  <Checkbox />
                   <a href="#" className="shrink-0 md:order-1">
                     <img
                       className="h-20 w-20 dark:hidden"
@@ -37,7 +37,7 @@ export default function Cart() {
                   </a>
 
                   <label htmlFor="counter-input" className="sr-only">
-                    Choose quantity:
+                    Chọn số lượng
                   </label>
                   <div className="flex items-center justify-between md:order-3 md:justify-end">
                     <div className="flex items-center">
@@ -132,7 +132,7 @@ export default function Cart() {
                             d="M6 18 17.94 6M18 18 6.06 6"
                           />
                         </svg>
-                        Remove
+                        Xóa
                       </button>
                     </div>
                   </div>
@@ -144,14 +144,14 @@ export default function Cart() {
           <div className="mx-auto mt-6 max-w-4xl flex-1 space-y-6 lg:mt-0 lg:w-full">
             <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
               <p className="text-xl font-semibold text-gray-900 dark:text-white">
-                Order summary
+                Tổng kết đặt hàng
               </p>
 
               <div className="space-y-4">
                 <div className="space-y-2">
                   <dl className="flex items-center justify-between gap-4">
                     <dt className="text-base font-normal text-gray-500 dark:text-gray-400">
-                      Original price
+                      Giá gốc
                     </dt>
                     <dd className="text-base font-medium text-gray-900 dark:text-white">
                       VND 7,592.00
@@ -160,35 +160,17 @@ export default function Cart() {
 
                   <dl className="flex items-center justify-between gap-4">
                     <dt className="text-base font-normal text-gray-500 dark:text-gray-400">
-                      Savings
+                      Giảm Giá
                     </dt>
                     <dd className="text-base font-medium text-green-600">
                       -VND 299.00
-                    </dd>
-                  </dl>
-
-                  <dl className="flex items-center justify-between gap-4">
-                    <dt className="text-base font-normal text-gray-500 dark:text-gray-400">
-                      Store Pickup
-                    </dt>
-                    <dd className="text-base font-medium text-gray-900 dark:text-white">
-                      VND 99
-                    </dd>
-                  </dl>
-
-                  <dl className="flex items-center justify-between gap-4">
-                    <dt className="text-base font-normal text-gray-500 dark:text-gray-400">
-                      Tax
-                    </dt>
-                    <dd className="text-base font-medium text-gray-900 dark:text-white">
-                      VND 799
                     </dd>
                   </dl>
                 </div>
 
                 <dl className="flex items-center justify-between gap-4 border-t border-gray-200 pt-2 dark:border-gray-700">
                   <dt className="text-base font-bold text-gray-900 dark:text-white">
-                    Total
+                    Tổng cộng:
                   </dt>
                   <dd className="text-base font-bold text-gray-900 dark:text-white">
                     VND 8,191.00
@@ -200,18 +182,18 @@ export default function Cart() {
                 href="#"
                 className="flex w-full items-center justify-center rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-300 dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:focus:ring-emerald-800"
               >
-                Proceed to Checkout
+                Tiến hành thanh toán
               </a>
 
               <div className="flex items-center justify-center gap-2">
                 <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                  or
+                  hoặc
                 </span>
                 <a
                   href="/product"
                   className="inline-flex items-center gap-2 text-sm font-medium text-primary-700 underline hover:no-underline dark:text-primary-500"
                 >
-                  Continue Shopping
+                  Tiếp tục mua hàng
                   <svg
                     className="h-5 w-5"
                     aria-hidden="true"
@@ -238,7 +220,7 @@ export default function Cart() {
                     htmlFor="voucher"
                     className="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
                   >
-                    Do you have a voucher or gift card?
+                    Bạn có phiếu giảm giá hoặc thẻ quà tặng không?
                   </label>
                   <input
                     type="text"
@@ -252,7 +234,7 @@ export default function Cart() {
                   type="submit"
                   className="flex w-full items-center justify-center rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-300 dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:focus:ring-emerald-800"
                 >
-                  Apply Code
+                  Áp dụng Mã
                 </button>
               </form>
             </div>

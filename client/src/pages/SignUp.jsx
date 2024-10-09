@@ -162,7 +162,7 @@ export default function Signup() {
         <div className="flex-1">
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <div>
-              <Label value="Your username" />
+              <Label value="Tên của bạn" />
               <TextInput
                 type="text"
                 placeholder="Username"
@@ -175,7 +175,7 @@ export default function Signup() {
               {usernameError && <p style={{ color: 'red' }}>{usernameError}</p>}
             </div>
             <div>
-              <Label value="Your email" />
+              <Label value="Email của bạn" />
               <TextInput
                 type="email"
                 placeholder="name@company.com"
@@ -188,7 +188,7 @@ export default function Signup() {
               {emailError && <p style={{ color: 'red' }}>{emailError}</p>}
             </div>
             <div>
-              <Label value="Your password" />
+              <Label value="Mật khẩu của bạn" />
               <TextInput
                 type="password"
                 placeholder="Password"
@@ -209,22 +209,22 @@ export default function Signup() {
               <Spinner aria-label="Loading" />
             ) : (
               <Button gradientDuoTone="greenToBlue" type="submit">
-                Sign Up
+                Đăng ký
               </Button>
             )}
 
             <Button type="button" gradientDuoTone="pinkToOrange" outline>
               <AiFillGoogleCircle className="w-6 h-6 mr-2" />
-              Continue with Google
+              Đăng nhập với google
             </Button>
           </form>
 
           
 
           <div className="flex gap-2 text-sm mt-5">
-            <span>Have an account ?</span>
+            <span>Đã có tài khoản ?</span>
             <Link to="/sign-in" className="text-blue-500">
-              Sign In
+              Đăng nhập
             </Link>
           </div>
         </div>

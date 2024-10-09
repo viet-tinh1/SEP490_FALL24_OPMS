@@ -49,7 +49,7 @@ export default function DashSidebar() {
             labelColor='dark'
             as='div'
           >
-            Profile
+            Hồ sơ
           </Sidebar.Item>
         </Link>
     
@@ -59,7 +59,7 @@ export default function DashSidebar() {
               icon={HiDocumentText}
               as='div'
             >
-              Posts
+              Bài Viết
             </Sidebar.Item>
           </Link>
     
@@ -71,7 +71,7 @@ export default function DashSidebar() {
                 icon={HiOutlineUserGroup}
                 as='div'
               >
-                Users
+                Quản lý tài khoản
               </Sidebar.Item>
             </Link>
             <Link to='/dashboard?tab=comments'>
@@ -80,7 +80,7 @@ export default function DashSidebar() {
                 icon={HiAnnotation}
                 as='div'
               >
-                Comments
+                Quản lý bình luận
               </Sidebar.Item>
             </Link>
             <Link to='/dashboard?tab=product'>
@@ -89,7 +89,7 @@ export default function DashSidebar() {
                 icon={HiAnnotation}
                 as='div'
               >
-                Product
+                Quản Lý Sản phẩm
               </Sidebar.Item>
             </Link>
           </>
@@ -99,7 +99,7 @@ export default function DashSidebar() {
           className='cursor-pointer'
         
         >
-          Sign Out
+          Đăng xuất
         </Sidebar.Item>
       </Sidebar.ItemGroup>
     </Sidebar.Items>

@@ -22,7 +22,7 @@ export default function FooterCom() {
           </div>
           <div className='grid grid-cols-2 gap-8 mt-4 sm:grid-cols-3 sm:gap-6 '>
             <div>
-              <Footer.Title title='About' />
+              <Footer.Title title='Giới Thiệu' />
               <Footer.LinkGroup col>
                
                 <Footer.Link
@@ -36,7 +36,7 @@ export default function FooterCom() {
               </Footer.LinkGroup>
             </div>
             <div>
-              <Footer.Title title='Follow us' />
+              <Footer.Title title='Theo giõi' />
               <Footer.LinkGroup col>
                 <Footer.Link
                   href='https://www.github.com/sahandghavidel'
@@ -49,10 +49,10 @@ export default function FooterCom() {
               </Footer.LinkGroup>
             </div>
             <div>
-              <Footer.Title title='Member' />
+              <Footer.Title title='Thành Viên' />
               <Footer.LinkGroup col>
-                <Footer.Link href='#'>Privacy Policy</Footer.Link>
-                <Footer.Link href='#'>Terms &amp; Conditions</Footer.Link>
+                <Footer.Link href='#'>TinNV</Footer.Link>
+                <Footer.Link href='#'>ThuanNPN</Footer.Link>
               </Footer.LinkGroup>
             </div>
           </div>
