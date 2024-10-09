@@ -36,7 +36,7 @@ export default function FooterCom() {
               </Footer.LinkGroup>
             </div>
             <div>
-              <Footer.Title title='Follow us' />
+              <Footer.Title title='Theo giõi' />
               <Footer.LinkGroup col>
                 <Footer.Link
                   href='https://www.github.com/sahandghavidel'
@@ -49,10 +49,10 @@ export default function FooterCom() {
               </Footer.LinkGroup>
             </div>
             <div>
-              <Footer.Title title='Member' />
+              <Footer.Title title='Thành Viên' />
               <Footer.LinkGroup col>
-                <Footer.Link href='#'>Privacy Policy</Footer.Link>
-                <Footer.Link href='#'>Terms &amp; Conditions</Footer.Link>
+              <Footer.Link href='#'>TinhNV</Footer.Link>
+              <Footer.Link href='#'>ThuanNPN</Footer.Link>
               </Footer.LinkGroup>
             </div>
           </div>

@@ -111,6 +111,12 @@ export default function Product() {
     return category ? category.categoryName : "Unknown Category";
   };
 
+  const [showAll, setShowAll] = useState(false); // State to track whether to show all flowers
+
+  const toggleShowAll = () => {
+    setShowAll(!showAll);
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -127,7 +133,7 @@ export default function Product() {
             <Sidebar.Items>
               <Sidebar.ItemGroup>
                 <Sidebar.Item icon={TbShoppingBagSearch} as="div">
-                  Search by category
+                   Tìm kiếm theo danh mục
                 </Sidebar.Item>
                 <ul className="ml-6 mt-2 space-y-2">
                   {categories.map((category) => (
@@ -152,6 +158,15 @@ export default function Product() {
                     </li>
                   ))}
                 </ul>
+                {/* "Xem thêm" button */}
+                <div className="ml-6 mt-2">
+                  <button
+                    onClick={toggleShowAll}
+                    className="text-cyan-700 hover:underline focus:outline-none"
+                  >
+                    {showAll ? "Thu gọn" : "Xem thêm"}
+                  </button>
+                </div>
               </Sidebar.ItemGroup>
             </Sidebar.Items>
           </Sidebar>

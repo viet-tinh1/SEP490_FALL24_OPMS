@@ -63,7 +63,7 @@ export default function Header() {
       <form>
         <TextInput
           type="text"
-          placeholder="Search..."
+          placeholder="Tìm kiếm..."
           rightIcon={AiOutlineSearch}
           className="hidden lg:inline"
         />
@@ -80,12 +80,12 @@ export default function Header() {
         {userId ? (
           // Render Sign Out button if userId exists
           <Button gradientDuoTone="greenToBlue" onClick={handleSignOut}>
-            Sign Out
+            Đăng xuất
           </Button>
         ) : (
           // Render Sign In button if userId is null
           <Link to="/sign-in">
-            <Button gradientDuoTone="greenToBlue">Sign In</Button>
+            <Button gradientDuoTone="greenToBlue">Đăng nhập</Button>
           </Link>
         )}
 
@@ -93,13 +93,13 @@ export default function Header() {
       </div>
       <Navbar.Collapse>
         <Navbar.Link active={path === "/"} as={"div"}>
-          <Link to="/">Home</Link>
+          <Link to="/">Trang chủ</Link>
         </Navbar.Link>
         <Navbar.Link active={path === "/about"} as={"div"}>
-          <Link to="/about">About</Link>
+          <Link to="/about">Giới thiệu</Link>
         </Navbar.Link>
         <Navbar.Link active={path === "/product"} as={"div"}>
-          <Link to="/product">Product</Link>
+          <Link to="/product">Sản Phẩm</Link>
         </Navbar.Link>
         { role === '1' && (
           <Navbar.Link active={path === "/dashboard"} as={"div"}>

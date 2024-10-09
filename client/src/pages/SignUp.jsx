@@ -209,22 +209,22 @@ export default function Signup() {
               <Spinner aria-label="Loading" />
             ) : (
               <Button gradientDuoTone="greenToBlue" type="submit">
-                Sign Up
+                Đăng ký
               </Button>
             )}
 
             <Button type="button" gradientDuoTone="pinkToOrange" outline>
               <AiFillGoogleCircle className="w-6 h-6 mr-2" />
-              Continue with Google
+              Đăng nhập với google
             </Button>
           </form>
 
           
 
           <div className="flex gap-2 text-sm mt-5">
-            <span>Have an account ?</span>
+            <span>Đã có tài khoản ?</span>
             <Link to="/sign-in" className="text-blue-500">
-              Sign In
+              Đăng nhập
             </Link>
           </div>
         </div>

@@ -57,36 +57,36 @@ export default function DashSidebar() {
 
           <Link to='/dashboard?tab=profile'>
             <Sidebar.Item active={tab === 'profile'} icon={HiUser} labelColor='dark' as='div'>
-              Profile
+            Hồ sơ
             </Sidebar.Item>
           </Link>
 
           <Link to='/dashboard?tab=posts'>
             <Sidebar.Item active={tab === 'posts'} icon={HiDocumentText} as='div'>
-              Posts
+            Bài Viết
             </Sidebar.Item>
           </Link>
 
           <>
             <Link to='/dashboard?tab=users'>
               <Sidebar.Item active={tab === 'users'} icon={HiOutlineUserGroup} as='div'>
-                Users
+              Quản lý tài khoản 
               </Sidebar.Item>
             </Link>
             <Link to='/dashboard?tab=comments'>
               <Sidebar.Item active={tab === 'comments'} icon={HiAnnotation} as='div'>
-                Comments
+              Quản lý bình luận
               </Sidebar.Item>
             </Link>
             <Link to='/dashboard?tab=product'>
               <Sidebar.Item active={tab === 'product'} icon={HiAnnotation} as='div'>
-                Product
+              Quản Lý Sản phẩm
               </Sidebar.Item>
             </Link>
           </>
 
           <Sidebar.Item icon={HiArrowSmRight} className='cursor-pointer' onClick={handleSignOut}>
-            Sign Out
+          Đăng xuất
           </Sidebar.Item>
         </Sidebar.ItemGroup>
       </Sidebar.Items>

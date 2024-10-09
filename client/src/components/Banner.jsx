@@ -10,23 +10,23 @@ export default function Banner() {
         <div className="flex flex-col justify-center py-14 md:py-0 relative z-10">
           <div className="text-center md:text-left space-y-6 lg:max-w-[400px]:">
             <h1 className="text-5xl lg:text-6xl font-bold leading-relaxed xl:leading-loose font-averia">
-              Vibrant
+              Cây Xanh
               <br />
-              Green <span className="text-secondary">Plants</span>
+              <span className="text-secondary">Tươi tốt</span>
             </h1>
             <p className="text-2xl tracking-wide">
-              Order Now For a Green and Fresh Home
+              Đặt hàng ngay để có một ngôi nhà xanh và tươi mới
             </p>
             <p className="text-gray-400">
-              Healthy and beautiful plants for your indoor or outdoor space.
-              Enhance your living environment with vibrant greenery. Order now
-              and get 20% off on your first purchase.
+              Cây xanh khỏe mạnh và đẹp cho không gian trong nhà hoặc ngoài trời
+              của bạn. Cải thiện môi trường sống của bạn với cây xanh tươi tốt.
+              Đặt hàng ngay và được giảm giá 20% cho lần mua đầu tiên.
             </p>
             {/*button section*/}
             <div className="flex justify-center md:justify-start">
               <button className="primary-btn flex items-center gap-2">
                 <IoBagHandleOutline />
-                Order Now
+                Đặt hàng ngay
               </button>
             </div>
           </div>

@@ -113,13 +113,13 @@ export default function SignIn() {
             {error && <Alert color="failure">{error}</Alert>}
             <Button type="button" gradientDuoTone="pinkToOrange" outline>
               <AiFillGoogleCircle className="w-6 h-6 mr-2" />
-              Continue with Google
+              Đăng nhập với google
             </Button>
           </form>
           <div className="flex gap-2 text-sm mt-5">
-            <span>Don't have an account?</span>
+            <span>Chưa có tài khoản ?</span>
             <Link to="/sign-up" className="text-blue-500">
-              Sign Up
+              Đăng ký
             </Link>
           </div>
         </div>

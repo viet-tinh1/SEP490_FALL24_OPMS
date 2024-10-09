@@ -164,7 +164,7 @@ const decrement = (itemId) => {
     <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16">
       <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
-          Shopping Cart
+          Giỏ hàng
         </h2>
 
         <div className="mt-6 sm:mt-8 md:gap-6 lg:flex lg:items-start xl:gap-8">
@@ -280,7 +280,7 @@ const decrement = (itemId) => {
                               d="M6 18 17.94 6M18 18 6.06 6"
                             />
                           </svg>
-                          Remove
+                          Xóa
                         </button>
                       </div>
                     </div>
@@ -294,14 +294,14 @@ const decrement = (itemId) => {
           <div className="mx-auto mt-6 max-w-4xl flex-1 space-y-6 lg:mt-0 lg:w-full">
             <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
               <p className="text-xl font-semibold text-gray-900 dark:text-white">
-                Order summary
+              Tổng kết đặt hàng
               </p>
 
               <div className="space-y-4">
                 <div className="space-y-2">
                   <dl className="flex items-center justify-between gap-4">
                     <dt className="text-base font-normal text-gray-500 dark:text-gray-400">
-                      Original price
+                      Giá gốc
                     </dt>
                     <dd className="text-base font-medium text-gray-900 dark:text-white">
                     ${calculateSelectedTotalOriginalPrice().toFixed(2)}
@@ -310,7 +310,7 @@ const decrement = (itemId) => {
 
                   <dl className="flex items-center justify-between gap-4">
                     <dt className="text-base font-normal text-gray-500 dark:text-gray-400">
-                      Savings
+                      Giảm Giá
                     </dt>                  
                     <dd className="text-base font-medium text-green-600">
                       -${((calculateSelectedTotalOriginalPriceWithoutDiscount() - calculateSelectedTotalOriginalPrice()).toFixed(2) || savings.toFixed(2))}
@@ -319,7 +319,7 @@ const decrement = (itemId) => {
 
                   <dl className="flex items-center justify-between gap-4">
                     <dt className="text-base font-normal text-gray-500 dark:text-gray-400">
-                      Store Pickup
+                      Trả trước 
                     </dt>
                     <dd className="text-base font-medium text-gray-900 dark:text-white">
                     ${storePickup.toFixed(2)} {/* Fixed store pickup fee */}
@@ -328,7 +328,7 @@ const decrement = (itemId) => {
 
                   <dl className="flex items-center justify-between gap-4">
                     <dt className="text-base font-normal text-gray-500 dark:text-gray-400">
-                      Tax
+                      Thuế
                     </dt>
                     <dd className="text-base font-medium text-gray-900 dark:text-white">
                     ${(calculateSelectedTotalOriginalPrice()*taxRate).toFixed(2)}
@@ -338,7 +338,7 @@ const decrement = (itemId) => {
 
                 <dl className="flex items-center justify-between gap-4 border-t border-gray-200 pt-2 dark:border-gray-700">
                   <dt className="text-base font-bold text-gray-900 dark:text-white">
-                    Total
+                    Tổng cộng
                   </dt>
                   <dd className="text-base font-bold text-gray-900 dark:text-white">
                   ${calculateSelectedTotal()} {/* 10% Tax */}
@@ -350,18 +350,18 @@ const decrement = (itemId) => {
                 href="#"
                 className="flex w-full items-center justify-center rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-300 dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:focus:ring-emerald-800"
               >
-                Proceed to Checkout
+                Tiến hành thanh toán
               </a>
 
               <div className="flex items-center justify-center gap-2">
                 <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                  or
+                  hoặc
                 </span>
                 <a
                   href="#"
                   className="inline-flex items-center gap-2 text-sm font-medium text-primary-700 underline hover:no-underline dark:text-primary-500"
                 >
-                  Continue Shopping
+                  Tiếp tục mua hàng
                   <svg
                     className="h-5 w-5"
                     aria-hidden="true"
@@ -388,7 +388,7 @@ const decrement = (itemId) => {
                     htmlFor="voucher"
                     className="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
                   >
-                    Do you have a voucher or gift card?
+                    Bạn có phiếu giảm giá hoặc thẻ quà tặng không?
                   </label>
                   <input
                     type="text"
@@ -402,7 +402,7 @@ const decrement = (itemId) => {
                   type="submit"
                   className="flex w-full items-center justify-center rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-300 dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:focus:ring-emerald-800"
                 >
-                  Apply Code
+                  Áp dụng Mã
                 </button>
               </form>
             </div>

@@ -11,7 +11,7 @@ export default function DashProfile() {
             <div className="mb-1 w-full">
               <div className="mb-4">
                 <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl">
-                  User settings
+                  Cài đặt người dùng
                 </h1>
               </div>
             </div>
@@ -40,7 +40,7 @@ export default function DashProfile() {
                     className="inline-flex items-center py-2 px-3 text-sm font-medium text-center text-white bg-gradient-to-br from-pink-500 to-purple-500 rounded-lg shadow-md shadow-gray-300 hover:scale-[1.02] transition-transform"
                   >
                     <FaCloudArrowUp className="mr-2 -ml-1 w-4 h-4" />
-                    Change picture
+                    Thay đổi hình ảnh
                   </a>
                 </div>
               </div>
@@ -49,14 +49,14 @@ export default function DashProfile() {
             {/* Register to become seller */}
             <div className="bg-white shadow-lg shadow-gray-200 rounded-2xl p-4 mb-6">
               <div className="text-sm font-medium">
-                *Register to become seller
+                *Đăng ký thành người bán cây
               </div>
               <a
                 href="/dashboard?tab=DashRegisterSeller"
                 className="inline-flex items-center py-2 px-3 text-sm font-medium text-center text-white bg-gradient-to-br from-pink-500 to-purple-500 rounded-lg shadow-md shadow-gray-300 hover:scale-[1.02] transition-transform"
               >
                 <MdOutlineSell className="mr-2 -ml-1 w-4 h-4" />
-                Register Seller
+                  Đăng ký Người bán
               </a>
             </div>
           </div>
@@ -69,7 +69,7 @@ export default function DashProfile() {
                 <div className="grid grid-cols-6 gap-6">
                   <div className="col-span-6 sm:col-span-3">
                     <label className="block mb-2 text-sm font-medium text-gray-900">
-                      User Name
+                    Tên người dùng
                     </label>
                     <input
                       type="text"
@@ -83,7 +83,7 @@ export default function DashProfile() {
 
                   <div className="col-span-6 sm:col-span-3">
                     <label className="block mb-2 text-sm font-medium text-gray-900">
-                      Your name
+                      Tên của bạn
                     </label>
                     <input
                       type="text"
@@ -97,7 +97,7 @@ export default function DashProfile() {
 
                   <div className="col-span-6 sm:col-span-3">
                     <label className="block mb-2 text-sm font-medium text-gray-900">
-                      Address
+                      Địa chỉ
                     </label>
                     <input
                       type="text"
@@ -125,7 +125,7 @@ export default function DashProfile() {
 
                   <div className="col-span-6 sm:col-span-3">
                     <label className="block mb-2 text-sm font-medium text-gray-900">
-                      Phone Number
+                      Số điện thoại
                     </label>
                     <input
                       type="tel"
@@ -139,7 +139,7 @@ export default function DashProfile() {
 
                   <div className="col-span-6 sm:col-span-3">
                     <label className="block mb-2 text-sm font-medium text-gray-900">
-                      Created Date
+                      Ngày tạo
                     </label>
                     <input
                       type="text"
@@ -156,7 +156,7 @@ export default function DashProfile() {
                       className="text-white bg-gradient-to-br from-green-500 to-blue-500 rounded-lg shadow-md shadow-gray-300 hover:scale-[1.02] transition-transform font-medium text-sm px-5 py-2.5 text-center"
                       type="submit"
                     >
-                      Save all
+                      Lưu tất cả
                     </button>
                   </div>
                 </div>
@@ -171,7 +171,7 @@ export default function DashProfile() {
                 <div className="grid grid-cols-6 gap-6">
                   <div className="col-span-6 sm:col-span-3">
                     <label className="block mb-2 text-sm font-medium text-gray-900">
-                      Current password
+                      Mật khẩu hiện tại
                     </label>
                     <input
                       type="password"
@@ -185,7 +185,7 @@ export default function DashProfile() {
 
                   <div className="col-span-6 sm:col-span-3">
                     <label className="block mb-2 text-sm font-medium text-gray-900">
-                      New password
+                      Mật khẩu mới
                     </label>
                     <input
                       type="password"
@@ -199,7 +199,7 @@ export default function DashProfile() {
 
                   <div className="col-span-6 sm:col-span-3">
                     <label className="block mb-2 text-sm font-medium text-gray-900">
-                      Confirm password
+                      Xác nhận mật khẩu
                     </label>
                     <input
                       type="password"
@@ -216,7 +216,7 @@ export default function DashProfile() {
                       className="text-white bg-gradient-to-br from-green-500 to-blue-500 rounded-lg shadow-md shadow-gray-300 hover:scale-[1.02] transition-transform font-medium text-sm px-5 py-2.5 text-center"
                       type="submit"
                     >
-                      Save all
+                      Lưu tất cả
                     </button>
                   </div>
                 </div>
