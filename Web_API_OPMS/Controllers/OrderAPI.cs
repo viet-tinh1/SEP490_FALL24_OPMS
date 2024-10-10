@@ -121,8 +121,12 @@ namespace Web_API_OPMS.Controllers
         [HttpPost("updateOrderStatus")]
         public IActionResult UpdateOrderStatus([FromBody] UpdateOrderStatusDTO updateOrderStatusDTO)
         {
-            var userRole = HttpContext.Session.GetString("UserRole");  // Lấy vai trò người dùng từ session.
-            if (userRole != "seller")  // Kiểm tra nếu người dùng không phải là seller.
+            var userRole = HttpContext.Session.GetInt32("UserRole");  // Lấy vai trò người dùng từ session.
+            if (userRole == null)
+            {
+                return Unauthorized(new { message = "User not logged in." });
+            }
+            if (userRole != 3)  // Kiểm tra nếu người dùng không phải là seller.
             {
                 return Unauthorized(new { message = "Only sellers can update order status." });  // Trả về lỗi 401 Unauthorized.
             }
