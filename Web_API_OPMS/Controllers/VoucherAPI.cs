@@ -138,7 +138,7 @@ namespace Web_API_OPMS.Controllers
         }
 
         // Xóa Voucher
-        [HttpDelete("deleteVoucher/{id}")]
+        [HttpDelete("deleteVoucher")]
         public IActionResult DeleteVoucher(int id)
         {
             try

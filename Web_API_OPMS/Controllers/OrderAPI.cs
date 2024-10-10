@@ -68,7 +68,9 @@ namespace Web_API_OPMS.Controllers
                         }
 
                         // Lấy thông tin chi tiết của plant dựa trên PlantId có trong cart
+
                         var plant = PlantRepository.getPlantById(cart.PlantId);  // Lấy chi tiết plant.
+
                         if (plant == null)
                         {
                             return NotFound("Plant not found.");

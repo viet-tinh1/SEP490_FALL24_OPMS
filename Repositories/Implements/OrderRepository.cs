@@ -42,6 +42,7 @@ namespace Repositories.Implements
         //  lấy đơn hàng theo UserId
         public List<Order> GetOrdersByUserId(int userId)
         {
+
             return orderDAO.GetOrdersByUserId(userId); // Gọi DAO để lấy danh sách đơn hàng
         }
 
@@ -56,6 +57,7 @@ namespace Repositories.Implements
                 order.Status = status;  // Cập nhật cột trạng thái của đơn hàng.
                 orderDAO.UpdateOrder(order);  // Lưu thay đổi trạng thái vào cơ sở dữ liệu.
             }
+
         }
 
     }
