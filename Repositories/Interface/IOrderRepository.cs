@@ -25,5 +25,6 @@ namespace Repositories.Interface
 
         // Phương thức lấy một Order theo ID.
         Order GetOrderById(int id);
+        void UpdateOrderStatus(int orderId, string status);
     }
 }

@@ -20,6 +20,25 @@ namespace DataAccess.DAO
         {
             _context = context;
         }
+        //Cập nhật trạng thái đơn hang
+
+
+        public void UpdateOrderStatus(int orderId, string status)
+        {
+            var order = _context.Orders.Find(orderId); // Lấy thông tin đơn hàng.
+            if (order != null)
+            {
+                order.Status = status; // Cập nhật trạng thái của đơn hàng.
+                _context.SaveChanges(); // Lưu thay đổi vào cơ sở dữ liệu.
+            }
+            else
+            {
+                throw new Exception("Order not found"); // Thông báo nếu không tìm thấy đơn hàng.
+            }
+        }
+
+
+
 
         //  lấy tất cả Order từ cơ sở dữ liệu.
         public List<Order> GetOrders()
@@ -83,6 +102,9 @@ namespace DataAccess.DAO
                 var shoppingCartItem = _context.ShoppingCartItems.FirstOrDefault(s => s.ShoppingCartItemId == cartId); // Tìm item trong giỏ hàng
                 if (shoppingCartItem != null)
                 {
+
+                    // Tạo đối tượng Order mới.
+
                     var order = new Order
                     {
                         ShoppingCartItemId = cartId,

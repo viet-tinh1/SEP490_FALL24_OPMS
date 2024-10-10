@@ -32,7 +32,7 @@ namespace Web_API_OPMS.Controllers
         [HttpGet("getOrder")]
         public ActionResult<IEnumerable<Order>> getOrder()
         {
-            return OrderRepository.GetOrders();
+            return OrderRepository.GetOrders();// Lấy tất cả đơn hàng từ repository.
         }
 
         //Tạo 1 order  mới
@@ -68,7 +68,9 @@ namespace Web_API_OPMS.Controllers
                         }
 
                         // Lấy thông tin chi tiết của plant dựa trên PlantId có trong cart
-                        var plant = PlantRepository.getPlantById(cart.PlantId);
+
+                        var plant = PlantRepository.getPlantById(cart.PlantId);  // Lấy chi tiết plant.
+
                         if (plant == null)
                         {
                             return NotFound("Plant not found.");
@@ -117,6 +119,39 @@ namespace Web_API_OPMS.Controllers
                 }
             }
         }
+        // API cập nhật trạng thái đơn hàng chỉ cho seller.
+        [HttpPost("updateOrderStatus")]
+        public IActionResult UpdateOrderStatus([FromBody] UpdateOrderStatusDTO updateOrderStatusDTO)
+        {
+            var userRole = HttpContext.Session.GetInt32("UserRole");  // Lấy vai trò người dùng từ session.
+            if (userRole == null)
+            {
+                return Unauthorized(new { message = "User not logged in." });
+            }
+            if (userRole != 3)  // Kiểm tra nếu người dùng không phải là seller.
+            {
+                return Unauthorized(new { message = "Only sellers can update order status." });  // Trả về lỗi 401 Unauthorized.
+            }
+
+            try
+            {
+                // Lấy thông tin đơn hàng từ Repository
+                var order = OrderRepository.GetOrderById(updateOrderStatusDTO.OrderId);
+                if (order == null)
+                {
+                    return NotFound(new { message = "Order not found." });
+                }
+
+                // Cập nhật trạng thái đơn hàng.
+                OrderRepository.UpdateOrderStatus(updateOrderStatusDTO.OrderId, updateOrderStatusDTO.Status);
+
+                return NoContent();  // Trả về 204 No Content nếu cập nhật thành công.
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);  // Trả về lỗi 500 nếu có lỗi xảy ra.
+            }
+        }
 
         // Chỉnh sửa Order đã tạo
         [HttpPost("updateOrder")]
@@ -157,9 +192,11 @@ namespace Web_API_OPMS.Controllers
         [HttpGet("deleteOrder")]
         public IActionResult deleteOrder(int OrderId)
         {
-            OrderRepository.DeleteOrder(OrderId);
-            return NoContent();
+            OrderRepository.DeleteOrder(OrderId);  // Xóa đơn hàng.
+            return NoContent();  // Trả về 204 No Content nếu thành công.
         }
+        // API lấy đơn hàng theo ID.
+
         [HttpGet("getOrderById")]
         public ActionResult<Order> GetOrderById(int id)
         {
