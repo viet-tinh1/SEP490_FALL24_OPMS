@@ -265,7 +265,7 @@ public partial class Db6213Context : DbContext
             entity.HasKey(e => e.ReviewId).HasName("PK__Reviews__74BC79AE08292853");
 
             entity.Property(e => e.ReviewId).HasColumnName("ReviewID");
-            entity.Property(e => e.Comment).HasColumnType("text");
+            entity.Property(e => e.Comment).HasMaxLength(255);
             entity.Property(e => e.PlantId).HasColumnName("PlantID");
             entity.Property(e => e.ReviewDate).HasColumnType("datetime");
             entity.Property(e => e.UserId).HasColumnName("UserID");

@@ -64,6 +64,8 @@ namespace Web_API_OPMS
             // Swagger for API documentation
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            // Đăng ký IReviewRepository với implement là ReviewRepository
+            builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
             // Đăng ký IVoucherRepository với implement là VoucherRepository
             builder.Services.AddScoped<IVoucherRepository, VoucherRepository>();
             builder.Services.AddTransient<MailService>();
