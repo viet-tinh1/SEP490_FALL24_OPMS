@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Repositories.Interface
 {
     public interface IReviewRepository
-    {
+    {        
         // Phương thức lấy tất cả Reviews.
         List<Review> GetReviews();
 
@@ -22,5 +22,8 @@ namespace Repositories.Interface
 
         // Phương thức lấy danh sách Review theo UserId.
         List<Review> GetReviewsByUserId(int userId);
+
+        // Phương thức lấy các Review theo PlantId.
+        List<Review> GetReviewsByPlantId(int plantId);
     }
 }

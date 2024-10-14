@@ -1,5 +1,4 @@
 ﻿using BusinessObject.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,10 +17,18 @@ namespace DataAccess.DAO
             _context = context;
         }
 
+        // Các phương thức khác đã có...
+
         // Phương thức lấy tất cả các Review từ cơ sở dữ liệu.
         public List<Review> GetReviews()
         {
             return _context.Reviews.ToList(); // Trả về danh sách tất cả các Review.
+        }
+
+        // Phương thức lấy các Review theo PlantId.
+        public List<Review> GetReviewsByPlantId(int plantId)
+        {
+            return _context.Reviews.Where(x => x.PlantId == plantId).ToList(); // Trả về danh sách các Review theo PlantId.
         }
 
         // Phương thức xóa một Review theo ID.

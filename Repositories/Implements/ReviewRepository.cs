@@ -1,6 +1,5 @@
 ﻿using BusinessObject.Models;
 using DataAccess.DAO;
-using DataAccess.DTO;
 using Repositories.Interface;
 using System.Collections.Generic;
 
@@ -9,19 +8,6 @@ namespace Repositories.Implements
     public class ReviewRepository : IReviewRepository
     {
         private readonly ReviewDAO _reviewDAO = new ReviewDAO();
-        private readonly Db6213Context _context;
-
-        // Constructor nhận tham số context từ Dependency Injection
-        public ReviewRepository(Db6213Context context)
-        {
-            _context = context;
-        }
-
-        // Constructor mặc định
-        public ReviewRepository()
-        {
-        }
-
         // Phương thức xóa một Review theo ID.
         public void DeleteReview(int reviewId)
         {
@@ -52,10 +38,16 @@ namespace Repositories.Implements
             return _reviewDAO.GetReviewById(id); // Trả về review có ID tương ứng từ DAO
         }
 
-        // Phương thức để lấy các Review theo User ID.
+        // Phương thức để lấy các Review theo UserId.
         public List<Review> GetReviewsByUserId(int userId)
         {
             return _reviewDAO.GetReviewsByUserId(userId); // Trả về danh sách review của một người dùng
+        }
+
+        // Phương thức để lấy các Review theo PlantId.
+        public List<Review> GetReviewsByPlantId(int plantId)
+        {
+            return _reviewDAO.GetReviewsByPlantId(plantId); // Trả về danh sách review của một cây trồng
         }
     }
 }
