@@ -72,12 +72,17 @@ namespace Web_API_OPMS.Controllers
 
             try
             {
+                // Lấy giờ hiện tại theo giờ Việt Nam (GMT+7)
+                TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+                DateTime utcNow = DateTime.UtcNow;
+                DateTime currentVietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+
                 Voucher voucher = new Voucher()
                 {
                     VoucherId = voucherDTO.VoucherId,
                     VoucherName = voucherDTO.VoucherName,
                     VoucherPercent = voucherDTO.VoucherPercent,
-                    CreateDate = voucherDTO.CreateDate,
+                    CreateDate = currentVietnamTime,
                     CloseDate = voucherDTO.CloseDate,
                     Status = voucherDTO.Status,
                     OpenDate = voucherDTO.OpenDate,
@@ -96,29 +101,29 @@ namespace Web_API_OPMS.Controllers
 
         // Chỉnh sửa Voucher đã tạo
         [HttpPost("updateVoucher")]
-        public IActionResult UpdateVoucher([FromBody] VoucherDTO voucherDTO)
+        public IActionResult UpdateVoucher([FromBody] VoucherDTOU voucherDTOU)
         {
-            if (voucherDTO == null)
+            if (voucherDTOU == null)
             {
                 return BadRequest("Invalid voucher data");
             }
 
             try
             {
-                var existingVoucher = VoucherRepository.GetSingleVoucherById(voucherDTO.VoucherId);
+                var existingVoucher = VoucherRepository.GetSingleVoucherById(voucherDTOU.VoucherId);
                 if (existingVoucher == null)
                 {
-                    return NotFound($"Voucher with name {voucherDTO.VoucherName} not found.");
+                    return NotFound($"Voucher with name {voucherDTOU.VoucherName} not found.");
                 }
 
                 // Cập nhật các thuộc tính của voucher
-                existingVoucher.VoucherName = voucherDTO.VoucherName;
-                existingVoucher.VoucherPercent = voucherDTO.VoucherPercent;
-                existingVoucher.CreateDate = voucherDTO.CreateDate ?? DateTime.Now;
-                existingVoucher.CloseDate = voucherDTO.CloseDate;
-                existingVoucher.Status = voucherDTO.Status ?? true;
-                existingVoucher.OpenDate = voucherDTO.OpenDate ?? DateTime.Now;
-                existingVoucher.Amount = voucherDTO.Amount ?? 0;
+                existingVoucher.VoucherName = voucherDTOU.VoucherName;
+                existingVoucher.VoucherPercent = voucherDTOU.VoucherPercent;
+                existingVoucher.CreateDate = voucherDTOU.CreateDate ?? DateTime.Now;
+                existingVoucher.CloseDate = voucherDTOU.CloseDate;
+                existingVoucher.Status = voucherDTOU.Status ?? true;
+                existingVoucher.OpenDate = voucherDTOU.OpenDate ?? DateTime.Now;
+                existingVoucher.Amount = voucherDTOU.Amount ?? 0;
 
                 // Tự động xóa nếu Amount bằng 0
                 if (existingVoucher.Amount == 0)

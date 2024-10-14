@@ -24,7 +24,6 @@ namespace DataAccess.DTO
 
         public string? Address { get; set; }
 
-        public DateTime? CreatedDate { get; set; }
 
         public string? UserImage { get; set; }
 

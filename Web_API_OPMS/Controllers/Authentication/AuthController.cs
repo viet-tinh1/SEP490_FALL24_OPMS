@@ -1,4 +1,5 @@
 ﻿using BusinessObject.Models;
+using DataAccess.DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,11 @@ namespace Web_API_OPMS.Controllers.Authentication
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] User user)
         {
+            // Lấy giờ hiện tại theo giờ Việt Nam (GMT+7)
+            TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTime utcNow = DateTime.UtcNow;
+            DateTime currentVietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+
             if (await _context.Users.AnyAsync(u => u.Username == user.Username || u.Email == user.Email))
             {
                 return BadRequest(new { message = "Username or Email already exists" });
@@ -36,7 +42,7 @@ namespace Web_API_OPMS.Controllers.Authentication
 
             // Hash mật khẩu
             user.Password = HashPassword(user.Password);
-            user.CreatedDate = DateTime.UtcNow;
+            user.CreatedDate = currentVietnamTime;
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
             return Ok(new { message = "User registered successfully" });

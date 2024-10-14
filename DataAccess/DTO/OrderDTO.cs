@@ -11,7 +11,7 @@ namespace DataAccess.DTO
         public int OrderId { get; set; }
 
         public List<int> ShoppingCartItemIds { get; set; } // Danh sách CartId
-        public DateTime OrderDate { get; set; }       
+              
     }
     public class OrderDTOU
     {
