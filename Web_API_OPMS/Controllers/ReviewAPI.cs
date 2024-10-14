@@ -71,6 +71,11 @@ namespace Web_API_OPMS.Controllers
 
             try
             {
+                // Lấy giờ hiện tại theo giờ Việt Nam (GMT+7)
+                TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+                DateTime utcNow = DateTime.UtcNow;
+                DateTime currentVietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+
                 Review review = new Review()
                 {
                     ReviewId = reviewDTO.ReviewId,
@@ -78,7 +83,7 @@ namespace Web_API_OPMS.Controllers
                     PlantId = reviewDTO.PlantId,
                     Rating = reviewDTO.Rating,
                     Comment = reviewDTO.Comment,
-                    ReviewDate = reviewDTO.ReviewDate ?? DateTime.Now
+                    ReviewDate = currentVietnamTime
                 };
 
                 _reviewRepository.CreateReview(review);
@@ -93,27 +98,31 @@ namespace Web_API_OPMS.Controllers
 
         // Chỉnh sửa Review đã tạo
         [HttpPost("updateReview")]
-        public IActionResult UpdateReview([FromBody] ReviewDTO reviewDTO)
+        public IActionResult UpdateReview([FromBody] ReviewDTOU reviewDTOU)
         {
-            if (reviewDTO == null)
+            if (reviewDTOU == null)
             {
                 return BadRequest("Invalid review data");
             }
 
             try
             {
-                var existingReview = _reviewRepository.GetReviewById(reviewDTO.ReviewId);
+                // Lấy giờ hiện tại theo giờ Việt Nam (GMT+7)
+                TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+                DateTime utcNow = DateTime.UtcNow;
+                DateTime currentVietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+                var existingReview = _reviewRepository.GetReviewById(reviewDTOU.ReviewId);
                 if (existingReview == null)
                 {
-                    return NotFound($"Review with ID {reviewDTO.ReviewId} not found.");
+                    return NotFound($"Review with ID {reviewDTOU.ReviewId} not found.");
                 }
 
                 // Cập nhật các thuộc tính của review
-                existingReview.UserId = reviewDTO.UserId;
-                existingReview.PlantId = reviewDTO.PlantId;
-                existingReview.Rating = reviewDTO.Rating;
-                existingReview.Comment = reviewDTO.Comment;
-                existingReview.ReviewDate = reviewDTO.ReviewDate ?? DateTime.Now;
+                existingReview.UserId = reviewDTOU.UserId;
+                existingReview.PlantId = reviewDTOU.PlantId;
+                existingReview.Rating = reviewDTOU.Rating;
+                existingReview.Comment = reviewDTOU.Comment;
+                existingReview.ReviewDate = reviewDTOU.ReviewDate ?? currentVietnamTime;
 
                 _reviewRepository.UpdateReview(existingReview);
 

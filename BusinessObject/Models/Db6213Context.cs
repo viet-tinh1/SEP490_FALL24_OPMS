@@ -120,9 +120,7 @@ public partial class Db6213Context : DbContext
             entity.HasKey(e => e.CategoryId).HasName("PK__Categori__19093A2B71E9E287");
 
             entity.Property(e => e.CategoryId).HasColumnName("CategoryID");
-            entity.Property(e => e.CategoryName)
-                .HasMaxLength(100)
-                .IsUnicode(false);
+            entity.Property(e => e.CategoryName).HasMaxLength(100);
         });
 
         modelBuilder.Entity<Fplant>(entity =>
@@ -246,9 +244,7 @@ public partial class Db6213Context : DbContext
                 .IsUnicode(false)
                 .HasColumnName("ImageURL");
             entity.Property(e => e.IsVerfied).HasDefaultValueSql("((0))");
-            entity.Property(e => e.PlantName)
-                .HasMaxLength(100)
-                .IsUnicode(false);
+            entity.Property(e => e.PlantName).HasMaxLength(100);
             entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.Stock).HasDefaultValueSql("((0))");
             entity.Property(e => e.UserId).HasColumnName("UserID");
@@ -292,18 +288,14 @@ public partial class Db6213Context : DbContext
             entity.HasIndex(e => e.Username, "UQ__Users__536C85E4501EF946").IsUnique();
 
             entity.Property(e => e.UserId).HasColumnName("UserID");
-            entity.Property(e => e.Address)
-                .HasMaxLength(255)
-                .IsUnicode(false);
+            entity.Property(e => e.Address).HasMaxLength(255);
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
                 .IsUnicode(false);
-            entity.Property(e => e.FullName)
-                .HasMaxLength(100)
-                .IsUnicode(false);
+            entity.Property(e => e.FullName).HasMaxLength(100);
             entity.Property(e => e.Password)
                 .HasMaxLength(255)
                 .IsUnicode(false);
@@ -337,7 +329,6 @@ public partial class Db6213Context : DbContext
             entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.VoucherName)
                 .HasMaxLength(255)
-                .IsUnicode(false)
                 .HasColumnName("voucher_name");
             entity.Property(e => e.VoucherPercent)
                 .HasColumnType("decimal(5, 2)")
