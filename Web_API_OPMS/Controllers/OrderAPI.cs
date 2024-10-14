@@ -75,7 +75,10 @@ namespace Web_API_OPMS.Controllers
                         {
                             return NotFound("Plant not found.");
                         }
-
+                        // Lấy giờ hiện tại theo giờ Việt Nam (GMT+7)
+                        TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+                        DateTime utcNow = DateTime.UtcNow;
+                        DateTime currentVietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
                         // Tính toán tổng số tiền cho đơn hàng (giá của plant * số lượng trong cart)
                         var totalAmount = plant.Price * cart.Quantity;
 
@@ -83,7 +86,7 @@ namespace Web_API_OPMS.Controllers
                         Order order = new Order()
                         {
                             ShoppingCartItemId = cartId,  // Gán CartId từ dữ liệu đầu vào
-                            OrderDate = orderDTO.OrderDate, // Ngày tạo order
+                            OrderDate = currentVietnamTime, // Ngày tạo order
                             TotalAmount = totalAmount,       // Tổng số tiền được tính toán tự động
                             Status = "Pending",              // Đặt trạng thái đơn hàng là "1" (thành công)
                             UserId = userId.Value            // Gán UserId từ session

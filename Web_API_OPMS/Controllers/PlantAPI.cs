@@ -182,13 +182,13 @@ namespace Web_API_OPMS.Controllers
                 var existingPlant = plantRepository.getPlantById(plantId);
                 if (existingPlant == null)
                 {
-                    return NotFound($"Plant with ID {plantId} not found.");
+                    return NotFound(new { message = $"Plant with ID {plantId} not found." });
                 }
 
                 // Check if the plant is already verified
                 if (existingPlant.IsVerfied == 1)
                 {
-                    return BadRequest($"Plant'{existingPlant.PlantName}' is already verified.");
+                    return BadRequest(new { message = $"Plant'{existingPlant.PlantName}' is already verified." });
                 }
 
                 // Update the verification status to 1 (verified)
@@ -279,24 +279,8 @@ namespace Web_API_OPMS.Controllers
 
         public IActionResult SearchPlants([FromQuery] string name = null, [FromQuery] List<int> categoryId = null, [FromQuery] decimal? minPrice = null, [FromQuery] decimal? maxPrice = null)
         {
-            categoryId ??= new List<int>();
-
-            // Kiểm tra nếu minPrice lớn hơn maxPrice
-            if (minPrice.HasValue && maxPrice.HasValue && minPrice > maxPrice)
-            {
-                return BadRequest("Giá trị tối thiểu không thể lớn hơn giá trị tối đa.");
-            }
-
-            // Gọi phương thức tìm kiếm trong PlantRepository và truyền các tham số
+            categoryId ??= new List<int>();           
             var plants = plantRepository.searchPlants(name, categoryId, minPrice, maxPrice);
-
-            // Kiểm tra nếu không có kết quả
-            if (plants == null || plants.Count == 0)
-            {
-                return NotFound("Không có kết quả theo yêu cầu.");
-            }
-
-            // Trả về kết quả dưới dạng JSON
             return Ok(plants);
         }
 
