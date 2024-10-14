@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Repositories.Implements;
 using Repositories.Interface;
+using Repositories.Service;
 using System.Text;
 
 namespace Web_API_OPMS
@@ -65,6 +66,7 @@ namespace Web_API_OPMS
             builder.Services.AddSwaggerGen();
             // Đăng ký IVoucherRepository với implement là VoucherRepository
             builder.Services.AddScoped<IVoucherRepository, VoucherRepository>();
+            builder.Services.AddTransient<MailService>();
             var app = builder.Build();
 
             // Enable Swagger UI in development mode

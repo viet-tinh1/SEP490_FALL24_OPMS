@@ -44,8 +44,15 @@ namespace Web_API_OPMS.Controllers
             }
             try
             {
+                // Lấy giờ hiện tại theo giờ Việt Nam (GMT+7)
+                TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+                DateTime utcNow = DateTime.UtcNow;
+                DateTime currentVietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+
                 // Mã hóa password
                 string hashedPassword = HashPassword(u.Password);
+
+                // Tạo đối tượng User mới với thông tin từ u và thời gian Việt Nam
                 User user = new User()
                 {
                     Username = u.Username,
@@ -53,8 +60,8 @@ namespace Web_API_OPMS.Controllers
                     Email = u.Email,
                     Roles = u.Roles,
                     Status = u.Status,
-                    // Kiểm tra nếu CreatedDate không được đặt từ trước thì sẽ gán ngày hiện tại
-                    CreatedDate = u.CreatedDate ?? DateTime.Now
+                    // Kiểm tra nếu CreatedDate không được đặt từ trước thì sẽ gán ngày hiện tại theo giờ Việt Nam
+                    CreatedDate = currentVietnamTime
                 };
                 UserRepository.CreateUser(user);
                 return CreatedAtAction(nameof(getUserById), new { id = user.UserId }, user);
