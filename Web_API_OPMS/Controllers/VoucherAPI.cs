@@ -164,5 +164,36 @@ namespace Web_API_OPMS.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+        [HttpPost("reduceVoucherAmount")]
+        public IActionResult ReduceVoucherAmount(string name)
+        {
+            try
+            {
+                // Tìm voucher theo tên
+                var voucher = VoucherRepository.GetSingleVoucherByName(name);
+                if (voucher == null)
+                {
+                    return NotFound(new { message = "Voucher not found." });
+                }
+
+                // Kiểm tra số lượng voucher
+                if (voucher.Amount > 0)
+                {
+                    voucher.Amount -= 1; // Giảm số lượng mã
+                    VoucherRepository.UpdateVoucher(voucher);
+                }
+                else
+                {
+                    return BadRequest(new { message = "Voucher has no remaining uses." });
+                }
+
+                return Ok(new { message = "Voucher amount reduced successfully", updatedVoucher = voucher });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
     }
 }
