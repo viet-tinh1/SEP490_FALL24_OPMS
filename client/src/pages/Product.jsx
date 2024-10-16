@@ -14,6 +14,9 @@ export default function Product() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [priceError, setPriceError] = useState(null);
   const [notification, setNotification] = useState(null);
 
   useEffect(() => {
@@ -25,11 +28,11 @@ export default function Product() {
         const productsData = await productResponse.json();
 
         if (!productResponse.ok) {
-          throw new Error("Failed to fetch plants");
+          throw new Error("Không thể lấy dữ liệu ");
         }
 
         if (productsData.message === "No plants available currently.") {
-          setNotification("No plants available currently.");
+          setNotification("Hiện tại không có cây trồng nào có sẵn.");
           setProducts([]);
           setLoading(false);
           return;
@@ -60,8 +63,11 @@ export default function Product() {
       const categoryIdsQuery = selectedCategoryIds
         .map((id) => `categoryId=${id}`)
         .join("&");
-      const query = `${categoryIdsQuery}`;
-
+     
+      let query = `${categoryIdsQuery}`;
+      if (minPrice !== null && maxPrice !== null) {
+        query += `&minPrice=${minPrice}&maxPrice=${maxPrice}`;
+      }
       const productResponse = await fetch(
         `https://localhost:7098/api/PlantAPI/searchPlants?${query}`
       );
@@ -69,9 +75,9 @@ export default function Product() {
       if (!productResponse.ok) {
         
         if(productResponse.status==404 && productsData.message == "Không có kết quả theo yêu cầu."){
-          setError("Plant is not found or non-verify.");
+          setError("Cây trồng không được tìm thấy hoặc chưa được xác minh.");
         }
-        throw new Error("Failed to fetch filtered plants");
+        throw new Error("Không thể lấy cây trồng đã được lọc");
       }
      
      
@@ -93,8 +99,42 @@ export default function Product() {
     }
 
     setSelectedCategories(updatedCategories);
-    searchPlants(updatedCategories);
+    
   };
+  const handlePriceChange = (e, priceType) => {
+    const value = e.target.value;
+  
+    if (priceType === "min") {
+      setMinPrice(value); // Lưu giá trị minPrice từ input Min
+    } else if (priceType === "max") {
+      setMaxPrice(value); // Lưu giá trị maxPrice từ input Max
+    }
+  
+    const min = parseFloat(priceType === "min" ? value : minPrice);  // Sử dụng giá trị mới nhập cho min
+    const max = parseFloat(priceType === "max" ? value : maxPrice);  // Sử dụng giá trị mới nhập cho max
+  
+    // Validate that minPrice is not greater than maxPrice
+    if (value.length !== 0 && (!isNaN(min) && !isNaN(max))) {
+      if (min < 0) {
+        setPriceError("Giá tối thiểu không được phép là số âm.");
+      } else if (min > max) {
+        setPriceError("Giá tối thiểu không được lớn hơn giá tối đa.");
+      } else {
+        setPriceError("");  // Xóa lỗi nếu giá trị hợp lệ
+      }
+    } else {
+      setPriceError("");  // Xóa lỗi nếu minPrice hoặc maxPrice trống
+    }
+  };
+  
+
+  
+  // Automatically search when price or categories change
+  useEffect(() => {
+    if (!priceError) {
+      searchPlants(selectedCategories, minPrice, maxPrice);
+    }
+  }, [selectedCategories, minPrice, maxPrice, priceError]);
 
   const pageCount = Math.ceil(products.length / usersPerPage);
   const handlePageClick = ({ selected }) => {
@@ -108,7 +148,7 @@ export default function Product() {
 
   const getCategoryName = (categoryId) => {
     const category = categories.find((cat) => cat.categoryId === categoryId);
-    return category ? category.categoryName : "Unknown Category";
+    return category ? category.categoryName : "Danh mục không xác định";
   };
 
   const [showAll, setShowAll] = useState(false); // State to track whether to show all flowers
@@ -135,8 +175,10 @@ export default function Product() {
                 <Sidebar.Item icon={TbShoppingBagSearch} as="div">
                    Tìm kiếm theo danh mục
                 </Sidebar.Item>
-                <ul className="ml-6 mt-2 space-y-2">
-                  {categories.map((category) => (
+                <ul className="ml-6 mt-2 space-y-2">                
+                  {categories
+                  .slice(0, showAll ? categories.length : 3)
+                  .map((category) => (
                     <li
                       key={category.categoryId}
                       className="flex items-center justify-between"
@@ -168,6 +210,42 @@ export default function Product() {
                   </button>
                 </div>
               </Sidebar.ItemGroup>
+              {/* tìm kiếm theo giá*/} 
+              <Sidebar.ItemGroup>
+                <Sidebar.Item icon={TbShoppingBagSearch} as="div">
+                   Tìm kiếm theo giá 
+                </Sidebar.Item>
+                <ul className="ml-6 mt-2 space-y-2">
+                  <li>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Giá thấp nhất
+                    </label>
+                    <input
+                      type="number"
+                      className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                      value={minPrice}
+                      onChange={(e) => handlePriceChange(e, "min")} 
+                    />
+                  </li>
+                  <li>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Giá cao nhất
+                    </label>
+                    <input
+                      type="number"
+                      className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                      value={maxPrice}
+                      onChange={(e) => handlePriceChange(e, "max")} 
+                    />
+                  </li>
+                  {priceError && (
+                    <li>
+                      <span className="text-red-500">{priceError}</span>
+                    </li>
+                  )}
+                </ul>
+                
+              </Sidebar.ItemGroup>
             </Sidebar.Items>
           </Sidebar>
         </div>
@@ -176,7 +254,7 @@ export default function Product() {
           <div className="flex flex-wrap justify-center gap-3 p-5">
             {productsToDisplay.length === 0 ? (
               <div className="text-center text-green-600 font-semibold">
-                {notification || "No products available."}
+                {notification || "Không có sản phẩm nào có sẵn."}
               </div>
             ) : (
               productsToDisplay.map((product) => (

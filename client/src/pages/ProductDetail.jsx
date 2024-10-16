@@ -23,7 +23,7 @@ export default function ProductDetail() {
         );
         console.log(plantId)
         if (!response.ok) {
-          throw new Error("Failed to fetch product data");
+          throw new Error("Không thể lấy dữ liệu sản phẩm");
         }
         const data = await response.json();
         setProductData(data);

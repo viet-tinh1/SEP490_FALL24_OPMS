@@ -14,7 +14,25 @@ export default function DashSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [tab, setTab] = useState('');
+  const [role, setURoles] = useState(null);
+  useEffect(() => {
+    // Fetch role from localStorage during the initial mount
+    const storedRoles = localStorage.getItem("role");
+    setURoles(storedRoles); // Assuming role is stored as string in localStorage
 
+    // Listen for changes to localStorage (cross-tab synchronization)
+    const handleStorageChange = () => {
+      const updatedRoles = localStorage.getItem("role");
+      setURoles(updatedRoles);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    // Clean up the event listener when component unmounts
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const tabFromUrl = urlParams.get('tab');
@@ -68,21 +86,26 @@ export default function DashSidebar() {
           </Link>
 
           <>
+            {role =='1'&&(
             <Link to='/dashboard?tab=users'>
               <Sidebar.Item active={tab === 'users'} icon={HiOutlineUserGroup} as='div'>
               Quản lý tài khoản 
               </Sidebar.Item>
             </Link>
+            )}
+            
             <Link to='/dashboard?tab=comments'>
               <Sidebar.Item active={tab === 'comments'} icon={HiAnnotation} as='div'>
               Quản lý bình luận
               </Sidebar.Item>
             </Link>
-            <Link to='/dashboard?tab=product'>
+            {role=='3'&&(
+              <Link to='/dashboard?tab=product'>
               <Sidebar.Item active={tab === 'product'} icon={HiAnnotation} as='div'>
               Quản Lý Sản phẩm
               </Sidebar.Item>
             </Link>
+            )}           
           </>
 
           <Sidebar.Item icon={HiArrowSmRight} className='cursor-pointer' onClick={handleSignOut}>

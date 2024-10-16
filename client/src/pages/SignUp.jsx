@@ -134,7 +134,26 @@ export default function Signup() {
       console.log("Đăng ký thành công:", data);
       // Điều hướng người dùng tới trang khác, ví dụ trang đăng nhập
       if (data.message === "User registered successfully") {
-        navigate("/sign-in");
+        const emailResponse = await fetch("https://localhost:7098/api/SendMailAPI/send-email", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: username,           // Pass the registered username
+            recipientEmail: email,        // Pass the recipient's email (the registered email)
+          }),
+        });
+  
+        const emailData = await emailResponse.json();
+  
+        if (!emailResponse.ok) {
+          setError("Failed to send OTP email. Please try again.");
+          return;
+        }
+  
+        // Navigate to the OTP verification page if email sending is successful
+        navigate("/verify_otp", { state: { email: email } });
       }
       
     } catch (error) {
