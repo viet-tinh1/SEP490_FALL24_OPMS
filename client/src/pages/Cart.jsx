@@ -163,6 +163,51 @@ export default function Cart() {
     return (totalWithDiscount + tax - storePickup).toFixed(3);
   };
 
+  // Hàm áp dụng mã voucher
+  const applyVoucher = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch(
+        `https://localhost:7098/api/VoucherAPI/getVoucherByName?name=${voucherCode}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Invalid voucher code");
+      }
+
+      const voucherData = await response.json();
+
+      // Nếu voucher hợp lệ, áp dụng mức giảm giá
+      if (voucherData && voucherData.voucherPercent) {
+        setVoucherDiscount(voucherData.voucherPercent); // Áp dụng mức giảm giá
+        setVoucherApplied(true); // Đánh dấu voucher đã được áp dụng
+        setVoucherError(""); // Xóa lỗi nếu có
+      } else {
+        throw new Error("Voucher not valid");
+      }
+    } catch (error) {
+      setVoucherError("Voucher không chính xác");
+      setVoucherDiscount(0); // Không áp dụng giảm giá nếu mã không hợp lệ
+      setVoucherApplied(false); // Không áp dụng voucher
+    }
+  };
+
+  // Tính tổng tiền sau khi áp dụng voucher
+  const calculateSelectedTotalWithVoucher = () => {
+    const totalOriginal = calculateSelectedTotalOriginalPrice();
+    const discount = totalOriginal * (voucherDiscount / 100);
+    const totalWithDiscount = totalOriginal - discount;
+    const tax = totalWithDiscount * taxRate;
+    return (totalWithDiscount + tax - storePickup).toFixed(2);
+  };
+
   if (loading) {
     return <p>Loading...</p>;
   }
@@ -327,7 +372,6 @@ export default function Cart() {
                         >
                           {item.plantDetails?.plantName || item.plantId}
                         </a>
-
                         <div className="flex items-center gap-4">
                           <button
                             type="button"
@@ -363,7 +407,6 @@ export default function Cart() {
               <p className="text-xl font-semibold text-gray-900 dark:text-white">
                 Tổng kết đặt hàng
               </p>
-
               <div className="space-y-4">
                 <div className="space-y-2">
                   <dl className="flex items-center justify-between gap-4">
@@ -371,16 +414,17 @@ export default function Cart() {
                       Giá gốc
                     </dt>
                     <dd className="text-base font-medium text-gray-900 dark:text-white">
-                      ${calculateSelectedTotalOriginalPriceWithoutDiscount().toFixed(3)}
+                      ${calculateSelectedTotalOriginalPriceWithoutDiscount().toFixed(3)
                     </dd>
                   </dl>
-
                   <dl className="flex items-center justify-between gap-4">
                     <dt className="text-base font-normal text-gray-500 dark:text-gray-400">
                       Giảm Giá
                     </dt>
                     <dd className="text-base font-medium text-green-600">
-                      -${((calculateSelectedTotalOriginalPriceWithoutDiscount() - calculateSelectedTotalOriginalPrice()).toFixed(3) || savings.toFixed(2))}
+
+                      -${((calculateSelectedTotalOriginalPriceWithoutDiscount() - calculateSelectedTotalOriginalPrice()).toFixed(3) || savings.toFixed(3))}
+
                     </dd>
                   </dl>
                   {/*
@@ -431,7 +475,6 @@ export default function Cart() {
               >
                 Tiến hành thanh toán
               </a>
-
               <div className="flex items-center justify-center gap-2">
                 <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
                   hoặc
