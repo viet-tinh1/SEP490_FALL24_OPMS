@@ -4,14 +4,28 @@ import { FaLeaf } from "react-icons/fa";
 import { FaMoon, FaSun } from "react-icons/fa";
 import { AiOutlineSearch } from "react-icons/ai";
 import { MdOutlineShoppingCart } from "react-icons/md";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Header() {
   const path = useLocation().pathname;
   const [userId, setUserId] = useState(null);
   const [role, setURoles] = useState(null);
   const navigate = useNavigate();
+  const timeoutRef = useRef(null);
 
+  const INACTIVITY_LIMIT = 30 * 60 * 1000;
+
+  const resetInactivityTimeout = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current); // Xóa timeout hiện tại nếu có
+    }
+
+    // Đặt một timeout mới sau 30 phút sẽ thực thi hàm handleSignOut
+    timeoutRef.current = setTimeout(() => {
+      handleSignOut(); // Xóa thông tin người dùng sau 30 phút không hoạt động
+    }, INACTIVITY_LIMIT);
+  };
+  
   // Check localStorage for userId when the component mounts
   useEffect(() => {
     // Get userId and role from localStorage when component mounts
@@ -29,13 +43,28 @@ export default function Header() {
       setUserId(updatedUserId);
       setURoles(updatedRoles);
     };
-  
-    // Listen for storage changes
+     // Hàm để reset thời gian không hoạt động khi người dùng tương tác
+    const handleUserActivity = () => {
+      resetInactivityTimeout(); // Reset lại thời gian không hoạt động
+    };
+     // Thêm các sự kiện để phát hiện hoạt động của người dùng
     window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("mousemove", handleUserActivity);
+    window.addEventListener("keydown", handleUserActivity);
+    window.addEventListener("click", handleUserActivity);
   
+    // Đặt lại bộ đếm thời gian không hoạt động ngay từ lúc đầu
+    resetInactivityTimeout();
+
     // Cleanup the event listener on component unmount
     return () => {
       window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("mousemove", handleUserActivity);
+      window.removeEventListener("keydown", handleUserActivity);
+      window.removeEventListener("click", handleUserActivity);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current); // Xóa timeout nếu component bị hủy
+      }
     };
   }, []);
   // Handle sign out logic
@@ -101,7 +130,7 @@ export default function Header() {
         <Navbar.Link active={path === "/product"} as={"div"}>
           <Link to="/product">Sản Phẩm</Link>
         </Navbar.Link>
-        { role === '1' && (
+        { (role === '1' || role === '3') && (
           <Navbar.Link active={path === "/dashboard"} as={"div"}>
             <Link to="/dashboard">Dashboard</Link>
           </Navbar.Link>

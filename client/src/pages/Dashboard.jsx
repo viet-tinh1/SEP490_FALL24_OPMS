@@ -28,7 +28,7 @@ export default function Dashboard() {
       {/* posts... */}
       {tab === 'posts' && <DashPosts />}
       {/* users */}
-      {tab === 'users' && <DashUsers />}
+      {tab === 'users'  && <DashUsers />}
       {/* comments  */}
       {tab === 'comments' && <DashComments />}
       {/* dashboard Product */}

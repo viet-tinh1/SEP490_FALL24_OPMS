@@ -9,6 +9,7 @@ import Footer from './components/Footer'
 import Product from './pages/Product'
 import Cart from './pages/Cart'
 import ProductDetail from './pages/ProductDetail'
+import Verify_Otp from './pages/Verify_otp'
 export default function App() {
   return (
     <BrowserRouter>
@@ -23,6 +24,7 @@ export default function App() {
           <Route path='/product' element={<Product/>}/>
           <Route path='/cart' element={<Cart/>}/>
           <Route path="/productdetail/:plantId" element={<ProductDetail />} />
+          <Route path='/verify_otp' element={<Verify_Otp/>} />
 
 
     </Routes>
