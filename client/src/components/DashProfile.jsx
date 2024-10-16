@@ -10,6 +10,8 @@ export default function DashProfile() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
   // Hàm lấy dữ liệu người dùng từ API
   useEffect(() => {
@@ -57,8 +59,6 @@ export default function DashProfile() {
         },
         body: JSON.stringify(user)  // Gửi dữ liệu người dùng
       });
-
-      
       if (!response.ok) {
         throw new Error('Failed to update user');
       }
@@ -72,9 +72,12 @@ export default function DashProfile() {
   // Hàm xử lý khi submit form cho mật khẩu
   const handlePasswordSubmit = async (event) => {
     event.preventDefault();
+    setPasswordError('');
+    setConfirmPasswordError('');
+
     try {
       if (newPassword !== confirmPassword) {
-        alert("Mật khẩu xác nhận không khớp!");
+        setConfirmPasswordError("Mật khẩu xác nhận phải giống với mật khẩu mới.");
         return;
       }
 
@@ -91,7 +94,12 @@ export default function DashProfile() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update password');
+        if (response.status === 400) {
+          setPasswordError("Mật khẩu hiện tại không đúng.");
+        } else {
+          throw new Error('Failed to update password');
+        }
+        return;
       }
 
       alert("Password updated successfully!");
@@ -314,6 +322,7 @@ export default function DashProfile() {
                       placeholder="••••••••"
                       required
                     />
+                     {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
                   </div>
 
                   <div className="col-span-6 sm:col-span-3">
@@ -344,6 +353,7 @@ export default function DashProfile() {
                       placeholder="••••••••"
                       required
                     />
+                  {confirmPasswordError && <p className="text-red-500 text-sm mt-1">{confirmPasswordError}</p>}
                   </div>
 
                   <div className="col-span-6">
