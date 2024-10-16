@@ -50,7 +50,7 @@ export default function DashProfile() {
   const handleUserSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/api/UserAPI/updateUser', {
+      const response = await fetch('https://localhost:7098/api/UserAPI/updateUser', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -58,6 +58,7 @@ export default function DashProfile() {
         body: JSON.stringify(user)  // Gửi dữ liệu người dùng
       });
 
+      
       if (!response.ok) {
         throw new Error('Failed to update user');
       }
