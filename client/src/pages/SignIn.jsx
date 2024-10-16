@@ -57,7 +57,7 @@ export default function SignIn() {
         if (data.role === 1) {
           navigate("/admin");
         } else if (data.role === 2) {
-          navigate("/user");
+          navigate("/product");
         } else if (data.role === 3) {
           navigate("/seller");
         } else {

@@ -125,7 +125,9 @@ export default function DashProfile() {
       case 1:
         return 'Admin';  // Vai trò Admin
       case 2:
-        return 'User';   // Vai trò Người dùng
+        return 'Người dùng';   // Vai trò Người dùng
+      case 3:
+        return 'Người bán'; // Vai trò Người bán
       default:
         return 'Unknown Role'; // Nếu không có vai trò nào phù hợp
     }

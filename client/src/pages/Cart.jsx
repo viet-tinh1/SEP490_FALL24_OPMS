@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 export default function Cart() {
   const [cartItems, setCartItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
+  const [appliedVoucherCode, setAppliedVoucherCode] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [notification, setNotification] = useState(null);
@@ -13,7 +14,7 @@ export default function Cart() {
   const [voucherError, setVoucherError] = useState(""); // State lưu trữ lỗi nếu voucher không hợp lệ
   const savings = 0; // Fixed savings
   const storePickup = 0; // Fixed store pickup fee
-  const taxRate = 0.1; // Tax rate of 10%
+  const taxRate = 0; // Tax rate of 10%
 
   useEffect(() => {
     const fetchCartData = async () => {
@@ -21,7 +22,7 @@ export default function Cart() {
 
       if (!userId || userId === "undefined") {
         console.error("User is not logged in or userId is invalid.");
-        setError("User is not logged in or userId is invalid.");
+        setError("Người dùng chưa đăng nhập hoặc không hợp lệ.");
         setLoading(false);
         return;
       }
@@ -41,7 +42,7 @@ export default function Cart() {
           const data = await response.json();
         
           if (response.status === 400 && data.message === "No carts found for the given user.") {
-            setNotification("No carts found for the given user.");
+            setNotification("Bạn chưa thêm sản phẩm nào vào giỏ hàng.");
           } else if (response.status === 401) {
             setError("Unauthorized access. Please login again.");
             localStorage.clear();
@@ -79,7 +80,7 @@ export default function Cart() {
           );
 
           if (!plantResponse.ok) {
-            console.error(`Failed to fetch plant details for plantId: ${item.plantId}`);
+            console.error(`Lấy dữ liệu không thành công : ${item.plantId}`);
             return item;
           }
 
@@ -95,6 +96,72 @@ export default function Cart() {
 
     fetchCartData();
   }, []);
+// Function to reset or clear voucher
+
+  // Hàm áp dụng mã voucher
+  const applyVoucher = async (e) => {
+    e.preventDefault();
+    if (voucherApplied) {
+      return;
+    }
+    try {
+      const response = await fetch(
+        `https://localhost:7098/api/VoucherAPI/getVoucherByName?name=${voucherCode}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("không tồn tại mã giảm giá");
+      }
+
+      const voucherData = await response.json();
+
+      // Nếu voucher hợp lệ, áp dụng mức giảm giá
+      if (voucherData && voucherData.voucherPercent) {
+        setAppliedVoucherCode(voucherCode);
+        setVoucherDiscount(voucherData.voucherPercent); // Áp dụng mức giảm giá
+        setVoucherApplied(true); // Đánh dấu voucher đã được áp dụng
+        setVoucherError(""); // Xóa lỗi nếu có
+      } else {
+        throw new Error("Voucher not valid");
+      }
+    } catch (error) {
+      setVoucherError("Mã giảm giá không chính xác");
+      setVoucherDiscount(0); // Không áp dụng giảm giá nếu mã không hợp lệ
+      setVoucherApplied(false); // Không áp dụng voucher
+    }
+  };
+  const resetVoucher = () => {
+    setAppliedVoucherCode(""); // Clear applied voucher
+    setVoucherDiscount(0); // Reset discount
+    setVoucherApplied(false); // Reset voucher applied state
+    setVoucherError(""); // Clear any errors
+  };
+  
+  // Input field change handler (this will remove applied voucher if the field is empty)
+  const handleVoucherInputChange = (e) => {
+    const inputValue = e.target.value;
+    setVoucherCode(inputValue);
+  
+    // If the input is cleared, reset the voucher
+    if (!inputValue) {
+      resetVoucher();
+    }
+  };
+
+  // Tính tổng tiền sau khi áp dụng voucher
+  const calculateSelectedTotalWithVoucher = () => {
+    const totalOriginal = calculateSelectedTotalOriginalPrice();
+    const discount = totalOriginal * (voucherDiscount / 100);
+    const totalWithDiscount = totalOriginal - discount;
+    const tax = totalWithDiscount * taxRate;
+    return (totalWithDiscount + tax - storePickup).toFixed(3);
+  };
 
   // Hàm áp dụng mã voucher
   const applyVoucher = async (e) => {
@@ -293,7 +360,7 @@ export default function Cart() {
                           <p className="text-base font-bold text-gray-900 dark:text-white">
                             ${(
                               (item.plantDetails?.price - item.plantDetails?.price * (item.plantDetails?.discount / 100 || 0)) * item.quantity
-                            ).toFixed(2)}
+                            ).toFixed(3)}
                           </p>
                         </div>
                       </div>
@@ -303,9 +370,8 @@ export default function Cart() {
                           href="#"
                           className="text-base font-medium text-gray-900 hover:underline dark:text-white"
                         >
-                          {item.plantDetails?.name || item.plantId}
+                          {item.plantDetails?.plantName || item.plantId}
                         </a>
-
                         <div className="flex items-center gap-4">
                           <button
                             type="button"
@@ -341,7 +407,6 @@ export default function Cart() {
               <p className="text-xl font-semibold text-gray-900 dark:text-white">
                 Tổng kết đặt hàng
               </p>
-
               <div className="space-y-4">
                 <div className="space-y-2">
                   <dl className="flex items-center justify-between gap-4">
@@ -349,19 +414,20 @@ export default function Cart() {
                       Giá gốc
                     </dt>
                     <dd className="text-base font-medium text-gray-900 dark:text-white">
-                      ${calculateSelectedTotalOriginalPrice().toFixed(2)}
+                      ${calculateSelectedTotalOriginalPriceWithoutDiscount().toFixed(3)
                     </dd>
                   </dl>
-
                   <dl className="flex items-center justify-between gap-4">
                     <dt className="text-base font-normal text-gray-500 dark:text-gray-400">
                       Giảm Giá
                     </dt>
                     <dd className="text-base font-medium text-green-600">
-                      -${((calculateSelectedTotalOriginalPriceWithoutDiscount() - calculateSelectedTotalOriginalPrice()).toFixed(2) || savings.toFixed(2))}
+
+                      -${((calculateSelectedTotalOriginalPriceWithoutDiscount() - calculateSelectedTotalOriginalPrice()).toFixed(3) || savings.toFixed(3))}
+
                     </dd>
                   </dl>
-
+                  {/*
                   <dl className="flex items-center justify-between gap-4">
                     <dt className="text-base font-normal text-gray-500 dark:text-gray-400">
                       Trả trước 
@@ -379,15 +445,15 @@ export default function Cart() {
                       ${(calculateSelectedTotalOriginalPrice() * taxRate).toFixed(2)}
                     </dd>
                   </dl>
-
+                  */}
                   {/* Hiển thị giá trị của voucher nếu đã được áp dụng */}
                   {voucherApplied && (
                     <dl className="flex items-center justify-between gap-4">
                       <dt className="text-base font-normal text-gray-500 dark:text-gray-400">
-                        Mã voucher đã áp dụng:
+                        Mã giảm giá đã áp dụng:
                       </dt>
                       <dd className="text-base font-medium text-gray-900 dark:text-white">
-                        {voucherCode} - {voucherDiscount}% giảm giá
+                        Mã {voucherCode} - giảm giá {voucherDiscount}% 
                       </dd>
                     </dl>
                   )}
@@ -395,7 +461,7 @@ export default function Cart() {
 
                 <dl className="flex items-center justify-between gap-4 border-t border-gray-200 pt-2 dark:border-gray-700">
                   <dt className="text-base font-bold text-gray-900 dark:text-white">
-                    Tổng cộng sau khi áp dụng voucher
+                    Tổng cộng sau khi áp dụng mã giảm giá 
                   </dt>
                   <dd className="text-base font-bold text-gray-900 dark:text-white">
                     ${calculateSelectedTotalWithVoucher()}
@@ -409,13 +475,12 @@ export default function Cart() {
               >
                 Tiến hành thanh toán
               </a>
-
               <div className="flex items-center justify-center gap-2">
                 <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
                   hoặc
                 </span>
-                <a
-                  href="#"
+                <Link
+                  to="/product"
                   className="inline-flex items-center gap-2 text-sm font-medium text-primary-700 underline hover:no-underline dark:text-primary-500"
                 >
                   Tiếp tục mua hàng
@@ -434,7 +499,7 @@ export default function Cart() {
                       d="M19 12H5m14 0-4 4m4-4-4-4"
                     />
                   </svg>
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -451,7 +516,7 @@ export default function Cart() {
                     type="text"
                     id="voucher"
                     value={voucherCode}
-                    onChange={(e) => setVoucherCode(e.target.value)}
+                    onChange={handleVoucherInputChange}
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
                     placeholder="Nhập mã voucher"
                     required
