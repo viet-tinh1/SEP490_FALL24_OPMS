@@ -36,6 +36,20 @@ export default function DashUsers() {
     fetchUsers();
   }, []); // Empty dependency array to fetch only once on component mount
 
+
+  const getRoleName = (roleId) => {
+    switch(roleId) {
+      case 1:
+        return "Admin";
+      case 2:
+        return "Người dùng";
+      case 3:
+        return "Người bán";
+      default:
+        return "Unknown Role"; // Default for unexpected values
+    }
+  };
+
   const handleToggle = (user) => {
     setSelectedUser(user);
     setShowModal(true);
@@ -122,7 +136,7 @@ export default function DashUsers() {
                 <Table.Cell className="py-4">{user.username}</Table.Cell>
                 <Table.Cell className="py-4">{user.email}</Table.Cell>
                 <Table.Cell className="py-4">{user.phoneNumber}</Table.Cell>
-                <Table.Cell className="py-4">{user.roles}</Table.Cell>
+                <Table.Cell className="py-4">{getRoleName(user.roles)}</Table.Cell>
                 <Table.Cell className="py-4">{user.address}</Table.Cell>
                 <Table.Cell>
                   <label className="inline-flex items-center mb-5 cursor-pointer">
