@@ -14,56 +14,53 @@ export default function ProductDetail() {
   const [productData, setProductData] = useState(null); // New state to store product data
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState(null); // Error state
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState([]); // Ensure reviews is an array
   const [ratingSummary, setRatingSummary] = useState({ totalReviews: 0, totalRating: 0 });
   const [rating, setRating] = useState(0); // State to store the user's rating
   const [comment, setComment] = useState(""); // State to store the user's comment
-  const [notification, setNotification] = useState(""); // State to store the notification message
-
-  // Hàm để lấy tên người dùng dựa trên userId
-  const fetchUserName = async (userId) => {
-    try {
-      const response = await fetch(`https://localhost:7098/api/UserAPI/getUserById?id=${userId}`);
-      if (!response.ok) {
-        throw new Error("Không thể lấy thông tin người dùng");
-      }
-      const data = await response.json();
-      return data.username; // Giả sử API trả về username
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      return "Unknown User"; // Default nếu có lỗi
-    }
-  };
+  const [notification, setNotification] = useState("");
+  const [userData, setUserData] = useState(null); // State to store the notification message
 
   // Fetch product data when the component mounts
   useEffect(() => {
     const fetchProductData = async () => {
       try {
-        const response = await fetch(
-          `https://localhost:7098/api/PlantAPI/getPlantById?id=${plantId}` // Using plantId dynamically
-        );
-        if (!response.ok) {
-          throw new Error("Không thể lấy dữ liệu sản phẩm");
-        }
+        // Fetch product details
+        const response = await fetch(`https://localhost:7098/api/PlantAPI/getPlantById?id=${plantId}`);
+        if (!response.ok) throw new Error("Không thể lấy dữ liệu sản phẩm");
         const data = await response.json();
         setProductData(data);
-
-        // Fetch reviews and rating summary
+  
+        // Fetch reviews
         const reviewResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getReviewsByPlantId?plantId=${plantId}`);
         let reviewData = await reviewResponse.json();
-
-        // Fetch tên người dùng cho từng review
+  
+        // Ensure reviews is an array
+        if (!Array.isArray(reviewData)) reviewData = [];
+  
+        // Use Promise.all to fetch user names for each review's userId
         const updatedReviews = await Promise.all(
           reviewData.map(async (review) => {
-            const userName = await fetchUserName(review.userId);
-            return { ...review, userName }; // Gắn userName vào review
+            // Fetch userName based on userId
+            const userResponse = await fetch(`https://localhost:7098/api/UserAPI/getUserById?userId=${review.userId}`);
+            if (!userResponse.ok) {
+              console.error(`Error fetching user data for userId: ${review.userId}`);
+              return review; // Return the review unchanged if the user API call fails
+            }
+            const userData = await userResponse.json();
+            // Assign the fetched userName to the review
+            return { ...review, userName: userData.userName };
           })
         );
+
         setReviews(updatedReviews);
 
-        const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
-        const ratingData = await ratingResponse.json();
-        setRatingSummary(ratingData);
+        
+
+        // Fetch rating summary
+        //const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
+        //const ratingData = await ratingResponse.json();
+        //setRatingSummary(ratingData);
       } catch (error) {
         setError(error.message);
       } finally {
@@ -71,8 +68,24 @@ export default function ProductDetail() {
       }
     };
 
-    fetchProductData(); // Fetch product data on component mount
+    fetchProductData(); // Call the fetch function on mount
   }, [plantId]);
+  // Hàm để lấy tên người dùng dựa trên userId
+  const fetchUserNameForReview = async (userId) => {
+    try {
+      const userResponse = await fetch(`https://localhost:7098/api/UserAPI/getUserById?userId=${userId}`);
+      if (!userResponse.ok) {
+        console.error(`Error fetching user data for userId: ${userId}`);
+        return "Unknown User"; 
+      }
+      const userData = await userResponse.json();
+      console.log("Fetched User Data: ", userData.userName);
+      setUserData(userData);
+    } catch (error) {
+      console.error("Error fetching user name:", error);
+      return "Unknown User"; 
+    }
+  };
 
   // Function to handle increment
   const incrementQuantity = () => {
@@ -101,12 +114,6 @@ export default function ProductDetail() {
     }
   };
 
-  const handleReasonSelect = (reason) => {
-    setSelectedReason(reason);
-    setIsReasonModalOpen(false);
-    setIsFormModalOpen(true);
-  };
-
   // Handle rating change
   const handleRatingChange = (newRating) => {
     setRating(newRating);
@@ -121,9 +128,6 @@ export default function ProductDetail() {
       setNotification("Bạn cần đăng nhập để gửi đánh giá.");
       return;
     }
-
-    console.log("Rating:", rating);
-    console.log("Comment:", comment);
 
     // Gửi đánh giá đến API
     try {
@@ -146,13 +150,26 @@ export default function ProductDetail() {
         }, 3000);
 
         // Fetch reviews and rating summary again after successful submission
+        // Refresh reviews and rating summary after submission
         const reviewResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getReviewsByPlantId?plantId=${plantId}`);
-        const reviewData = await reviewResponse.json();
-        setReviews(reviewData);
+      let reviewData = await reviewResponse.json();
 
-        const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
-        const ratingData = await ratingResponse.json();
-        setRatingSummary(ratingData);
+      // Ensure reviews is an array
+      if (!Array.isArray(reviewData)) reviewData = [];
+
+      // Compare review.userId with userData.userId and assign userName
+      const updatedReviews = reviewData.map((review) => {
+        // If review.userId matches userData.userId, assign userData.userName
+        if (review.userId === userData?.userId) {
+          review.userName = userData.userName; // Assign userData.userName to the review
+        }
+        return review;
+      });
+        setReviews(updatedReviews);
+
+       // const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
+        //const ratingData = await ratingResponse.json();
+        //setRatingSummary(ratingData);
       } else {
         setNotification("Có lỗi xảy ra khi gửi đánh giá của bạn");
         setTimeout(() => {
@@ -352,7 +369,7 @@ export default function ProductDetail() {
                   />
                   <div>
                     <div className="flex items-center space-x-2">
-                      <h4 className="font-semibold">{review.userId}</h4>
+                      <h4 className="font-semibold">{review.userName }</h4>
                       <span className="text-sm text-gray-500">{new Date(review.reviewDate).toLocaleDateString()}</span>
                     </div>
                     <p className="mt-2 text-gray-700">{review.comment}</p>
