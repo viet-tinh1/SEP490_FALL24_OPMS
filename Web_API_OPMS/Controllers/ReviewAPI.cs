@@ -176,6 +176,7 @@ namespace Web_API_OPMS.Controllers
         {
             try
             {
+
                 var reviews = _reviewRepository.GetReviewsByPlantId(plantId);
 
                 if (reviews == null || !reviews.Any())
