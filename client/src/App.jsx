@@ -9,6 +9,7 @@ import Footer from './components/Footer'
 import Product from './pages/Product'
 import Cart from './pages/Cart'
 import ProductDetail from './pages/ProductDetail'
+import Payment from './pages/Payment'
 export default function App() {
   return (
     <BrowserRouter>
@@ -21,6 +22,8 @@ export default function App() {
           <Route path='/sign-up' element={<SignUp/>}/>
           <Route path='/dashboard' element={<Dashboard/>}/>
           <Route path='/product' element={<Product/>}/>
+          <Route path='/payment' element={<Payment/>}/>
+
           <Route path='/cart' element={<Cart/>}/>
           <Route path='/productdetail' element={<ProductDetail/>}/>
 
