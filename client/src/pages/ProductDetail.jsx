@@ -10,7 +10,7 @@ export default function ProductDetail() {
   const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [selectedReason, setSelectedReason] = useState("");
-  const [quantity, setQuantity] = useState(1); // Initial quantity
+  const [quantity, setQuantity] = useState(0); // Initial quantity
   const [productData, setProductData] = useState(null); // New state to store product data
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState(null); // Initial quantity
