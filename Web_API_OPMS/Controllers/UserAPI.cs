@@ -151,18 +151,12 @@ namespace Web_API_OPMS.Controllers
             return NoContent();
         }
         [HttpGet("getUserById")]
-        
-        public ActionResult<User> getUserById()
+
+       
+        public ActionResult<User> getUserById(int userId)
         {
-            // Lấy ID người dùng từ session
-            var userId = HttpContext.Session.GetInt32("UserId");
-
-            if (userId == null)
-            {
-                return Unauthorized(new { message = "User not logged in" });
-            }
-
-            var user = UserRepository.GetUserById(userId.Value);
+            // Không lấy từ session nữa, mà từ tham số truyền vào
+            var user = UserRepository.GetUserById(userId);
 
             if (user == null)
             {
