@@ -64,16 +64,13 @@ namespace Web_API_OPMS.Controllers
         [HttpPost("createShoppingCart")]
         public IActionResult CreateShoppingCartAsync([FromBody] ShoppingCartItemDTO c)
         {
-            //using session userId from login api 
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null)// If the user is not logged in or session expired
-            {
-                return Unauthorized(new { message = "User not logged in" });
-            }
             if (c == null)
             {
                 return BadRequest("Invalid Cart data");
             }
+
+            // Nếu UserId không được nhập hoặc bằng 0, gán giá trị mặc định là 1
+            var userId = c.UserId.HasValue && c.UserId.Value != 0 ? c.UserId.Value : 1;
 
             try
             {
@@ -90,11 +87,7 @@ namespace Web_API_OPMS.Controllers
                     return BadRequest("Not enough stock available.");
                 }
 
-                //// Deduct the quantity from the plant's stock
-                //plant.Stock -= c.Quantity;
-                //PlantRepository.updatePlant(plant); // Update the plant stock in the database
-
-
+                // Create the cart item
                 ShoppingCartItem cart = new ShoppingCartItem()
                 {
                     ShoppingCartItemId = c.ShoppingCartItemId,
@@ -103,12 +96,14 @@ namespace Web_API_OPMS.Controllers
                 };
                 ShoppingCartItemRepository.CreateCart(cart);
 
+                // Create the shopping cart với UserId đã kiểm tra
                 ShoppingCart shoppingCart = new ShoppingCart()
                 {
                     ShoppingCartItemId = cart.ShoppingCartItemId,
-                    UserId = userId // Gán giá trị UserId from session
+                    UserId = userId // Gán giá trị UserId đã kiểm tra
                 };
                 ShoppingCartRepository.CreateCartUser(shoppingCart);
+
                 return CreatedAtAction(nameof(GetShoppingCartById), new { id = cart.ShoppingCartItemId }, cart);
             }
             catch (Exception ex)
