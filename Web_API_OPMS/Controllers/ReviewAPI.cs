@@ -174,6 +174,7 @@ namespace Web_API_OPMS.Controllers
         [HttpGet("getProductRatingSummary")]
         public ActionResult GetProductRatingSummary(int plantId)
         {
+
             try
             {
                 var reviews = _reviewRepository.GetReviewsByPlantId(plantId);
