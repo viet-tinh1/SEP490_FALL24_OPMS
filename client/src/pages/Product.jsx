@@ -1,5 +1,4 @@
 import { Sidebar } from "flowbite-react";
-import { TbShoppingBagSearch } from "react-icons/tb";
 import { Link } from "react-router-dom";
 import { PiShoppingCartLight } from "react-icons/pi";
 import ReactPaginate from "react-paginate"; // Import the pagination library
