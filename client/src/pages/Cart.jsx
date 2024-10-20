@@ -164,6 +164,8 @@ export default function Cart() {
     return (totalWithDiscount + tax - storePickup).toFixed(3);
   };
 
+
+
   if (loading) {
     return <p>Loading...</p>;
   }
@@ -328,7 +330,6 @@ export default function Cart() {
                         >
                           {item.plantDetails?.plantName || item.plantId}
                         </a>
-
                         <div className="flex items-center gap-4">
                           <button
                             type="button"
@@ -364,7 +365,6 @@ export default function Cart() {
               <p className="text-xl font-semibold text-gray-900 dark:text-white">
                 Tổng kết đặt hàng
               </p>
-
               <div className="space-y-4">
                 <div className="space-y-2">
                   <dl className="flex items-center justify-between gap-4">
@@ -375,13 +375,14 @@ export default function Cart() {
                       ${calculateSelectedTotalOriginalPriceWithoutDiscount().toFixed(3)}
                     </dd>
                   </dl>
-
                   <dl className="flex items-center justify-between gap-4">
                     <dt className="text-base font-normal text-gray-500 dark:text-gray-400">
                       Giảm Giá
                     </dt>
                     <dd className="text-base font-medium text-green-600">
-                      -${((calculateSelectedTotalOriginalPriceWithoutDiscount() - calculateSelectedTotalOriginalPrice()).toFixed(3) || savings.toFixed(2))}
+
+                      -${((calculateSelectedTotalOriginalPriceWithoutDiscount() - calculateSelectedTotalOriginalPrice()).toFixed(3) || savings.toFixed(3))}
+
                     </dd>
                   </dl>
                   {/*
@@ -446,7 +447,9 @@ export default function Cart() {
                 className="flex w-full items-center justify-center rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-300 dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:focus:ring-emerald-800"
               >
                 Tiến hành thanh toán
+
               </Link>
+
 
               <div className="flex items-center justify-center gap-2">
                 <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
