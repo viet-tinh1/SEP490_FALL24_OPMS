@@ -1,4 +1,5 @@
-﻿using BusinessObject.Models;
+﻿
+using BusinessObject.Models;
 using DataAccess.DTO;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.Interface;
@@ -155,6 +156,8 @@ namespace Web_API_OPMS.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+        // Lấy Review theo PlantId
         [HttpGet("getReviewsByPlantId")]
         public ActionResult<IEnumerable<Review>> GetReviewsByPlantId(int plantId)
         {
@@ -165,6 +168,31 @@ namespace Web_API_OPMS.Controllers
             }
 
             return Ok(reviews);
+        }
+
+        // Lấy tổng số lượng review và tổng số sao của sản phẩm
+        [HttpGet("getProductRatingSummary")]
+        public ActionResult GetProductRatingSummary(int plantId)
+        {
+            try
+            {
+                var reviews = _reviewRepository.GetReviewsByPlantId(plantId);
+
+                if (reviews == null || !reviews.Any())
+                {
+                    return NotFound(new { message = "No reviews found for this product." });
+                }
+
+                // Tính tổng số lượng review và tổng số sao
+                var totalReviews = reviews.Count();
+                var totalRating = reviews.Sum(r => r.Rating);
+
+                return Ok(new { totalReviews, totalRating });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
     }
 }
