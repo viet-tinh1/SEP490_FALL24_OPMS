@@ -6,7 +6,7 @@ export default function ProductDetail() {
   const [isReasonModalOpen, setIsReasonModalOpen] =  useState(false);
   const [isFormModalOpen, setIsFormModalOpen] =  useState(false);
   const [selectedReason, setSelectedReason] =  useState("");
-  const [quantity, setQuantity] = useState(1); // Initial quantity
+  const [quantity, setQuantity] = useState(0); // Initial quantity
 
   // Function to handle increment
   const incrementQuantity  = () => {
@@ -15,13 +15,13 @@ export default function ProductDetail() {
 
   // Function to handle decrement
   const decrementQuantity  = () => {
-    setQuantity((prevQuantity) => (prevQuantity > 1 ? prevQuantity - 1 : 1));
+    setQuantity((prevQuantity) => (prevQuantity > 0 ? prevQuantity - 1 : 0));
   };
 
   // Function to handle manual input
   const handleQuantityChange  = (e) => {
     const value = parseInt(e.target.value, 10);
-    if (!isNaN(value) && value > 0) {
+    if (!isNaN(value) && value >= 0) {
       setQuantity(value);
     } else if (e.target.value === "") {
       setQuantity(""); // Allow empty value while typing
@@ -31,7 +31,7 @@ export default function ProductDetail() {
   // Reset empty input to 1 on blur
   const handleBlur  = () => {
     if (!quantity) {
-      setQuantity(1);
+      setQuantity(0);
     }
   };
 
