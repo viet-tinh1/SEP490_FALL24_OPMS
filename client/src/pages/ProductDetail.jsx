@@ -6,11 +6,12 @@ import { useParams } from "react-router-dom";
 import Rating from 'react-rating-stars-component';
 
 export default function ProductDetail() {
-  const { plantId } = useParams(); // Get the plantId from the URL
+
+  const { plantId } = useParams();// Get the plantId from the URL
   const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [selectedReason, setSelectedReason] = useState("");
-  const [quantity, setQuantity] = useState(1); // Initial quantity
+  const [quantity, setQuantity] = useState(0); // Initial quantity
   const [productData, setProductData] = useState(null); // New state to store product data
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState(null); // Error state
@@ -69,6 +70,7 @@ export default function ProductDetail() {
     };
 
     fetchProductData(); // Call the fetch function on mount
+
   }, [plantId]);
   // Hàm để lấy tên người dùng dựa trên userId
   const fetchUserNameForReview = async (userId) => {
@@ -93,14 +95,15 @@ export default function ProductDetail() {
   };
 
   // Function to handle decrement
-  const decrementQuantity = () => {
-    setQuantity((prevQuantity) => (prevQuantity > 1 ? prevQuantity - 1 : 1));
+
+  const decrementQuantity  = () => {
+    setQuantity((prevQuantity) => (prevQuantity > 0 ? prevQuantity - 1 : 0));
   };
 
   // Function to handle manual input
   const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value, 10);
-    if (!isNaN(value) && value > 0) {
+    if (!isNaN(value) && value >= 0) {
       setQuantity(value);
     } else if (e.target.value === "") {
       setQuantity(""); // Allow empty value while typing
@@ -110,7 +113,7 @@ export default function ProductDetail() {
   // Reset empty input to 1 on blur
   const handleBlur = () => {
     if (!quantity) {
-      setQuantity(1);
+      setQuantity(0);
     }
   };
 
