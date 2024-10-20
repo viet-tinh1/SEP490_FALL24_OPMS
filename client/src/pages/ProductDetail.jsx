@@ -3,30 +3,67 @@ import { TiShoppingCart } from "react-icons/ti";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import { AiFillLike } from "react-icons/ai";
 import { useParams } from "react-router-dom";
+import Rating from 'react-rating-stars-component';
 
 export default function ProductDetail() {
-  const { plantId } = useParams();// Get the plantId from the URL
+  const { plantId } = useParams(); // Get the plantId from the URL
   const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [selectedReason, setSelectedReason] = useState("");
   const [quantity, setQuantity] = useState(1); // Initial quantity
   const [productData, setProductData] = useState(null); // New state to store product data
   const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(null); // Initial quantity
+  const [error, setError] = useState(null); // Error state
+  const [reviews, setReviews] = useState([]);
+  const [ratingSummary, setRatingSummary] = useState({ totalReviews: 0, totalRating: 0 });
+  const [rating, setRating] = useState(0); // State to store the user's rating
+  const [comment, setComment] = useState(""); // State to store the user's comment
+  const [notification, setNotification] = useState(""); // State to store the notification message
 
-   // Fetch product data when the component mounts
-   useEffect(() => {
+  // Hàm để lấy tên người dùng dựa trên userId
+  const fetchUserName = async (userId) => {
+    try {
+      const response = await fetch(`https://localhost:7098/api/UserAPI/getUserById?id=${userId}`);
+      if (!response.ok) {
+        throw new Error("Không thể lấy thông tin người dùng");
+      }
+      const data = await response.json();
+      return data.username; // Giả sử API trả về username
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      return "Unknown User"; // Default nếu có lỗi
+    }
+  };
+
+  // Fetch product data when the component mounts
+  useEffect(() => {
     const fetchProductData = async () => {
       try {
         const response = await fetch(
           `https://localhost:7098/api/PlantAPI/getPlantById?id=${plantId}` // Using plantId dynamically
         );
-        console.log(plantId)
         if (!response.ok) {
           throw new Error("Không thể lấy dữ liệu sản phẩm");
         }
         const data = await response.json();
         setProductData(data);
+
+        // Fetch reviews and rating summary
+        const reviewResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getReviewsByPlantId?plantId=${plantId}`);
+        let reviewData = await reviewResponse.json();
+
+        // Fetch tên người dùng cho từng review
+        const updatedReviews = await Promise.all(
+          reviewData.map(async (review) => {
+            const userName = await fetchUserName(review.userId);
+            return { ...review, userName }; // Gắn userName vào review
+          })
+        );
+        setReviews(updatedReviews);
+
+        const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
+        const ratingData = await ratingResponse.json();
+        setRatingSummary(ratingData);
       } catch (error) {
         setError(error.message);
       } finally {
@@ -36,18 +73,19 @@ export default function ProductDetail() {
 
     fetchProductData(); // Fetch product data on component mount
   }, [plantId]);
+
   // Function to handle increment
-  const incrementQuantity  = () => {
+  const incrementQuantity = () => {
     setQuantity((prevQuantity) => prevQuantity + 1);
   };
 
   // Function to handle decrement
-  const decrementQuantity  = () => {
+  const decrementQuantity = () => {
     setQuantity((prevQuantity) => (prevQuantity > 1 ? prevQuantity - 1 : 1));
   };
 
   // Function to handle manual input
-  const handleQuantityChange  = (e) => {
+  const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value, 10);
     if (!isNaN(value) && value > 0) {
       setQuantity(value);
@@ -57,62 +95,101 @@ export default function ProductDetail() {
   };
 
   // Reset empty input to 1 on blur
-  const handleBlur  = () => {
+  const handleBlur = () => {
     if (!quantity) {
       setQuantity(1);
     }
   };
 
-  const handleReasonSelect   = (reason) => {
+  const handleReasonSelect = (reason) => {
     setSelectedReason(reason);
     setIsReasonModalOpen(false);
     setIsFormModalOpen(true);
   };
+
+  // Handle rating change
+  const handleRatingChange = (newRating) => {
+    setRating(newRating);
+  };
+
+  // Handle review submit
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+
+    const userId = localStorage.getItem("userId"); // Giả sử bạn lưu userId trong localStorage
+    if (!userId) {
+      setNotification("Bạn cần đăng nhập để gửi đánh giá.");
+      return;
+    }
+
+    console.log("Rating:", rating);
+    console.log("Comment:", comment);
+
+    // Gửi đánh giá đến API
+    try {
+      const response = await fetch(`https://localhost:7098/api/ReviewAPI/createReview`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          plantId: plantId,
+          rating: rating,
+          comment: comment,
+          userId: userId,
+        }),
+      });
+      if (response.ok) {
+        setNotification("Đánh giá của bạn đã được gửi");
+        setTimeout(() => {
+          setNotification(""); // Ẩn thông báo sau 3 giây
+        }, 3000);
+
+        // Fetch reviews and rating summary again after successful submission
+        const reviewResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getReviewsByPlantId?plantId=${plantId}`);
+        const reviewData = await reviewResponse.json();
+        setReviews(reviewData);
+
+        const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
+        const ratingData = await ratingResponse.json();
+        setRatingSummary(ratingData);
+      } else {
+        setNotification("Có lỗi xảy ra khi gửi đánh giá của bạn");
+        setTimeout(() => {
+          setNotification("");
+        }, 3000);
+      }
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      setNotification("Có lỗi xảy ra khi gửi đánh giá của bạn");
+      setTimeout(() => {
+        setNotification("");
+      }, 3000);
+    }
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
-  
+
   if (error) {
     return <div>Error: {error}</div>;
   }
-  const { plantName, price, description, imageUrl, rating } = productData || {};
-  const comments = [
-    {
-      id: 1,
-      name: "Lucy Carlson",
-      date: "Jul 12",
-      avatar: "https://via.placeholder.com/40", // Replace with actual avatar image URL
-      comment:
-        "This is a sample comment. Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    },
-    {
-      id: 2,
-      name: "Lora Leigh",
-      date: "Jul 10",
-      avatar: "https://via.placeholder.com/40", // Replace with actual avatar image URL
-      comment:
-        "Another sample comment. Curabitur pretium tincidunt lacus. Nulla gravida orci a odio.",
-    },
-    {
-      id: 3,
-      name: "Natalie Gordon",
-      date: "Jul 8",
-      avatar: "https://via.placeholder.com/40", // Replace with actual avatar image URL
-      comment:
-        "Yet another comment example. Phasellus scelerisque felis nec libero.",
-    },
-  ];
+
+  const { plantName, price, description, imageUrl, rating: productRating } = productData || {};
+
+  // Tính số sao trung bình
+  const averageRating = (ratingSummary.totalRating / ratingSummary.totalReviews).toFixed(1);
 
   return (
-    <body className="overflow-hidden bg-gray-100 ">
-      <section className="py-10 bg-white shadow-lg shadow-gray-200 rounded-md md:py-10 dark:bg-gray-900 antialiased  p-10 m-10 ">
-        {/* Nền section trắng, bo góc và có bóng đổ */}
+    <body className="overflow-hidden bg-gray-100">
+      <section className="py-10 bg-white shadow-lg shadow-gray-200 rounded-md md:py-10 dark:bg-gray-900 antialiased p-10 m-10">
         <div className="max-w-screen-xl px-4 mx-auto 2xl:px-0">
           <div className="lg:grid lg:grid-cols-2 lg:gap-8 xl:gap-16">
             <div className="shrink-0 max-w-md lg:max-w-lg mx-auto">
               <img
                 className="w-full dark:hidden"
-                src={imageUrl || "https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front.svg"} // Display dynamic image
+                src={imageUrl || "https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front.svg"}
                 alt={plantName || "Product Image"}
               />
               <img
@@ -129,7 +206,7 @@ export default function ProductDetail() {
 
               <div className="mt-4 sm:items-center sm:gap-4 sm:flex">
                 <p className="text-2xl font-extrabold text-gray-900 sm:text-3xl dark:text-white">
-                  ${(price || 0) .toFixed(3)} {/* Dynamic price multiplied by quantity */}
+                  ${(price || 0).toFixed(3)} {/* Dynamic price */}
                 </p>
 
                 <div className="flex items-center gap-2 mt-2 sm:mt-0">
@@ -147,13 +224,13 @@ export default function ProductDetail() {
                     </svg>
                   </div>
                   <p className="text-sm font-medium leading-none text-gray-500 dark:text-gray-400">
-                    ({rating || "5.0"}) {/* Dynamic rating */}
+                    ({averageRating || "5.0"}) {/* Dynamic rating */}
                   </p>
                   <a
                     href="#"
                     className="text-sm font-medium leading-none text-gray-900 underline hover:no-underline dark:text-white"
                   >
-                    345 Reviews
+                    {ratingSummary.totalReviews} Reviews {/* Show total reviews */}
                   </a>
                 </div>
 
@@ -166,122 +243,13 @@ export default function ProductDetail() {
                     Report
                   </button>
                 </div>
-
-                {/* Reason Modal */}
-                {isReasonModalOpen && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center w-full h-full bg-gray-900 bg-opacity-50">
-                    <div
-                      className="relative p-4 bg-white rounded-lg shadow dark:bg-gray-700 max-w-md w-full"
-                      onClick={(e) => e.stopPropagation()} // To prevent closing modal on content click
-                    >
-                      <div className="flex items-center justify-between p-4 border-b rounded-t dark:border-gray-600">
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                          Select reason for complaint
-                        </h3>
-                        <button
-                          className="text-2xl"
-                          onClick={() => setIsReasonModalOpen(false)}
-                        >
-                          <IoCloseCircleOutline />
-                        </button>
-                      </div>
-                      <div className="p-4 space-y-4">
-                        <ul className="space-y-2">
-                          <li>
-                            <button
-                              className="block w-full text-left text-gray-900 hover:underline dark:text-white"
-                              onClick={() => handleReasonSelect("Lý do A")}
-                            >
-                              reason A
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              className="block w-full text-left text-gray-900 hover:underline dark:text-white"
-                              onClick={() => handleReasonSelect("Lý do B")}
-                            >
-                              reason B
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              className="block w-full text-left text-gray-900 hover:underline dark:text-white"
-                              onClick={() => handleReasonSelect("Lý do C")}
-                            >
-                              reason C
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Form Modal */}
-                {isFormModalOpen && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center w-full h-full bg-gray-900 bg-opacity-50">
-                    <div
-                      className="relative p-4 bg-white rounded-lg shadow dark:bg-gray-700 max-w-md w-full"
-                      onClick={(e) => e.stopPropagation()} // To prevent closing modal on content click
-                    >
-                      <div className="flex items-center justify-between p-4 border-b rounded-t dark:border-gray-600">
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                          Reason
-                        </h3>
-                        <button
-                          className="text-2xl"
-                          onClick={() => setIsFormModalOpen(false)}
-                        >
-                          <IoCloseCircleOutline />
-                        </button>
-                      </div>
-                      <div className="p-4 space-y-4">
-                        <p className="text-sm text-gray-700 dark:text-white">
-                          Reason you selected: {selectedReason}
-                        </p>
-                        <form>
-                          <div className="mb-4">
-                            <label
-                              htmlFor="complaintDetails"
-                              className="block text-sm font-medium text-gray-700 dark:text-gray-200"
-                            >
-                              Details of the reason for the complaint
-                            </label>
-                            <textarea
-                              id="complaintDetails"
-                              name="complaintDetails"
-                              rows="4"
-                              className="block w-full p-2 mt-1 border rounded-md focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                              required
-                            ></textarea>
-                          </div>
-                          <div className="flex items-center justify-end">
-                            <button
-                              type="submit"
-                              className="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700"
-                            >
-                              Summit
-                            </button>
-                            <button
-                              className="ml-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:bg-gray-500 dark:hover:bg-gray-600"
-                              onClick={() => setIsFormModalOpen(false)}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
 
               <div className="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
                 <a
                   href="#"
-                  title=""
+                  title="Add to cart"
                   className="flex items-center justify-center py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                  role="button"
                 >
                   <TiShoppingCart className="text-2xl" />
                   Add to cart
@@ -289,19 +257,15 @@ export default function ProductDetail() {
 
                 <a
                   href="#"
-                  title=""
+                  title="Buy now"
                   className="flex items-center justify-center py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                  role="button"
                 >
                   <TiShoppingCart className="text-2xl" />
                   Buy Now
                 </a>
 
                 {/* Quantity */}
-
-                <label className="text-gray-900 text-sm dark:text-white">
-                  Quantity:
-                </label>
+                <label className="text-gray-900 text-sm dark:text-white ml-4">Quantity:</label>
                 <div className="flex items-center mt-2">
                   <button
                     type="button"
@@ -358,74 +322,81 @@ export default function ProductDetail() {
 
               <hr className="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
 
-              <p className="mb-6 text-gray-500 dark:text-gray-400">
-                Studio quality three mic array for crystal clear calls and voice
-                recordings. Six-speaker sound system for a remarkably robust and
-                high-quality audio experience. Up to 256GB of ultrafast SSD
-                storage.
-              </p>
-
-              <p className="text-gray-500 dark:text-gray-400">
-                Two Thunderbolt USB 4 ports and up to two USB 3 ports. Ultrafast
-                Wi-Fi 6 and Bluetooth 5.0 wireless. Color matched Magic Mouse
-                with Magic Keyboard or Magic Keyboard with Touch ID.
-              </p>
+              <p className="text-gray-500 dark:text-gray-400">{description}</p>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="py-10 bg-white shadow-lg shadow-gray-200 rounded-md md:py-10 dark:bg-gray-900 antialiased  p-10 m-10">
+      {/* Hiển thị thông báo */}
+      {notification && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="p-4 bg-blue-500 text-white rounded-lg shadow-lg">
+            {notification}
+          </div>
+        </div>
+      )}
+
+      <div className="py-10 bg-white shadow-lg shadow-gray-200 rounded-md md:py-10 dark:bg-gray-900 antialiased p-10 m-10">
         {/* Comments List */}
         <div>
-          <h3 className="text-2xl font-semibold mb-6">3 Comments</h3>
+          <h3 className="text-2xl font-semibold mb-6">{ratingSummary.totalReviews} Comments</h3>
           <div className="space-y-8">
-            {comments.map((comment) => (
-              <div key={comment.id} className="flex space-x-4">
-                <img
-                  src={comment.avatar}
-                  alt={`${comment.name} avatar`}
-                  className="w-10 h-10 rounded-full"
-                />
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <h4 className="font-semibold">{comment.name}</h4>
-                    <span className="text-sm text-gray-500">
-                      {comment.date}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-gray-700">{comment.comment}</p>
+            {reviews.length > 0 ? (
+              reviews.map((review) => (
+                <div key={review.reviewId} className="flex space-x-4">
+                  <img
+                    src={review.userAvatar || "https://via.placeholder.com/40"}
+                    alt={`${review.userName} avatar`}
+                    className="w-10 h-10 rounded-full"
+                  />
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <h4 className="font-semibold">{review.userId}</h4>
+                      <span className="text-sm text-gray-500">{new Date(review.reviewDate).toLocaleDateString()}</span>
+                    </div>
+                    <p className="mt-2 text-gray-700">{review.comment}</p>
 
-                  <div className="flex items-center space-x-4 mt-2">
-                    {/* Like button */}
-                    <button className="flex items-center text-sm text-blue-500 hover:underline">
-                      <AiFillLike className="mr-1" /> Like
-                    </button>
-                    {/* Reply button */}
-                    <button className="text-sm text-blue-500 hover:underline">
-                      Reply
-                    </button>
+                    <div className="flex items-center space-x-4 mt-2">
+                      {/* Like button */}
+                      <button className="flex items-center text-sm text-blue-500 hover:underline">
+                        <AiFillLike className="mr-1" /> Like
+                      </button>
+                      {/* Reply button */}
+                      <button className="text-sm text-blue-500 hover:underline">Reply</button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-gray-500 dark:text-gray-400">Chưa có review nào về sản phẩm này</p>
+            )}
           </div>
         </div>
 
-        {/* Comment Form */}
+        {/* Review Form */}
         <div className="mt-10">
-          <h3 className="text-2xl font-semibold mb-4">Comment</h3>
-          <form className="space-y-4">
+          <h3 className="text-2xl font-semibold mb-4">Đánh giá sản phẩm</h3>
+          <form onSubmit={handleReviewSubmit} className="space-y-4">
+            {/* Star Rating Component */}
+            <Rating
+              count={5}
+              onChange={handleRatingChange}
+              size={24}
+              activeColor="#ffd700"
+            />
             <div>
               <textarea
-                placeholder="Write your comment here"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Viết bình luận của bạn"
                 className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:border-blue-500"
                 rows="5"
               ></textarea>
             </div>
 
-            <button className="block text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800">
-              Send
+            <button type="submit" className="block text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800">
+              Gửi đánh giá
             </button>
           </form>
         </div>
