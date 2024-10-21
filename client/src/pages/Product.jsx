@@ -18,7 +18,8 @@ export default function Product() {
   const [maxPrice, setMaxPrice] = useState('');
   const [priceError, setPriceError] = useState(null);
   const [notification, setNotification] = useState(null);
-
+  
+  const userIds = localStorage.getItem("userId");
   useEffect(() => {
     const fetchProductsAndCategories = async () => {
       try {
@@ -156,6 +157,32 @@ export default function Product() {
   const toggleShowAll = () => {
     setShowAll(!showAll);
   };
+  const addToCart = async (productId, quantity) => {
+    try {
+        const response = await fetch('https://localhost:7098/api/ShoppingCartAPI/createShoppingCart', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          plantId: productId,
+          quantity: quantity,
+          userId : userIds,
+        }),
+      });
+
+      if (response.ok) {
+        alert("Sản phẩm đã được thêm vào giỏ hàng!");
+      } else {
+        const errorResponse = await response.json();
+        alert(`Không thể thêm sản phẩm vào giỏ hàng. ${errorResponse.message}`);
+      }
+    } catch (err) {
+      console.error("Lỗi thêm sản phẩm vào giỏ hàng:", err);
+      alert("Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.");
+    }
+  };
+
 
   if (loading) {
     return <div>Loading...</div>;
@@ -222,7 +249,7 @@ export default function Product() {
                     </label>
                     <input
                       type="number"
-                      className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                      className="mt-1 bl56rgb ư5ư5ock w-full p-2 border border-gray-300 rounded-md"
                       value={minPrice}
                       onChange={(e) => handlePriceChange(e, "min")} 
                     />
@@ -320,12 +347,12 @@ export default function Product() {
                       {product.discount ? `${product.discount}%` : "0%"}
                     </div>
 
-                    <Link
-                      to=""
-                      className="rounded-lg bg-cyan-700 px-4 py-2 text-center text-sm font-medium text-white hover:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"
+                    <button
+                    onClick={() => addToCart(product.plantId, 1)} // Chỉ thêm 1 sản phẩm
+                    className="rounded-lg bg-cyan-700 px-4 py-2 text-center text-sm font-medium text-white hover:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"
                     >
                       <PiShoppingCartLight />
-                    </Link>
+                    </button>
                   </div>
                 </div>
               ))
