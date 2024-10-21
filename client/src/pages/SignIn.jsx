@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation  } from "react-router-dom";
 import { AiFillGoogleCircle } from "react-icons/ai";
 import Imgtree from "../assets/img/tree.png";
 
@@ -9,12 +9,45 @@ export default function SignIn() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  
+  const [userId, setUserId] = useState(null);
+  const [role, setRole] = useState(null);
+  const [token, setToken] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Check API Connection when component mounts
   
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const userId = params.get("userId");
+    const role = params.get("role");
+    const token = params.get("token");
 
+    // Chỉ lưu vào localStorage nếu các giá trị tồn tại
+    if (userId && role && token) {
+      setUserId(userId);
+      setRole(role);
+      setToken(token);
+
+      localStorage.setItem("userId", userId);
+      localStorage.setItem("role", role);
+      localStorage.setItem("token", token);
+    }
+  }, [location]);
+  // Check API Connection when component mounts
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    try {
+      // Thực hiện gọi API Google login và điều hướng người dùng tới trang Google để đăng nhập
+      window.location.href = "https://localhost:7098/api/Auth/google-login";
+      // Sau đó, trình duyệt sẽ điều hướng tới trang đăng nhập Google, 
+      // bạn không cần gọi hàm `checkGoogleLogin()` ngay tại đây nữa.
+    } catch (error) {
+      console.error("Error initiating Google login:", error);
+      setError("Google login initiation failed. Please try again.");
+      setLoading(false);
+    }
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -111,7 +144,11 @@ export default function SignIn() {
               {loading ? <Spinner size="sm" /> : "Sign In"}
             </Button>
             {error && <Alert color="failure">{error}</Alert>}
-            <Button type="button" gradientDuoTone="pinkToOrange" outline>
+            <Button 
+            type="button" 
+            gradientDuoTone="pinkToOrange" 
+            outline
+            onClick={handleGoogleLogin}>
               <AiFillGoogleCircle className="w-6 h-6 mr-2" />
               Đăng nhập với google
             </Button>
