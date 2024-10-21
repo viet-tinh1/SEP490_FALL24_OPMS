@@ -22,8 +22,10 @@ export default function ProductDetail() {
   const [notification, setNotification] = useState("");
   const [userData, setUserData] = useState(null); // State to store the notification message
 
+  const userIds = localStorage.getItem("userId");
   // Fetch product data when the component mounts
   useEffect(() => {
+
     const fetchProductData = async () => {
       try {
         // Fetch product details
@@ -187,6 +189,32 @@ export default function ProductDetail() {
       }, 3000);
     }
   };
+  const addToCart = async (productId, quantity) => {
+    try {
+      const response = await fetch('https://localhost:7098/api/ShoppingCartAPI/createShoppingCart', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          plantId: productId,
+          quantity: quantity,
+          userId : userIds,
+
+        }),
+      });
+
+      if (response.ok) {
+        alert("Sản phẩm đã được thêm vào giỏ hàng!");
+      } else {
+        const errorResponse = await response.json();
+        alert(`Không thể thêm sản phẩm vào giỏ hàng. ${errorResponse.message}`);
+      }
+    } catch (err) {
+      console.error("Lỗi thêm sản phẩm vào giỏ hàng:", err);
+      alert("Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.");
+    }
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -266,14 +294,14 @@ export default function ProductDetail() {
               </div>
 
               <div className="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
-                <a
-                  href="#"
-                  title="Add to cart"
+
+                <button 
+                  onClick={() => addToCart(plantId, quantity)} // Gọi hàm thêm vào giỏ hàng khi nhấn nút
                   className="flex items-center justify-center py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                 >
                   <TiShoppingCart className="text-2xl" />
                   Add to cart
-                </a>
+                </button>
 
                 <a
                   href="#"
