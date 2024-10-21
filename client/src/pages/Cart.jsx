@@ -19,14 +19,14 @@ export default function Cart() {
 
   useEffect(() => {
     const fetchCartData = async () => {
-      const userId = localStorage.getItem("userId");
+    const userId = localStorage.getItem("userId");
 
       if (!userId || userId === "undefined") {
-        console.error("User is not logged in or userId is invalid.");
-        setError("Người dùng chưa đăng nhập hoặc không hợp lệ.");
-        setLoading(false);
-        return;
-      }
+      console.error("User is not logged in or userId is invalid.");
+      setError("Người dùng chưa đăng nhập hoặc không hợp lệ.");
+      setLoading(false);
+      return;
+   }
 
       try {
         const response = await fetch(
