@@ -3,21 +3,38 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function Cart() {
-  const [quantity, setQuantity] = useState(0);
+  const [quantity, setQuantity] = useState(0); // Initial quantity
 
-  const increment = () => {
+  const incrementQuantity = () => {
     setQuantity((prevQuantity) => prevQuantity + 1);
   };
 
-  const decrement = () => {
+  const decrementQuantity = () => {
     setQuantity((prevQuantity) => (prevQuantity > 0 ? prevQuantity - 1 : 0));
+  };
+
+  // Function to handle manual input
+  const handleQuantityChange = (e) => {
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value) && value >= 0) {
+      setQuantity(value);
+    } else if (e.target.value === "") {
+      setQuantity(""); // Allow empty value while typing
+    }
+  };
+
+  // Reset empty input to 1 on blur
+  const handleBlur = () => {
+    if (!quantity) {
+      setQuantity(0);
+    }
   };
   return (
     <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16">
       <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
-          Giỏ hàng
-        </h2>
+      <label htmlFor="counter-input" className="sr-only">
+                    Chọn số lượng
+                  </label>
 
         <div className="mt-6 sm:mt-8 md:gap-6 lg:flex lg:items-start xl:gap-8">
           <div className="mx-auto w-full flex-none lg:max-w-2xl xl:max-w-4xl">
@@ -37,16 +54,16 @@ export default function Cart() {
                       alt="imac image"
                     />
                   </a>
-
+                  {/* Quantity */}
                   <label htmlFor="counter-input" className="sr-only">
                     Chọn số lượng
                   </label>
+
                   <div className="flex items-center justify-between md:order-3 md:justify-end">
                     <div className="flex items-center">
                       <button
                         type="button"
-                        id="decrement-button"
-                        onClick={decrement}
+                        onClick={decrementQuantity}
                         className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700"
                       >
                         <svg
@@ -68,14 +85,14 @@ export default function Cart() {
                       <input
                         type="text"
                         id="counter-input"
-                        className="w-10 shrink-0 border-0 bg-transparent text-center text-sm font-medium text-gray-900 focus:outline-none focus:ring-0 dark:text-white"
+                        className="w-16 min-w-[50px] shrink-0 border-0 bg-transparent text-center text-sm font-medium text-gray-900 focus:outline-none focus:ring-0 dark:text-white"
                         value={quantity}
-                        readOnly
+                        onChange={handleQuantityChange}
+                        onBlur={handleBlur}
                       />
                       <button
                         type="button"
-                        id="increment-button"
-                        onClick={increment}
+                        onClick={incrementQuantity}
                         className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700"
                       >
                         <svg
@@ -185,7 +202,6 @@ export default function Cart() {
                     VND 8,191.00
                   </dd>
                 </dl>
-              
               </div>
 
               <Link
