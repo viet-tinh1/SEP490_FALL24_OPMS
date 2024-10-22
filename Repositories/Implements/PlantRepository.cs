@@ -1,5 +1,6 @@
 ﻿using BusinessObject.Models;
 using DataAccess.DAO;
+using DataAccess.DTO;
 using Repositories.Interface;
 using System;
 using System.Collections.Generic;
@@ -57,6 +58,10 @@ namespace Repositories.Implements
         {
             // Gọi phương thức searchPlants từ PlantDAO với các tham số có thể là null
             return plantDAO.searchPlants(name, categoryId, minPrice, maxPrice);
+        }
+        public async Task <List<PlantDTOS>> GetMostPurchasedPlantsFromShoppingCartAsync(int limit)
+        {
+            return  await plantDAO.GetMostPurchasedPlantsFromShoppingCartAsync(limit);
         }
 
     }

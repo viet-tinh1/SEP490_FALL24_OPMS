@@ -1,4 +1,6 @@
 ﻿using BusinessObject.Models;
+using DataAccess.DTO;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -76,9 +78,28 @@ namespace DataAccess.DAO
         {
             return _context.Plants.FirstOrDefault(x => x.PlantId == id); // Trả về Plant có ID tương ứng.
         }
-
+        public async Task<List<PlantDTOS>> GetMostPurchasedPlantsFromShoppingCartAsync(int limit)
+        {
+            return await _context.ShoppingCartItems
+                .GroupBy(sci => sci.PlantId) // Nhóm theo PlantId
+                .Select(g => new
+                {
+                    PlantId = g.Key,
+                    TotalQuantity = g.Sum(sci => sci.Quantity) // Tính tổng số lượng đã mua cho mỗi PlantId
+                })
+                .OrderByDescending(g => g.TotalQuantity) // Sắp xếp theo tổng số lượng mua (giảm dần)
+                .Take(limit) // Giới hạn số lượng sản phẩm trả về
+                .Join(_context.Plants, g => g.PlantId, p => p.PlantId, (g, p) => new PlantDTOS
+                {
+                    PlantId = p.PlantId,
+                    PlantName = p.PlantName,
+                    Price = p.Price,
+                    ImageUrl = p.ImageUrl,
+                    TotalPurchased = g.TotalQuantity // Gán tổng số lượng đã mua cho mỗi Plant
+                })
+                .ToListAsync(); // Trả về danh sách bất đồng bộ
+        }
         // Phương thức tìm kiếm Plant theo tên, category, và giá.
-
         public List<Plant> searchPlants(string name = null, List<int> categoryId = null, decimal? minPrice = null, decimal? maxPrice = null)
 
         {

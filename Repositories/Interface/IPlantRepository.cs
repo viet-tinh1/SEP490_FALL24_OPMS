@@ -1,4 +1,5 @@
 ﻿using BusinessObject.Models;
+using DataAccess.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +24,7 @@ namespace Repositories.Interface
         Plant getPlantById(int id);
         // Lấy list  Plant dựa trên name , category, price    
         List<Plant> searchPlants(string name = null, List<int> categoryId = null, decimal? minPrice = null, decimal? maxPrice = null);
+        Task<List<PlantDTOS>> GetMostPurchasedPlantsFromShoppingCartAsync(int limit);
 
     }
 }

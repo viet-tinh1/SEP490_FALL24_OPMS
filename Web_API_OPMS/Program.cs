@@ -1,4 +1,6 @@
 ﻿using BusinessObject.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -25,7 +27,10 @@ namespace Web_API_OPMS
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
             })
+             .AddCookie()
             .AddJwtBearer(options =>
             {
                 options.RequireHttpsMetadata = false;
@@ -37,6 +42,13 @@ namespace Web_API_OPMS
                     ValidateIssuer = false,  // Set to 'true' and configure issuer in a production app
                     ValidateAudience = false // Set to 'true' and configure audience in a production app
                 };
+            })
+            // Add Google Authentication
+            .AddGoogle(options =>
+            {
+                options.ClientId = builder.Configuration["Google:ClientId"];
+                options.ClientSecret = builder.Configuration["Google:ClientSecret"];
+                options.SaveTokens = true;
             });
 
             // CORS Policy to allow all origins
@@ -44,9 +56,10 @@ namespace Web_API_OPMS
             {
                 options.AddPolicy("AllowAllOrigins", builder =>
                 {
-                    builder.AllowAnyOrigin()
-                           .AllowAnyMethod()
-                           .AllowAnyHeader();
+                    builder.WithOrigins("http://localhost:5173") // Cho phép nguồn frontend của bạn
+                   .AllowAnyHeader()
+                   .AllowAnyMethod()
+                   .AllowCredentials(); // Cho phép gửi thông tin xác thực
                 });
             });
 
@@ -77,11 +90,9 @@ namespace Web_API_OPMS
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
-            app.UseHttpsRedirection();
-
             // Enable CORS policy
             app.UseCors("AllowAllOrigins");
+            app.UseHttpsRedirection();
 
             // Enable session management
             app.UseSession();
@@ -89,7 +100,7 @@ namespace Web_API_OPMS
             // Enable authentication and authorization
             app.UseAuthentication();
             app.UseAuthorization();
-
+          
             // Map controllers to endpoints
             app.MapControllers();
 
