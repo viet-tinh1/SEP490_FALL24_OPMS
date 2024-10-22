@@ -152,8 +152,6 @@ namespace Web_API_OPMS.Controllers
             return NoContent();
         }
         [HttpGet("getUserById")]
-
-       
         public ActionResult<User> getUserById(int userId)
         {
             // Không lấy từ session nữa, mà từ tham số truyền vào
@@ -165,6 +163,21 @@ namespace Web_API_OPMS.Controllers
             }
 
             return Ok(new { message = "Successful", role = user.Roles, userId = user.UserId , userName = user.Username });
+        }
+
+        [HttpGet("getUserByRole")]
+        public ActionResult<IEnumerable<User>> getUserByRole(int roleId)
+        {
+            // Không lấy từ session nữa, mà từ tham số truyền vào
+            var users = UserRepository.GetUserByRole(roleId);
+
+            if (users == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
+            return Ok(users);
+
         }
 
         //hàm mã hóa password khi create user
