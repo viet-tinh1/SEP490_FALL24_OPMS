@@ -177,6 +177,7 @@ namespace Web_API_OPMS.Controllers
             }
 
             return Ok(users);
+
         }
 
         //hàm mã hóa password khi create user
