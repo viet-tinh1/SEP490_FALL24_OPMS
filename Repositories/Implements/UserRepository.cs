@@ -39,5 +39,9 @@ namespace Repositories.Implements
         {
             return userDAO.GetUserById(id); // Trả về User có ID tương ứng.
         }
+        public List<User> GetUserByRole(int roleId)
+        {
+            return userDAO.GetUserByRole(roleId); // Trả về User có ID tương ứng.
+        }
     }
 }
