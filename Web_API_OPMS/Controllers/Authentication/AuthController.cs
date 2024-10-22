@@ -1,5 +1,7 @@
 ﻿using BusinessObject.Models;
 using DataAccess.DTO;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace Web_API_OPMS.Controllers.Authentication
 {
@@ -69,6 +72,55 @@ namespace Web_API_OPMS.Controllers.Authentication
             HttpContext.Session.SetInt32("UserRole", user.Roles);
             return Ok(new { message = "Login successful", role = user.Roles, token = token, userId=user.UserId });
         }
+        // login with google
+        [HttpGet("google-login")]
+        public IActionResult GoogleLogin()
+        {
+            var properties = new AuthenticationProperties
+            {
+                RedirectUri = Url.Action("GoogleResponse") // Where to redirect after Google login
+            };
+            return Challenge(properties, GoogleDefaults.AuthenticationScheme);  // This initiates the Google login process
+        }
+
+        [HttpGet("google-response")]
+        public async Task<IActionResult> GoogleResponse()
+        {
+            var authenticateResult = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            if (!authenticateResult.Succeeded)
+            {
+                return BadRequest("Google authentication failed.");
+            }
+
+            // Retrieve user info from the claims
+            var email = authenticateResult.Principal.FindFirstValue(ClaimTypes.Email);
+            var name = authenticateResult.Principal.FindFirstValue(ClaimTypes.Name);
+
+            // Check if user already exists in your database
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+            {
+                // If user doesn't exist, create a new one
+                user = new User
+                {
+                    Username = name,
+                    Email = email,
+                    CreatedDate = DateTime.UtcNow,
+                    Roles = 2,
+                    Password = HashPassword("123")// Assign a default role, e.g., 'User'
+                };
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+            }
+
+            // Sign in the user by issuing a cookie
+            var token = GenerateJwtToken(user);
+            HttpContext.Session.SetInt32("UserId", user.UserId);
+            HttpContext.Session.SetInt32("UserRole", user.Roles);
+
+            return Redirect($"http://localhost:5173/product?userId={user.UserId}&role={user.Roles}&token={token}");
+        }
 
         [HttpPost("logout")]
         public IActionResult Logout()
@@ -86,6 +138,7 @@ namespace Web_API_OPMS.Controllers.Authentication
                 return Convert.ToBase64String(hashedBytes);
             }
         }
+
 
         // Hàm kiểm tra mật khẩu
         private bool VerifyPassword(string enteredPassword, string storedPassword)

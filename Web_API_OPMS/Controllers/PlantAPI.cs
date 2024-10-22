@@ -284,5 +284,12 @@ namespace Web_API_OPMS.Controllers
             return Ok(plants);
         }
 
+        [HttpGet("most-purchased")]
+        public async Task<IActionResult> GetMostPurchasedPlants([FromQuery] int limit)
+        {
+            var plants = await plantRepository.GetMostPurchasedPlantsFromShoppingCartAsync(limit);
+            return Ok(plants); // Trả về danh sách PlantDTOS
+        }
+
     }
 }
