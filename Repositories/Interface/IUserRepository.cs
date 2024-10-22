@@ -19,5 +19,6 @@ namespace Repositories.Interface
 
         // Phương thức lấy một User theo ID.
         User GetUserById(int id);
+        List<User> GetUserByRole(int roleId);
     }
 }

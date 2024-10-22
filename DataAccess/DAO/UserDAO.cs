@@ -72,5 +72,11 @@ namespace DataAccess.DAO
         {
             return _context.Users.FirstOrDefault(x => x.UserId == id); // Trả về User có ID tương ứng.
         }
+        public List<User> GetUserByRole(int roleId)
+        {
+            return _context.Users
+                           .Where(u => u.Roles == roleId) // Only return plants with isVerfied = 1
+                           .ToList(); // Trả về User có ID tương ứng.
+        }
     }
 }
