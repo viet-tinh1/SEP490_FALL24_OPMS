@@ -61,9 +61,9 @@ export default function ProductDetail() {
         
 
         // Fetch rating summary
-        //const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
-        //const ratingData = await ratingResponse.json();
-        //setRatingSummary(ratingData);
+        const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
+        const ratingData = await ratingResponse.json();
+        setRatingSummary(ratingData);
       } catch (error) {
         setError(error.message);
       } finally {
@@ -172,9 +172,9 @@ export default function ProductDetail() {
       });
         setReviews(updatedReviews);
 
-       // const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
-        //const ratingData = await ratingResponse.json();
-        //setRatingSummary(ratingData);
+        const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
+        const ratingData = await ratingResponse.json();
+        setRatingSummary(ratingData);
       } else {
         setNotification("Có lỗi xảy ra khi gửi đánh giá của bạn");
         setTimeout(() => {
