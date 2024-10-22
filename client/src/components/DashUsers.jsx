@@ -11,32 +11,40 @@ export default function DashUsers() {
   const [showModal, setShowModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
+  const [roleId, setRoleId] = useState(1);
   const [loading, setLoading] = useState(true); // Handle loading state
   const [error, setError] = useState(null); // Handle error state
   const usersPerPage = 5; 
 
   // Fetch users from API
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch('https://localhost:7098/api/UserAPI/getUser'); // Replace with your API URL
-        const data = await response.json();
+  const fetchUsersByRole = async (roleId) => {
+    try {
+      const response = await fetch(
+        `https://localhost:7098/api/UserAPI/getUserByRole?roleId=${roleId}`
+      );
+      const data = await response.json();
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch users');
-        }
-        setUsers(data); // Set the fetched users into state
-        setLoading(false); // Turn off the loading state
-      } catch (err) {
-        setError(err.message); // Handle any errors
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
       }
-    };
+      setUsers(data); // Set the fetched users into state
+      setLoading(false); // Turn off the loading state
+    } catch (err) {
+      setError(err.message); // Handle any errors
+      setLoading(false);
+    }
+  }; // Empty dependency array to fetch only once on component mount
 
-    fetchUsers();
-  }, []); // Empty dependency array to fetch only once on component mount
+// useEffect gọi API lần đầu với roleId = 1
+  useEffect(() => {
+    fetchUsersByRole(roleId);
+  }, [roleId]); // Thay đổi khi roleId thay đổi
 
-
+// Hàm xử lý khi người dùng nhấn vào nút để thay đổi roleId
+  const handleRoleChange = (newRoleId) => {
+  setRoleId(newRoleId);
+  setCurrentPage(0); // Cập nhật roleId mới
+  };
   const getRoleName = (roleId) => {
     switch(roleId) {
       case 1:
@@ -87,7 +95,8 @@ export default function DashUsers() {
       <div className="shadow-md md:mx-auto p-3  rounded-lg bg-white dark:bg-gray-800 my-4">
         <div className="mb-1 w-full">
           <div className=" mb-4">
-            <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl">All User</h1>
+            <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl">Quản lí tài khoản </h1>
+            <br></br>
             <div className="sm:flex">
               <div className="hidden items-center mb-3 sm:flex sm:divide-x sm:divide-gray-100 sm:mb-0">
                 <form>
@@ -102,6 +111,12 @@ export default function DashUsers() {
               <div className="flex items-center ml-auto space-x-2 sm:space-x-3">
                 <Button>Add User</Button>
               </div>
+            </div>
+            <br></br>
+            <div className="sm:flex space-x-4">
+              <Button id="1" onClick={() => handleRoleChange(1)}>Admin</Button>
+              <Button id="2" onClick={() => handleRoleChange(2)}>Người dùng</Button>
+              <Button id="3" onClick={() => handleRoleChange(3)}>Người bán</Button>
             </div>
           </div>
         </div>
