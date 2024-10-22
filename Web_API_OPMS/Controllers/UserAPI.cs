@@ -3,6 +3,7 @@ using DataAccess.DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
 using Repositories.Implements;
 using Repositories.Interface;
 using System.Data;
@@ -163,7 +164,7 @@ namespace Web_API_OPMS.Controllers
                 return NotFound(new { message = "User not found" });
             }
 
-            return Ok(user);
+            return Ok(new { message = "Successful", role = user.Roles, userId = user.UserId , userName = user.Username });
         }
 
         //hàm mã hóa password khi create user
