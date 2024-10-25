@@ -70,7 +70,7 @@ namespace Web_API_OPMS.Controllers.Authentication
             var token = GenerateJwtToken(user);
             HttpContext.Session.SetInt32("UserId", user.UserId);
             HttpContext.Session.SetInt32("UserRole", user.Roles);
-            return Ok(new { message = "Login successful", role = user.Roles, token = token, userId=user.UserId });
+            return Ok(new { message = "Login successful", role = user.Roles, token = token, userId=user.UserId ,email=user.Email,username=user.Username});
         }
         // login with google
         [HttpGet("google-login")]
@@ -108,7 +108,8 @@ namespace Web_API_OPMS.Controllers.Authentication
                     Email = email,
                     CreatedDate = DateTime.UtcNow,
                     Roles = 2,
-                    Password = HashPassword("123")// Assign a default role, e.g., 'User'
+                    Status = 1, 
+                    Password = HashPassword(GenerateRandomPassword(12)) // Generate random password with length 12
                 };
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
@@ -119,7 +120,7 @@ namespace Web_API_OPMS.Controllers.Authentication
             HttpContext.Session.SetInt32("UserId", user.UserId);
             HttpContext.Session.SetInt32("UserRole", user.Roles);
 
-            return Redirect($"http://localhost:5173/product?userId={user.UserId}&role={user.Roles}&token={token}");
+            return Redirect($"http://localhost:5173/product?userId={user.UserId}&role={user.Roles}&token={token}&username={user.Username}&email={user.Email}");
         }
 
         [HttpPost("logout")]
@@ -163,8 +164,23 @@ namespace Web_API_OPMS.Controllers.Authentication
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
-    }
 
+        private string GenerateRandomPassword(int length)
+        {
+            const string validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()";
+            StringBuilder password = new StringBuilder();
+            Random random = new Random();
+
+            for (int i = 0; i < length; i++)
+            {
+                password.Append(validChars[random.Next(validChars.Length)]);
+            }
+
+            return password.ToString();
+        }
+
+    }
+    
     // Lớp LoginRequest để đăng nhập 
     public class LoginRequest
     {
