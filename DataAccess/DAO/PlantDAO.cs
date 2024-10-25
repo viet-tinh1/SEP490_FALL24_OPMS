@@ -78,6 +78,12 @@ namespace DataAccess.DAO
         {
             return _context.Plants.FirstOrDefault(x => x.PlantId == id); // Trả về Plant có ID tương ứng.
         }
+        public List<Plant> getPlantByUser(int  UserId)
+        {
+            return _context.Plants
+                           .Where(p => p.UserId == UserId) // Only return plants with isVerfied = 0
+                           .ToList();
+        }
         public async Task<List<PlantDTOS>> GetMostPurchasedPlantsFromShoppingCartAsync(int limit)
         {
             return await _context.ShoppingCartItems

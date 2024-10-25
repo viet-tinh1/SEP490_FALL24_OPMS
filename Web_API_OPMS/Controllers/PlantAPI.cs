@@ -290,6 +290,11 @@ namespace Web_API_OPMS.Controllers
             var plants = await plantRepository.GetMostPurchasedPlantsFromShoppingCartAsync(limit);
             return Ok(plants); // Trả về danh sách PlantDTOS
         }
+        [HttpGet("getPlantByUser")]
+        public ActionResult<IEnumerable<Plant>> getPlantByUser(int UserId)
+        {
+            return plantRepository.getPlantByUser(UserId);
+        }
 
     }
 }
