@@ -165,9 +165,11 @@ public partial class Db6213Context : DbContext
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.HasKey(e => e.OrderId).HasName("PK__Orders__C3905BAFBF586BD6");
+            entity.HasKey(e => e.OrderId).HasName("PK_Orders_OrderID");
 
-            entity.Property(e => e.OrderId).HasColumnName("OrderID");
+            entity.Property(e => e.OrderId)
+                .ValueGeneratedNever()
+                .HasColumnName("OrderID");
             entity.Property(e => e.OrderDate).HasColumnType("datetime");
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
@@ -179,6 +181,7 @@ public partial class Db6213Context : DbContext
                 .HasForeignKey(d => d.ShoppingCartItemId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Orders__CartId__4CA06362");
+
             entity.HasOne(d => d.User).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK_Orders_Users");
@@ -327,12 +330,17 @@ public partial class Db6213Context : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("open_date");
             entity.Property(e => e.Status).HasColumnName("status");
+            entity.Property(e => e.UserId).HasColumnName("UserID");
             entity.Property(e => e.VoucherName)
                 .HasMaxLength(255)
                 .HasColumnName("voucher_name");
             entity.Property(e => e.VoucherPercent)
                 .HasColumnType("decimal(5, 2)")
                 .HasColumnName("voucher_percent");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Vouchers)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_Voucher_UserID");
         });
 
         OnModelCreatingPartial(modelBuilder);

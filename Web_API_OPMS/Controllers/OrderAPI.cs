@@ -50,12 +50,7 @@ namespace Web_API_OPMS.Controllers
 
                 try
                 {
-                    var userId = HttpContext.Session.GetInt32("UserId");
-
-                    if (userId == null)  // Kiểm tra nếu người dùng không đăng nhập
-                    {
-                        return Unauthorized(new { message = "Session expired or user not logged in. Please log in again." });
-                    }
+                    
 
                     foreach (var cartId in orderDTO.ShoppingCartItemIds)
                     {
@@ -81,15 +76,20 @@ namespace Web_API_OPMS.Controllers
                         DateTime currentVietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
                         // Tính toán tổng số tiền cho đơn hàng (giá của plant * số lượng trong cart)
                         var totalAmount = plant.Price * cart.Quantity;
-
+                        int randomOrderId;
+                        do
+                        {
+                            randomOrderId = new Random().Next(100000, 999999); // Tạo số ngẫu nhiên 6 chữ số
+                        } while (_context.Orders.Any(o => o.OrderId == randomOrderId)); // Kiểm tra xem ID đã tồn tại chưa
                         // Tạo một đối tượng order với trạng thái là "1" (đơn hàng thành công)
                         Order order = new Order()
                         {
+                            OrderId = randomOrderId,
                             ShoppingCartItemId = cartId,  // Gán CartId từ dữ liệu đầu vào
                             OrderDate = currentVietnamTime, // Ngày tạo order
                             TotalAmount = totalAmount,       // Tổng số tiền được tính toán tự động
                             Status = "Pending",              // Đặt trạng thái đơn hàng là "1" (thành công)
-                            UserId = userId.Value            // Gán UserId từ session
+                            UserId = orderDTO.UserId            // Gán UserId từ session
                         };
 
                         // Lưu đơn hàng mới vào repository

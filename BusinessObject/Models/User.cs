@@ -38,4 +38,5 @@ public partial class User
     public virtual ICollection<Plant> Plants { get; set; } = new List<Plant>();
 
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+    public virtual ICollection<Voucher> Vouchers { get; set; } = new List<Voucher>();
 }
