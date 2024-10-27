@@ -21,6 +21,8 @@ namespace DataAccess.DTO
         public DateTime? OpenDate { get; set; }
 
         public decimal? Amount { get; set; }
+        public int? UserId { get; set; }
+
     }
     public class VoucherDTOU
     {
@@ -39,5 +41,6 @@ namespace DataAccess.DTO
         public DateTime? OpenDate { get; set; }
 
         public decimal? Amount { get; set; }
+        public int? UserId { get; set; }
     }
 }

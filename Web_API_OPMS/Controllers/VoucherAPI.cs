@@ -86,7 +86,8 @@ namespace Web_API_OPMS.Controllers
                     CloseDate = voucherDTO.CloseDate,
                     Status = voucherDTO.Status,
                     OpenDate = voucherDTO.OpenDate,
-                    Amount = voucherDTO.Amount
+                    Amount = voucherDTO.Amount,
+                    UserId = voucherDTO.UserId
                 };
 
                 VoucherRepository.CreateVoucher(voucher);
@@ -124,6 +125,7 @@ namespace Web_API_OPMS.Controllers
                 existingVoucher.Status = voucherDTOU.Status ?? true;
                 existingVoucher.OpenDate = voucherDTOU.OpenDate ?? DateTime.Now;
                 existingVoucher.Amount = voucherDTOU.Amount ?? 0;
+                existingVoucher.UserId = voucherDTOU.UserId;
 
                 // Tự động xóa nếu Amount bằng 0
                 if (existingVoucher.Amount == 0)

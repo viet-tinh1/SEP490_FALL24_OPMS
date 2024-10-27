@@ -99,8 +99,10 @@ namespace DataAccess.DAO
                 {
                     PlantId = p.PlantId,
                     PlantName = p.PlantName,
+                    CategoryId = p.CategoryId,
                     Price = p.Price,
                     ImageUrl = p.ImageUrl,
+                    Discount = p.Discount,
                     TotalPurchased = g.TotalQuantity // Gán tổng số lượng đã mua cho mỗi Plant
                 })
                 .ToListAsync(); // Trả về danh sách bất đồng bộ
