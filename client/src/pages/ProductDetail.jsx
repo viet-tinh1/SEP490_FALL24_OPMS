@@ -3,6 +3,7 @@ import { TiShoppingCart } from "react-icons/ti";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import { AiFillLike } from "react-icons/ai";
 import { useParams } from "react-router-dom";
+import { Spinner } from "flowbite-react";
 import Rating from 'react-rating-stars-component';
 
 export default function ProductDetail() {
@@ -45,7 +46,7 @@ export default function ProductDetail() {
         const updatedReviews = await Promise.all(
           reviewData.map(async (review) => {
             // Fetch userName based on userId
-            const userResponse = await fetch(`https://localhost:7098/api/UserAPI/getUserById?userId=${review.userId}`);
+            const userResponse = await fetch(`https://localhost:7098/api/UserAPI/getUserByIds?userId=${review.userId}`);
             if (!userResponse.ok) {
               console.error(`Error fetching user data for userId: ${review.userId}`);
               return review; // Return the review unchanged if the user API call fails
@@ -77,7 +78,7 @@ export default function ProductDetail() {
   // Hàm để lấy tên người dùng dựa trên userId
   const fetchUserNameForReview = async (userId) => {
     try {
-      const userResponse = await fetch(`https://localhost:7098/api/UserAPI/getUserById?userId=${userId}`);
+      const userResponse = await fetch(`https://localhost:7098/api/UserAPI/getUserByIds?userId=${userId}`);
       if (!userResponse.ok) {
         console.error(`Error fetching user data for userId: ${userId}`);
         return "Unknown User"; 
@@ -217,7 +218,12 @@ export default function ProductDetail() {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner aria-label="Loading spinner" size="xl" />
+        <span className="ml-3 text-lg font-semibold">Loading...</span>
+      </div>
+    );
   }
 
   if (error) {

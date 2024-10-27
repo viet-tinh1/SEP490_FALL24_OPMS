@@ -10,6 +10,8 @@ export default function Header() {
   const path = useLocation().pathname;
   const [userId, setUserId] = useState(null);
   const [role, setURoles] = useState(null);
+  const [email, setEmail] = useState(null);
+  const [username, setUserName] = useState(null);
   const navigate = useNavigate();
   const timeoutRef = useRef(null);
 
@@ -31,17 +33,25 @@ export default function Header() {
     // Get userId and role from localStorage when component mounts
     const storedUserId = localStorage.getItem("userId");
     const storedRoles = localStorage.getItem("role");
+    const storedEmail = localStorage.getItem("email");
+    const storedUserName = localStorage.getItem("username");
     
     // Set initial user data to state
     setUserId(storedUserId);
     setURoles(storedRoles);
+    setEmail(storedEmail);
+    setUserName(storedUserName);
   
     // Define function to handle localStorage changes
     const handleStorageChange = () => {
       const updatedUserId = localStorage.getItem("userId");
       const updatedRoles = localStorage.getItem("role");
+      const updatedEmail = localStorage.getItem("email");
+      const updatedUserName = localStorage.getItem("username");
       setUserId(updatedUserId);
       setURoles(updatedRoles);
+      setEmail(updatedEmail);
+      setUserName(updatedUserName);
     };
      // Hàm để reset thời gian không hoạt động khi người dùng tương tác
     const handleUserActivity = () => {
@@ -105,12 +115,30 @@ export default function Header() {
         <Button className="w-12 h-10 hidden sm:inline" color="gray" pill>
           <FaSun />
         </Button>
-
+        
         {userId ? (
           // Render Sign Out button if userId exists
-          <Button gradientDuoTone="greenToBlue" onClick={handleSignOut}>
-            Đăng xuất
-          </Button>
+          <Dropdown
+          arrowIcon={false}
+          inline
+          label={
+            <Avatar alt='user' img=''rounded />
+          }
+        >
+          <Dropdown.Header>
+            <span className='block text-sm font-medium truncate'>
+              Username : {username}
+              </span>
+            <span className='block text-sm font-medium truncate'>
+             Email : {email}
+            </span>
+          </Dropdown.Header>
+          <Link to={'/dashboard?tab=profile '}>
+            <Dropdown.Item>Profile</Dropdown.Item>
+          </Link>
+          <Dropdown.Divider />
+          <Dropdown.Item onClick={handleSignOut} >Sign out</Dropdown.Item>
+        </Dropdown>
         ) : (
           // Render Sign In button if userId is null
           <Link to="/sign-in">

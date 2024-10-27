@@ -1,6 +1,7 @@
 import { Checkbox } from "flowbite-react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { Spinner } from "flowbite-react";
 
 export default function Cart() {
   const [cartItems, setCartItems] = useState([]);
@@ -167,13 +168,41 @@ export default function Cart() {
 
 
   if (loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner aria-label="Loading spinner" size="xl" />
+        <span className="ml-3 text-lg font-semibold">Loading...</span>
+      </div>
+    );
   }
 
   if (error) {
     return <p>Error: {error}</p>;
   }
-
+  const handleQuantityChange = (itemId, newQuantity) => {
+    // Nếu người dùng xóa hết số lượng (giá trị rỗng), tạm thời lưu giá trị rỗng
+    if (newQuantity === "") {
+      setCartItems((prevItems) =>
+        prevItems.map((item) =>
+          item.shoppingCartItemId === itemId
+            ? { ...item, quantity: "" } // Tạm thời đặt quantity là chuỗi rỗng
+            : item
+        )
+      );
+    } else {
+      // Kiểm tra nếu giá trị nhập là số hợp lệ và lớn hơn 0
+      const value = parseInt(newQuantity, 10);
+      if (!isNaN(value) && value > 0) {
+        setCartItems((prevItems) =>
+          prevItems.map((item) =>
+            item.shoppingCartItemId === itemId
+              ? { ...item, quantity: value }
+              : item
+          )
+        );
+      }
+    }
+  };
   // Function to increment quantity of an item
   const increment = (itemId) => {
     setCartItems((prevItems) =>
@@ -228,6 +257,17 @@ export default function Cart() {
       }
       return total;
     }, 0);
+  };
+  const handleBlur = (itemId, quantity) => {
+    if (!quantity || quantity < 1) {
+      setCartItems((prevItems) =>
+        prevItems.map((item) =>
+          item.shoppingCartItemId === itemId
+            ? { ...item, quantity: 1 } // Đặt lại số lượng về 1 nếu để trống hoặc không hợp lệ
+            : item
+        )
+      );
+    }
   };
 
   return (
@@ -289,9 +329,10 @@ export default function Cart() {
                           </button>
                           <input
                             type="text"
-                            className="w-10 shrink-0 border-0 bg-transparent text-center text-sm font-medium text-gray-900 focus:outline-none focus:ring-0 dark:text-white"
+                            className="w-16 min-w-[50px] shrink-0 border-0 bg-transparent text-center text-sm font-medium text-gray-900 focus:outline-none focus:ring-0 dark:text-white"
                             value={item.quantity}
-                            readOnly
+                            onChange={(e) => handleQuantityChange(item.shoppingCartItemId, e.target.value)}
+                            onBlur={() => handleBlur(item.shoppingCartItemId, item.quantity)}
                           />
                           <button
                             type="button"
@@ -415,7 +456,7 @@ export default function Cart() {
                     Số lượng sản phẩm:
                   </dt>
                   <dd className="text-base font-bold text-gray-900 dark:text-white">
-                    8
+                  {selectedItems.length || 0}
                   </dd>
                   </dl>
                   {/* Hiển thị giá trị của voucher nếu đã được áp dụng */}

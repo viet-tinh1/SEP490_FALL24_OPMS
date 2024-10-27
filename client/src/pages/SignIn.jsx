@@ -82,17 +82,19 @@ export default function SignIn() {
       // Role-based redirection
       if (data.message === "Login successful") {
         localStorage.setItem("userId", data.userId);
-        localStorage.setItem("role", data.role); // Store userId in localStorage
+        localStorage.setItem("role", data.role); 
+        localStorage.setItem("email", data.email);
+        localStorage.setItem("username", data.username);// Store userId in localStorage
         console.log("Logged in as UserId:", data.userId);
         
         // Dispatch a custom event to notify other components of the login state
         window.dispatchEvent(new Event("storage"));
         if (data.role === 1) {
-          navigate("/admin");
+          navigate("/dashboard?tab=users");
         } else if (data.role === 2) {
           navigate("/product");
         } else if (data.role === 3) {
-          navigate("/seller");
+          navigate("/dashboard?tab=product");
         } else {
           setError("Unknown role. Please contact support.");
         }
