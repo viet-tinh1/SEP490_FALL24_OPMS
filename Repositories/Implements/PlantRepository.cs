@@ -52,6 +52,11 @@ namespace Repositories.Implements
         {
             return plantDAO.getPlanttById(id);
         }
+        public List<Plant> getPlantByUser(int UserId)
+        {
+            return plantDAO.getPlantByUser(UserId);
+
+        }
         //hàm để lấy  list plant theo name , price , category 
         public List<Plant> searchPlants(string name = null, List<int> categoryId = null, decimal? minPrice = null, decimal? maxPrice = null)
 

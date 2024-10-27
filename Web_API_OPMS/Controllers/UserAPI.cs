@@ -151,6 +151,19 @@ namespace Web_API_OPMS.Controllers
             UserRepository.DeleteUser(UserId);
             return NoContent();
         }
+        [HttpGet("getUserByIds")]
+        public ActionResult<User> getUserByIds(int userId)
+        {
+            // Không lấy từ session nữa, mà từ tham số truyền vào
+            var user = UserRepository.GetUserById(userId);
+
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
+            return Ok(new { message = "Successful", role = user.Roles, userId = user.UserId , userName = user.Username });
+        }
         [HttpGet("getUserById")]
         public ActionResult<User> getUserById(int userId)
         {
@@ -162,7 +175,7 @@ namespace Web_API_OPMS.Controllers
                 return NotFound(new { message = "User not found" });
             }
 
-            return Ok(new { message = "Successful", role = user.Roles, userId = user.UserId , userName = user.Username });
+            return Ok(user);
         }
 
         [HttpGet("getUserByRole")]

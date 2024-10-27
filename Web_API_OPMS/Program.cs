@@ -81,6 +81,7 @@ namespace Web_API_OPMS
             builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
             // Đăng ký IVoucherRepository với implement là VoucherRepository
             builder.Services.AddScoped<IVoucherRepository, VoucherRepository>();
+            builder.Services.AddSingleton<IGeographyRepository, GeographyRepository>();
             builder.Services.AddTransient<MailService>();
             var app = builder.Build();
 
