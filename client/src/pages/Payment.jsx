@@ -16,7 +16,7 @@ export default function Payment() {
   useEffect(() => {
     // Fetch cities using fetch API
     fetch(
-      "https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json"
+      "https://viet-tinh1.github.io/Geography/data.json"
     )
       .then((response) => response.json())
       .then((data) => setCities(data))

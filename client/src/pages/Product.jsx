@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation  } from "react-router-dom";
 import { PiShoppingCartLight } from "react-icons/pi";
 import ReactPaginate from "react-paginate";
 import { useState, useEffect } from "react";
+import { Spinner } from "flowbite-react";
 import { IoArrowBackCircle, IoArrowForwardCircle } from "react-icons/io5";
 
 export default function Product() {
@@ -25,6 +26,8 @@ export default function Product() {
   const [userId, setUserId] = useState(null);
   const [role, setRole] = useState(null);
   const [token, setToken] = useState(null);
+  const [email, setEmail] = useState(null);
+  const [username, setUserName] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -34,17 +37,23 @@ export default function Product() {
     const userId = params.get("userId");
     const role = params.get("role");
     const token = params.get("token");
+    const email = params.get("email");
+    const username = params.get("username");
 
     if (userId && role && token) {
       // Lưu vào state
       setUserId(userId);
       setRole(role);
       setToken(token);
+      setEmail(email);
+      setUserName(username);
 
       // Lưu vào localStorage
       localStorage.setItem("userId", userId);
       localStorage.setItem("role", role);
       localStorage.setItem("token", token);
+      localStorage.setItem("email", email);
+      localStorage.setItem("username", username);
 
       // Điều hướng tới trang chính
       navigate("/product"); // Điều hướng tới trang product sau khi lưu thông tin
@@ -212,9 +221,13 @@ export default function Product() {
 
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner aria-label="Loading spinner" size="xl" />
+        <span className="ml-3 text-lg font-semibold">Loading...</span>
+      </div>
+    );
   }
-
   if (error) {
     return <div>Error: {error}</div>;
   }

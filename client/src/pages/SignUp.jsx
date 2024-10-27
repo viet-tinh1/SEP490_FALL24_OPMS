@@ -2,7 +2,7 @@ import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
 import Imgtree from "../assets/img/tree.png";
 import { Link, useNavigate, useLocation  } from "react-router-dom";
 import { AiFillGoogleCircle } from "react-icons/ai";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 
 export default function Signup() {
   const [username, setUsername] = useState("");
