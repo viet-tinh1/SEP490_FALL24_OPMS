@@ -5,6 +5,7 @@ import { TbLock, TbLockOpen } from "react-icons/tb";
 import { TextInput } from "flowbite-react";
 import { AiOutlineSearch } from "react-icons/ai";
 import ReactPaginate from "react-paginate"; 
+import { Spinner } from "flowbite-react";
 
 export default function DashUsers() {
   const [users, setUsers] = useState([]); // Initially empty, populated by the API
@@ -15,6 +16,7 @@ export default function DashUsers() {
   const [loading, setLoading] = useState(true); // Handle loading state
   const [error, setError] = useState(null); // Handle error state
   const usersPerPage = 5; 
+  const [activeButton, setActiveButton] = useState(1);
 
   // Fetch users from API
   const fetchUsersByRole = async (roleId) => {
@@ -42,6 +44,7 @@ export default function DashUsers() {
 
 // Hàm xử lý khi người dùng nhấn vào nút để thay đổi roleId
   const handleRoleChange = (newRoleId) => {
+  setActiveButton(newRoleId);
   setRoleId(newRoleId);
   setCurrentPage(0); // Cập nhật roleId mới
   };
@@ -87,7 +90,16 @@ export default function DashUsers() {
   );
 
   // Display loading or error states
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen w-full">
+        <div className="flex flex-col items-center">
+          <Spinner aria-label="Loading spinner" size="xl" />
+          <span className="mt-3 text-lg font-semibold">Loading...</span>
+        </div>
+      </div>
+    );
+  }
   if (error) return <div>Error: {error}</div>;
 
   return (
@@ -114,9 +126,39 @@ export default function DashUsers() {
             </div>
             <br></br>
             <div className="sm:flex space-x-4">
-              <Button id="1" onClick={() => handleRoleChange(1)}>Admin</Button>
-              <Button id="2" onClick={() => handleRoleChange(2)}>Người dùng</Button>
-              <Button id="3" onClick={() => handleRoleChange(3)}>Người bán</Button>
+              <Button 
+              id="1" 
+              onClick={() => handleRoleChange(1)}
+              className={`${
+                activeButton === 1
+                  ? "bg-green-600 text-white border-green-700"
+                  : "bg-gray-200 text-gray-700 border-gray-300"
+              } py-1 px-3 text-sm font-semibold rounded-lg shadow`}
+              >
+                Admin
+              </Button>
+              <Button 
+              id="2" 
+              onClick={() => handleRoleChange(2)}
+              className={`${
+                activeButton === 2
+                  ? "bg-green-600 text-white border-green-700"
+                  : "bg-gray-200 text-gray-700 border-gray-300"
+              } py-1 px-3 text-sm font-semibold rounded-lg shadow`}
+              >
+                Người dùng
+              </Button>
+              <Button 
+              id="3" 
+              onClick={() => handleRoleChange(3)}
+              className={`${
+               activeButton === 3
+                ? "bg-green-600 text-white border-green-700"
+                : "bg-gray-200 text-gray-700 border-gray-300"
+              } py-1 px-3 text-sm font-semibold rounded-lg shadow`}
+              >
+                Người bán
+              </Button>
             </div>
           </div>
         </div>
