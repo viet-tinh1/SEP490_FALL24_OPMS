@@ -47,24 +47,7 @@ namespace Web_API_OPMS.Controllers
         [HttpGet("getNonVerifiedPlants")]
         public ActionResult<IEnumerable<Plant>> GetNonVerifiedPlants()
         {
-            // Check if the user is logged in by checking the session
-            var userId = HttpContext.Session.GetInt32("UserId");
-
-            if (userId == null) // If the user is not logged in or session expired
-            {
-                return Unauthorized(new { message = "User not logged in" });
-            }
-
-            // Optional: Check if the user has the correct role (only users with certain roles can access this)
-            var user = UserRepository.GetUserById(userId.Value);
-
-            // Allow access only if the user has role 1 (admin or manager role)
-            if (user.Roles != 1)
-            {
-                return Unauthorized(new { message = "You do not have permission to view non-verified plants." });
-            }
-
-            // Fetch and return the non-verified plants
+           
             try
             {
                 var nonVerifiedPlants = plantRepository.getNonVerifiedPlants();
@@ -164,18 +147,7 @@ namespace Web_API_OPMS.Controllers
         [HttpPost("updateVerifyStatus")]
         public IActionResult UpdateVerifyStatus(int plantId)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
             
-            if (userId == null)// If the user is not logged in or session expired
-            {
-                return Unauthorized(new { message = "User not logged in" });
-            }
-            var user = UserRepository.GetUserById(userId.Value);
-            
-            if (user.Roles != 1)
-            {
-                return Unauthorized(new { message = "You do not have permission to update the verification status." });
-            }
             try
             {
                 // Find the existing plant by its ID
@@ -208,18 +180,7 @@ namespace Web_API_OPMS.Controllers
         [HttpPost("updateNonVerifyStatus")]
         public IActionResult UpdateNonVerifyStatus(int plantId)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-
-            if (userId == null)// If the user is not logged in or session expired
-            {
-                return Unauthorized(new { message = "User not logged in" });
-            }
-            var user = UserRepository.GetUserById(userId.Value);
-
-            if (user.Roles != 1)
-            {
-                return Unauthorized(new { mesage = "You do not have permission to update the non-verification status." });
-            }
+            
             try
             {
                 // Find the existing plant by its ID

@@ -55,6 +55,7 @@ namespace DataAccess.DAO
                 vc.Status = voucher.Status;
                 vc.OpenDate = voucher.OpenDate;
                 vc.Amount = voucher.Amount;
+                vc.UserId = voucher.UserId;
 
                 _context.Vouchers.Update(vc); // Cập nhật Voucher trong cơ sở dữ liệu.
                 _context.SaveChanges(); // Lưu thay đổi vào cơ sở dữ liệu.
