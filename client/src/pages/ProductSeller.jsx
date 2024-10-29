@@ -6,6 +6,7 @@ import { useState } from "react"; // Import useState
 import { IoArrowBackCircle } from "react-icons/io5";
 import { IoArrowForwardCircle } from "react-icons/io5";
 import { FaThList } from "react-icons/fa";
+import { IoChevronDown } from "react-icons/io5";
 
 export default function ProductSeller() {
   const flowers = [
@@ -130,6 +131,25 @@ export default function ProductSeller() {
   const toggleShowAll = () => {
     setShowAll(!showAll);
   };
+
+  {
+    /* sắp xếp theo */
+  }
+  const [sortOption, setSortOption] = useState("Liên Quan");
+  const [priceSort, setPriceSort] = useState(null);
+  const [isPriceDropdownOpen, setIsPriceDropdownOpen] = useState(false);
+
+  const handleSortClick = (option) => {
+    setSortOption(option);
+    setPriceSort(null); // Reset price sorting if other sort option is selected
+  };
+
+  const handlePriceSort = (option) => {
+    setPriceSort(option);
+    setSortOption("Giá"); // Set sortOption to "Giá" when price sort is selected
+    setIsPriceDropdownOpen(false);
+  };
+
   return (
     <main>
       <div className="p-6 bg-white shadow-lg rounded-md md:py-10 dark:bg-gray-900 shadow-gray-200 antialiased">
@@ -152,12 +172,9 @@ export default function ProductSeller() {
             </button>
 
             <button className="ml-4 px-3 py-1 bg-red-500 text-white rounded text-sm">
-            💬Chat
+              💬Chat
             </button>
-
-       
           </div>
-
         </div>
 
         {/* Stats Section */}
@@ -234,6 +251,64 @@ export default function ProductSeller() {
         </div>
 
         <div className="flex flex-wrap gap-4">
+          {/* sắp xếp theo */}
+
+          <div className="bg-white shadow-lg shadow-gray-200  dark:bg-gray-900 antialiased p-2 flex items-center gap-5  ">
+            <span className="text-gray-500">Sắp xếp theo</span>
+
+            <button
+              className={`px-4 py-2 rounded-md font-medium ${
+                sortOption === "Mới Nhất"
+                  ? "bg-red-500 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+              onClick={() => handleSortClick("Mới Nhất")}
+            >
+              Mới Nhất
+            </button>
+
+            <button
+              className={`px-4 py-2 rounded-md font-medium ${
+                sortOption === "Bán Chạy"
+                  ? "bg-red-500 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+              onClick={() => handleSortClick("Bán Chạy")}
+            >
+              Bán Chạy
+            </button>
+
+            <div className="relative">
+              <button
+                className={`px-4 py-2 flex items-center rounded-md font-medium ${
+                  sortOption === "Giá"
+                    ? "bg-red-500 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+                onClick={() => setIsPriceDropdownOpen(!isPriceDropdownOpen)}
+              >
+                Giá
+                <IoChevronDown className="ml-1" />
+              </button>
+
+              {isPriceDropdownOpen && (
+                <div className="absolute top-full mt-1 min-w-[150px] bg-white shadow-md border rounded-md z-10">
+                  <button
+                    className="block w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 whitespace-nowrap"
+                    onClick={() => handlePriceSort("Thấp đến Cao")}
+                  >
+                    Giá: Thấp đến Cao
+                  </button>
+                  <button
+                    className="block w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 whitespace-nowrap"
+                    onClick={() => handlePriceSort("Cao đến Thấp")}
+                  >
+                    Giá: Cao đến Thấp
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
           <div className="flex flex-wrap justify-center gap-3 p-5">
             {/* Card */}
             {productsToDisplay.map((product) => (

@@ -131,7 +131,7 @@ export default function ProductDetail() {
                     onClick={() => setIsReasonModalOpen(true)}
                     className="block text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800"
                   >
-                    Report
+                    Tố cáo
                   </button>
                 </div>
 
@@ -252,7 +252,7 @@ export default function ProductDetail() {
                   role="button"
                 >
                   <TiShoppingCart className="text-2xl" />
-                  Add to cart
+                  Thêm vào giỏ hàng
                 </a>
 
                 <a
@@ -262,13 +262,13 @@ export default function ProductDetail() {
                   role="button"
                 >
                   <TiShoppingCart className="text-2xl" />
-                  Buy Now
+                  Mua ngay
                 </a>
 
                 {/* Quantity */}
 
                 <label className="text-gray-900 text-sm dark:text-white">
-                  Quantity:
+                  Số Lượng:
                 </label>
                 <div className="flex items-center mt-2">
                   <button
@@ -351,7 +351,7 @@ export default function ProductDetail() {
       <div className="py-10 bg-white shadow-lg shadow-gray-200 rounded-md md:py-10 dark:bg-gray-900 antialiased  p-10 m-10">
         {/* Comments List */}
         <div>
-          <h3 className="text-2xl font-semibold mb-6">3 Comments</h3>
+          <h3 className="text-2xl font-semibold mb-6">Bình luận</h3>
           <div className="space-y-8">
             {comments.map((comment) => (
               <div key={comment.id} className="flex space-x-4">
@@ -372,11 +372,11 @@ export default function ProductDetail() {
                   <div className="flex items-center space-x-4 mt-2">
                     {/* Like button */}
                     <button className="flex items-center text-sm text-blue-500 hover:underline">
-                      <AiFillLike className="mr-1" /> Like
+                      <AiFillLike className="mr-1" /> Thích
                     </button>
                     {/* Reply button */}
                     <button className="text-sm text-blue-500 hover:underline">
-                      Reply
+                      Phản hồi
                     </button>
                   </div>
                 </div>
@@ -387,18 +387,18 @@ export default function ProductDetail() {
 
         {/* Comment Form */}
         <div className="mt-10">
-          <h3 className="text-2xl font-semibold mb-4">Comment</h3>
+          <h3 className="text-2xl font-semibold mb-4">Bình luận</h3>
           <form className="space-y-4">
             <div>
               <textarea
-                placeholder="Write your comment here"
+                placeholder="Viết bình luận của bạn ở đây"
                 className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:border-blue-500"
                 rows="5"
               ></textarea>
             </div>
 
             <button className="block text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800">
-              Send
+              Gửi
             </button>
           </form>
         </div>
