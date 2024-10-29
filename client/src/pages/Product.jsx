@@ -5,6 +5,7 @@ import ReactPaginate from "react-paginate"; // Import the pagination library
 import { useState } from "react"; // Import useState
 import { IoArrowBackCircle } from "react-icons/io5";
 import { IoArrowForwardCircle } from "react-icons/io5";
+import { FaThList } from "react-icons/fa";
 
 export default function Product() {
   const flowers = [
@@ -136,8 +137,11 @@ export default function Product() {
           <Sidebar className="w-full md:w-56">
             <Sidebar.Items>
               <Sidebar.ItemGroup>
-                <Sidebar.Item  as="div">
-                  Tìm kiếm theo danh mục
+                <Sidebar.Item as="div">
+                  <div className="flex items-center text-gray-900 dark:text-white">
+                    <FaThList className="mr-2 text-sm" />
+                    <p className="text-lg font-medium">Danh Mục</p>
+                  </div>
                 </Sidebar.Item>
 
                 {/* Hiển thị danh sách loại hoa và số lượng */}
@@ -184,12 +188,11 @@ export default function Product() {
           <div className="flex flex-wrap justify-center gap-3 p-5">
             {/* Card */}
             {productsToDisplay.map((product) => (
-          
               <div
                 key={product.id}
                 className="bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto"
               >
-                <Link to='/productdetailb  '>
+                <Link to="/productdetail">
                   <div className="relative p-2.5 overflow-hidden rounded-xl bg-clip-border">
                     <img
                       src={product.productImage} // Use the dynamic product image
@@ -245,7 +248,6 @@ export default function Product() {
                   </div>
                 </Link>
               </div>
-     
             ))}
 
             {/* Pagination Component */}
