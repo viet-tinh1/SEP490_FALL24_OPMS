@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function Cart() {
+
   const [quantity, setQuantity] = useState(0); // Initial quantity
 
   const incrementQuantity = () => {

@@ -10,6 +10,7 @@ import Product from './pages/Product'
 import Cart from './pages/Cart'
 import ProductDetail from './pages/ProductDetail'
 import Payment from './pages/Payment'
+import ProductSeller from './pages/ProductSeller'
 export default function App() {
   return (
     <BrowserRouter>
@@ -26,6 +27,7 @@ export default function App() {
 
           <Route path='/cart' element={<Cart/>}/>
           <Route path='/productdetail' element={<ProductDetail/>}/>
+          <Route path='/producsSeller' element={<ProductSeller/>}/>
 
 
     </Routes>

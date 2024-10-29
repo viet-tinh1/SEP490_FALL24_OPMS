@@ -2,24 +2,26 @@ import { useState } from "react";
 import { TiShoppingCart } from "react-icons/ti";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import { AiFillLike } from "react-icons/ai";
+import { Link } from "react-router-dom";
+
 export default function ProductDetail() {
-  const [isReasonModalOpen, setIsReasonModalOpen] =  useState(false);
-  const [isFormModalOpen, setIsFormModalOpen] =  useState(false);
-  const [selectedReason, setSelectedReason] =  useState("");
+  const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [selectedReason, setSelectedReason] = useState("");
   const [quantity, setQuantity] = useState(0); // Initial quantity
 
   // Function to handle increment
-  const incrementQuantity  = () => {
+  const incrementQuantity = () => {
     setQuantity((prevQuantity) => prevQuantity + 1);
   };
 
   // Function to handle decrement
-  const decrementQuantity  = () => {
+  const decrementQuantity = () => {
     setQuantity((prevQuantity) => (prevQuantity > 0 ? prevQuantity - 1 : 0));
   };
 
   // Function to handle manual input
-  const handleQuantityChange  = (e) => {
+  const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value, 10);
     if (!isNaN(value) && value >= 0) {
       setQuantity(value);
@@ -29,13 +31,13 @@ export default function ProductDetail() {
   };
 
   // Reset empty input to 1 on blur
-  const handleBlur  = () => {
+  const handleBlur = () => {
     if (!quantity) {
       setQuantity(0);
     }
   };
 
-  const handleReasonSelect   = (reason) => {
+  const handleReasonSelect = (reason) => {
     setSelectedReason(reason);
     setIsReasonModalOpen(false);
     setIsFormModalOpen(true);
@@ -89,8 +91,8 @@ export default function ProductDetail() {
 
             <div className="mt-6 sm:mt-8 lg:mt-0">
               <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
-                Apple iMac All-In-One Computer, Apple M1, 8GB RAM, 256GB
-                SSD, Mac OS, Pink
+                Apple iMac All-In-One Computer, Apple M1, 8GB RAM, 256GB SSD,
+                Mac OS, Pink
               </h1>
 
               <div className="mt-4 sm:items-center sm:gap-4 sm:flex">
@@ -321,6 +323,11 @@ export default function ProductDetail() {
                   </button>
                 </div>
               </div>
+              <Link to="/producsSeller">
+                <p className="ml-3 mt-2 text-sm font-medium text-gray-900 dark:text-white hover:underline">
+                  Người bán: User
+                </p>
+              </Link>
 
               <hr className="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
 

@@ -184,11 +184,12 @@ export default function Product() {
           <div className="flex flex-wrap justify-center gap-3 p-5">
             {/* Card */}
             {productsToDisplay.map((product) => (
+          
               <div
                 key={product.id}
                 className="bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto"
               >
-                <Link>
+                <Link to='/productdetailb  '>
                   <div className="relative p-2.5 overflow-hidden rounded-xl bg-clip-border">
                     <img
                       src={product.productImage} // Use the dynamic product image
@@ -244,10 +245,11 @@ export default function Product() {
                   </div>
                 </Link>
               </div>
+     
             ))}
 
             {/* Pagination Component */}
-            <div className="bottom-0 left-0 right-0 p-4 flex justify-center">
+            <div className="w-full flex justify-center mt-4">
               <ReactPaginate
                 previousLabel={<IoArrowBackCircle />} // Arrow for previous page
                 nextLabel={<IoArrowForwardCircle />} // Arrow for next page
