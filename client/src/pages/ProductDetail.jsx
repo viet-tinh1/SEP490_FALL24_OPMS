@@ -27,14 +27,15 @@ export default function ProductDetail() {
   const userIds = localStorage.getItem("userId");
   // Fetch product data when the component mounts
   useEffect(() => {
-
+    
     const fetchProductData = async () => {
       try {
-        // Fetch product details
+        // lấy data plants theo plantid
         const response = await fetch(`https://localhost:7098/api/PlantAPI/getPlantById?id=${plantId}`);
         if (!response.ok) throw new Error("Không thể lấy dữ liệu sản phẩm");
         const data = await response.json();
         setProductData(data);
+        // lấy thông tin user
         const UsersResponse = await fetch(
           "https://localhost:7098/api/UserAPI/getUser"
         );
@@ -45,7 +46,7 @@ export default function ProductDetail() {
         console.log(usersData)
         setUsers(usersData);
 
-        // Fetch reviews
+        // lấy review của plants
         const reviewResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getReviewsByPlantId?plantId=${plantId}`);
         let reviewData = await reviewResponse.json();
   
@@ -314,7 +315,7 @@ export default function ProductDetail() {
                     onClick={() => setIsReasonModalOpen(true)}
                     className="block text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800"
                   >
-                    Report
+                    Tố cáo
                   </button>
                 </div>
                 {/* Reason Modal */}
@@ -433,7 +434,7 @@ export default function ProductDetail() {
                   className="flex items-center justify-center py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                 >
                   <TiShoppingCart className="text-2xl" />
-                  Add to cart
+                  Thêm vào giỏ hàng
                 </button>
 
                 <a
@@ -442,11 +443,11 @@ export default function ProductDetail() {
                   className="flex items-center justify-center py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                 >
                   <TiShoppingCart className="text-2xl" />
-                  Buy Now
+                  Mua ngay
                 </a>
 
                 {/* Quantity */}
-                <label className="text-gray-900 text-sm dark:text-white ml-4">Quantity:</label>
+                <label className="text-gray-900 text-sm dark:text-white ml-4">Số Lượng:</label>
                 <div className="flex items-center mt-2">
                   <button
                     type="button"
@@ -525,7 +526,7 @@ export default function ProductDetail() {
       <div className="py-10 bg-white shadow-lg shadow-gray-200 rounded-md md:py-10 dark:bg-gray-900 antialiased p-10 m-10">
         {/* Comments List */}
         <div>
-          <h3 className="text-2xl font-semibold mb-6">{ratingSummary.totalReviews} Comments</h3>
+          <h3 className="text-2xl font-semibold mb-6">{ratingSummary.totalReviews} Bình luận</h3>
           <div className="space-y-8">
             {reviews.length > 0 ? (
               reviews.map((review) => (
@@ -545,10 +546,10 @@ export default function ProductDetail() {
                     <div className="flex items-center space-x-4 mt-2">
                       {/* Like button */}
                       <button className="flex items-center text-sm text-blue-500 hover:underline">
-                        <AiFillLike className="mr-1" /> Like
+                        <AiFillLike className="mr-1" /> Thích
                       </button>
                       {/* Reply button */}
-                      <button className="text-sm text-blue-500 hover:underline">Reply</button>
+                      <button className="text-sm text-blue-500 hover:underline">Phản hồi</button>
                     </div>
                   </div>
                 </div>

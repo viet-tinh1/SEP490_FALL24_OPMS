@@ -230,7 +230,7 @@ useEffect(() => {
             {plantsToDisplay.map((plant) => (
               <Table.Row
                 className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
-                key={plant.id}
+                key={plant.plantId}
               >
                 
                 <Table.Cell className="py-4 flex items-center">

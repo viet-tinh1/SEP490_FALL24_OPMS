@@ -180,7 +180,7 @@ export default function DashUsers() {
             {usersToDisplay.map((user) => (
               <Table.Row
                 className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
-                key={user.id}
+                key={user.userId}
               >
                 <Table.Cell className="py-4"> {new Date(user.createdDate).toLocaleDateString('en-CA')}</Table.Cell>
                 <Table.Cell className="py-4 flex items-center">
