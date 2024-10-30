@@ -1,6 +1,6 @@
 import { Sidebar } from "flowbite-react";
 import { TbShoppingBagSearch } from "react-icons/tb";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation  } from "react-router-dom";
 import { PiShoppingCartLight } from "react-icons/pi";
 import ReactPaginate from "react-paginate";
 import { useState, useEffect } from "react";
@@ -18,8 +18,39 @@ export default function Product() {
   const [maxPrice, setMaxPrice] = useState('');
   const [priceError, setPriceError] = useState(null);
   const [notification, setNotification] = useState(null);
+
   
   const userIds = localStorage.getItem("userId");
+
+  const [userId, setUserId] = useState(null);
+  const [role, setRole] = useState(null);
+  const [token, setToken] = useState(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  //lấy session
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const userId = params.get("userId");
+    const role = params.get("role");
+    const token = params.get("token");
+
+    if (userId && role && token) {
+      // Lưu vào state
+      setUserId(userId);
+      setRole(role);
+      setToken(token);
+
+      // Lưu vào localStorage
+      localStorage.setItem("userId", userId);
+      localStorage.setItem("role", role);
+      localStorage.setItem("token", token);
+
+      // Điều hướng tới trang chính
+      navigate("/product"); // Điều hướng tới trang product sau khi lưu thông tin
+    }
+  }, [location, navigate]);
+// lấy sản phẩm 
   useEffect(() => {
     const fetchProductsAndCategories = async () => {
       try {
@@ -79,11 +110,7 @@ export default function Product() {
           setError("Cây trồng không được tìm thấy hoặc chưa được xác minh.");
         }
         throw new Error("Không thể lấy cây trồng đã được lọc");
-      }
-     
-     
-
-      
+      }      
       setProducts(productsData);
     } catch (err) {
       setError(err.message);

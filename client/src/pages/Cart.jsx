@@ -1,3 +1,4 @@
+import { Checkbox } from "flowbite-react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
@@ -394,6 +395,13 @@ export default function Cart() {
                     </dd>
                   </dl>
 
+                </div>
+                
+                <dl className="flex items-center justify-between gap-4">
+                  <dt className="text-base font-bold text-gray-900 dark:text-white">
+                    Tổng Thành tiền:
+
+
                   <dl className="flex items-center justify-between gap-4">
                     <dt className="text-base font-normal text-gray-500 dark:text-gray-400">
                       Thuế
@@ -401,8 +409,15 @@ export default function Cart() {
                     <dd className="text-base font-medium text-gray-900 dark:text-white">
                       ${(calculateSelectedTotalOriginalPrice() * taxRate).toFixed(2)}
                     </dd>
+                  </dl>*/}
+                  <dl className="flex items-center justify-between gap-4 border-t border-gray-200 pt-2 dark:border-gray-700">
+                  <dt className="text-base font-bold text-gray-900 dark:text-white">
+                    Số lượng sản phẩm:
+                  </dt>
+                  <dd className="text-base font-bold text-gray-900 dark:text-white">
+                    8
+                  </dd>
                   </dl>
-                  */}
                   {/* Hiển thị giá trị của voucher nếu đã được áp dụng */}
                   {voucherApplied && (
                     <dl className="flex items-center justify-between gap-4">
@@ -415,23 +430,27 @@ export default function Cart() {
                     </dl>
                   )}
                 </div>
-
                 <dl className="flex items-center justify-between gap-4 border-t border-gray-200 pt-2 dark:border-gray-700">
                   <dt className="text-base font-bold text-gray-900 dark:text-white">
                     Tổng cộng sau khi áp dụng mã giảm giá 
+
                   </dt>
                   <dd className="text-base font-bold text-gray-900 dark:text-white">
                     ${calculateSelectedTotalWithVoucher()}
                   </dd>
                 </dl>
+              
               </div>
 
-              <a
-                href="#"
+              <Link
+                to="/payment"
                 className="flex w-full items-center justify-center rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-300 dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:focus:ring-emerald-800"
               >
                 Tiến hành thanh toán
-              </a>
+
+              </Link>
+
+
               <div className="flex items-center justify-center gap-2">
                 <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
                   hoặc
