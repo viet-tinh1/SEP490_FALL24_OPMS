@@ -74,7 +74,10 @@ namespace Web_API_OPMS.Controllers
             }
 
             try
-            {              
+            {
+                TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+                DateTime utcNow = DateTime.UtcNow;
+                DateTime currentVietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
                 Plant plant = new Plant()
                 {
                     UserId = userId.Value,
@@ -86,7 +89,8 @@ namespace Web_API_OPMS.Controllers
                     Stock = p.Stock,
                     Status = p.Status,
                     IsVerfied = 0,
-                    Discount = p.Discount
+                    Discount = p.Discount,
+                    CreateDate = currentVietnamTime
 
                 };
                 plantRepository.createPlant(plant);
@@ -238,10 +242,17 @@ namespace Web_API_OPMS.Controllers
         
         [HttpGet("searchPlants")]
 
-        public IActionResult SearchPlants([FromQuery] string name = null, [FromQuery] List<int> categoryId = null, [FromQuery] decimal? minPrice = null, [FromQuery] decimal? maxPrice = null)
+        public IActionResult SearchPlants([FromQuery] string name = null, [FromQuery] List<int> categoryId = null, [FromQuery] decimal? minPrice = null, [FromQuery] decimal? maxPrice = null, [FromQuery] int? sortOption = null)
         {
             categoryId ??= new List<int>();           
-            var plants = plantRepository.searchPlants(name, categoryId, minPrice, maxPrice);
+            var plants = plantRepository.searchPlants(name, categoryId, minPrice, maxPrice, sortOption);
+            return Ok(plants);
+        }
+        [HttpGet("searchPlantsByShop")]
+        public IActionResult SearchPlantsByShop([FromQuery] int userId, string name = null, [FromQuery] List<int> categoryId = null, [FromQuery] decimal? minPrice = null, [FromQuery] decimal? maxPrice = null, [FromQuery] int? sortOption = null)
+        {
+            categoryId ??= new List<int>();
+            var plants = plantRepository.SearchPlantsByShop(userId, name, categoryId, minPrice, maxPrice, sortOption);
             return Ok(plants);
         }
 
@@ -251,10 +262,22 @@ namespace Web_API_OPMS.Controllers
             var plants = await plantRepository.GetMostPurchasedPlantsFromShoppingCartAsync(limit);
             return Ok(plants); // Trả về danh sách PlantDTOS
         }
+
+        [HttpGet("most-purchased-by-shop")]
+        public async Task<IActionResult> GetMostPurchasedPlantsByShop([FromQuery] int limit, int userId)
+        {
+            var plants = await plantRepository.GetMostPurchasedPlantsByShopFromShoppingCartAsync(limit,userId);
+            return Ok(plants); // Trả về danh sách PlantDTOS
+        }
         [HttpGet("getPlantByUser")]
         public ActionResult<IEnumerable<Plant>> getPlantByUser(int UserId)
         {
             return plantRepository.getPlantByUser(UserId);
+        }
+        [HttpGet("getPlantByUserIsVerify")]
+        public ActionResult<IEnumerable<Plant>> getPlantByUserIsVerify(int UserId)
+        {
+            return plantRepository.getPlantByUserIsVerify(UserId);
         }
 
     }

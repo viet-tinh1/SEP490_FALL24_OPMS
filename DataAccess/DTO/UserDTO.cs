@@ -28,5 +28,6 @@ namespace DataAccess.DTO
         public string? UserImage { get; set; }
 
         public int? Status { get; set; }
+        public string? ShopName { get; set; }
     }
 }

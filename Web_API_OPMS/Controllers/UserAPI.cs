@@ -133,6 +133,7 @@ namespace Web_API_OPMS.Controllers
                 existingUser.Address = u.Address;
                 existingUser.UserImage = u.UserImage;
                 existingUser.Status = u.Status;
+                existingUser.ShopName = u.ShopName;
 
                 // Save changes
                 UserRepository.UpdateUser(existingUser);
