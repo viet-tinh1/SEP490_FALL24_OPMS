@@ -13,6 +13,8 @@ export default function Header() {
   const [role, setURoles] = useState(null);
   const [email, setEmail] = useState(null);
   const [username, setUserName] = useState(null);
+  const [searchQuery, setSearchQuery] = useState(""); // State for search input
+  const [searchResults, setSearchResults] = useState([]); // State for search results
   const navigate = useNavigate();
   const timeoutRef = useRef(null);
 
@@ -20,30 +22,24 @@ export default function Header() {
 
   const resetInactivityTimeout = () => {
     if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current); // Xóa timeout hiện tại nếu có
+      clearTimeout(timeoutRef.current);
     }
-
-    // Đặt một timeout mới sau 30 phút sẽ thực thi hàm handleSignOut
     timeoutRef.current = setTimeout(() => {
-      handleSignOut(); // Xóa thông tin người dùng sau 30 phút không hoạt động
+      handleSignOut();
     }, INACTIVITY_LIMIT);
   };
-  
-  // Check localStorage for userId when the component mounts
+
   useEffect(() => {
-    // Get userId and role from localStorage when component mounts
     const storedUserId = localStorage.getItem("userId");
     const storedRoles = localStorage.getItem("role");
     const storedEmail = localStorage.getItem("email");
     const storedUserName = localStorage.getItem("username");
-    
-    // Set initial user data to state
+
     setUserId(storedUserId);
     setURoles(storedRoles);
     setEmail(storedEmail);
     setUserName(storedUserName);
-  
-    // Define function to handle localStorage changes
+
     const handleStorageChange = () => {
       const updatedUserId = localStorage.getItem("userId");
       const updatedRoles = localStorage.getItem("role");
@@ -54,39 +50,58 @@ export default function Header() {
       setEmail(updatedEmail);
       setUserName(updatedUserName);
     };
-     // Hàm để reset thời gian không hoạt động khi người dùng tương tác
+
     const handleUserActivity = () => {
-      resetInactivityTimeout(); // Reset lại thời gian không hoạt động
+      resetInactivityTimeout();
     };
-     // Thêm các sự kiện để phát hiện hoạt động của người dùng
+
     window.addEventListener("storage", handleStorageChange);
     window.addEventListener("mousemove", handleUserActivity);
     window.addEventListener("keydown", handleUserActivity);
     window.addEventListener("click", handleUserActivity);
-  
-    // Đặt lại bộ đếm thời gian không hoạt động ngay từ lúc đầu
+
     resetInactivityTimeout();
 
-    // Cleanup the event listener on component unmount
     return () => {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("mousemove", handleUserActivity);
       window.removeEventListener("keydown", handleUserActivity);
       window.removeEventListener("click", handleUserActivity);
       if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current); // Xóa timeout nếu component bị hủy
+        clearTimeout(timeoutRef.current);
       }
     };
   }, []);
-  // Handle sign out logic
-  const handleSignOut = () => {
-    localStorage.removeItem("userId"); // Remove userId from localStorage
-    localStorage.removeItem("role"); // Remove role from localStorage
-    setUserId(null); // Update state
-    setURoles(null); // Reset role state
-    navigate("/"); // Redirect to the homepage
-  };// Redirect to the homepage
 
+  const handleSignOut = () => {
+    localStorage.removeItem("userId");
+    localStorage.removeItem("role");
+    setUserId(null);
+    setURoles(null);
+    navigate("/");
+  };
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(
+        `https://localhost:7098/api/PlantAPI/searchPlants?name=${searchQuery}&categoryId=0`
+      );
+  
+      if (!response.ok) {
+        throw new Error("Failed to fetch search results");
+      }
+  
+      const productsData = await response.json();
+      setSearchResults(productsData); // Store search results in state
+  
+      // Navigate to "/product" with the search query as a URL parameter
+      navigate(`/product?search=${encodeURIComponent(searchQuery)}`, { state: { results: productsData } });
+    } catch (error) {
+      console.error("Error fetching search results:", error);
+    }
+  };
+  
   return (
     <Navbar className="border-b-2">
       <Link
@@ -99,14 +114,25 @@ export default function Header() {
           <FaLeaf className="text-green-500" />
         </div>
       </Link>
-
+      {/* <form onSubmit={handleSearch}>
+        <TextInput
+          type="text"
+          placeholder="Tìm kiếm..."
+          rightIcon={AiOutlineSearch}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="hidden lg:inline"
+        />
+      </form> */}
       {/* Conditionally render the search bar only on the /product page */}
       {path === "/product" && (
-        <form>
+        <form onSubmit={handleSearch}>
           <TextInput
             type="text"
             placeholder="Tìm kiếm..."
             rightIcon={AiOutlineSearch}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="hidden lg:inline"
           />
         </form>
@@ -114,37 +140,32 @@ export default function Header() {
       <Button className="w-12 h-10 lg:hidden" color="gray" pill>
         <AiOutlineSearch />
       </Button>
-
       <div className="flex gap-2 md:order-2">
         <Button className="w-12 h-10 hidden sm:inline" color="gray" pill>
           <FaSun />
         </Button>
-        
+
         {userId ? (
-          // Render Sign Out button if userId exists
           <Dropdown
-          arrowIcon={false}
-          inline
-          label={
-            <Avatar alt='user' img=''rounded />
-          }
-        >
-          <Dropdown.Header>
-            <span className='block text-sm font-medium truncate'>
-              Username : {username}
+            arrowIcon={false}
+            inline
+            label={<Avatar alt="user" img="" rounded />}
+          >
+            <Dropdown.Header>
+              <span className="block text-sm font-medium truncate">
+                Username : {username}
               </span>
-            <span className='block text-sm font-medium truncate'>
-             Email : {email}
-            </span>
-          </Dropdown.Header>
-          <Link to={'/dashboard?tab=profile '}>
-            <Dropdown.Item>Profile</Dropdown.Item>
-          </Link>
-          <Dropdown.Divider />
-          <Dropdown.Item onClick={handleSignOut} >Sign out</Dropdown.Item>
-        </Dropdown>
+              <span className="block text-sm font-medium truncate">
+                Email : {email}
+              </span>
+            </Dropdown.Header>
+            <Link to={"/dashboard?tab=profile "}>
+              <Dropdown.Item>Profile</Dropdown.Item>
+            </Link>
+            <Dropdown.Divider />
+            <Dropdown.Item onClick={handleSignOut}>Sign out</Dropdown.Item>
+          </Dropdown>
         ) : (
-          // Render Sign In button if userId is null
           <Link to="/sign-in">
             <Button gradientDuoTone="greenToBlue">Đăng nhập</Button>
           </Link>
@@ -162,12 +183,11 @@ export default function Header() {
         <Navbar.Link active={path === "/product"} as={"div"}>
           <Link to="/product">Sản Phẩm</Link>
         </Navbar.Link>
-        { (role === '1' || role === '3') && (
+        {(role === "1" || role === "3") && (
           <Navbar.Link active={path === "/dashboard"} as={"div"}>
             <Link to="/dashboard">Dashboard</Link>
           </Navbar.Link>
         )}
-        
         <Navbar.Link active={path === "/cart"} as={"div"}>
           <Link to="/cart" className="text-2xl">
             <MdOutlineShoppingCart />

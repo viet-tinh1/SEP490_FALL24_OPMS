@@ -20,7 +20,7 @@ export default function Product() {
   const [maxPrice, setMaxPrice] = useState('');
   const [priceError, setPriceError] = useState(null);
   const [notification, setNotification] = useState(null);
-
+  const [name, setName] = useState("");
   
   const userIds = localStorage.getItem("userId");
 
@@ -60,6 +60,18 @@ export default function Product() {
       navigate("/product"); // Điều hướng tới trang product sau khi lưu thông tin
     }
   }, [location, navigate]);
+
+  useEffect(() => {
+    // Parse the query parameters
+    const searchParams = new URLSearchParams(location.search);
+    const nameParam = searchParams.get("search"); // Get the "search" parameter from URL
+
+    if (nameParam) {
+      setName(nameParam); // Store the search name in state
+      searchPlants(nameParam); // Call the search function with the name parameter
+    }
+  }, [location.search]);
+
 // lấy sản phẩm 
   useEffect(() => {
     const fetchProductsAndCategories = async () => {
@@ -100,13 +112,13 @@ export default function Product() {
     fetchProductsAndCategories();
   }, []);
 
-  const searchPlants = async (selectedCategoryIds = []) => {
+  const searchPlants = async (name, selectedCategoryIds = []) =>  {
     try {
       const categoryIdsQuery = selectedCategoryIds
         .map((id) => `categoryId=${id}`)
         .join("&");
      
-      let query = `${categoryIdsQuery}`;
+        let query = `name=${encodeURIComponent(name)}&${categoryIdsQuery}`;
       if (minPrice !== null && maxPrice !== null) {
         query += `&minPrice=${minPrice}&maxPrice=${maxPrice}`;
       }
@@ -170,7 +182,7 @@ export default function Product() {
   // Automatically search when price or categories change
   useEffect(() => {
     if (!priceError) {
-      searchPlants(selectedCategories, minPrice, maxPrice);
+      searchPlants(name ,selectedCategories, minPrice, maxPrice);
     }
   }, [selectedCategories, minPrice, maxPrice, priceError]);
 
