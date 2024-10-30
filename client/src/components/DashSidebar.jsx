@@ -67,23 +67,28 @@ export default function DashSidebar() {
     <Sidebar className='w-full md:w-56'>
       <Sidebar.Items>
         <Sidebar.ItemGroup className='flex flex-col gap-1'>
+        {(role === '1' || role === '3') &&(
           <Link to='/dashboard?tab=dash'>
-            <Sidebar.Item active={tab === 'dash' || !tab} icon={HiChartPie} as='div'>
-              Dashboard
-            </Sidebar.Item>
-          </Link>
+          <Sidebar.Item active={tab === 'dash' || !tab} icon={HiChartPie} as='div'>
+            Dashboard
+          </Sidebar.Item>
+        </Link>
+        )}
+          
 
           <Link to='/dashboard?tab=profile'>
             <Sidebar.Item active={tab === 'profile'} icon={HiUser} labelColor='dark' as='div'>
             Hồ sơ
             </Sidebar.Item>
           </Link>
-
-          <Link to='/dashboard?tab=posts'>
+          {(role === '1' || role === '3') &&(
+            <Link to='/dashboard?tab=posts'>
             <Sidebar.Item active={tab === 'posts'} icon={HiDocumentText} as='div'>
             Bài Viết
             </Sidebar.Item>
           </Link>
+          )}
+          
 
           <>
             {role =='1'&&(
@@ -93,13 +98,14 @@ export default function DashSidebar() {
               </Sidebar.Item>
             </Link>
             )}
-            
+            {(role === '1' || role === '3') &&(
             <Link to='/dashboard?tab=comments'>
               <Sidebar.Item active={tab === 'comments'} icon={HiAnnotation} as='div'>
               Quản lý bình luận
               </Sidebar.Item>
             </Link>
-            {role=='3'&&(
+            )}
+            {(role === '1' || role === '3') &&(
               <Link to='/dashboard?tab=product'>
               <Sidebar.Item active={tab === 'product'} icon={HiAnnotation} as='div'>
               Quản Lý Sản phẩm

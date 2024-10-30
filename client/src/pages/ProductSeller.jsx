@@ -4,14 +4,16 @@ import { Link, useNavigate, useLocation  } from "react-router-dom";
 import { PiShoppingCartLight } from "react-icons/pi";
 import ReactPaginate from "react-paginate";
 import { useState, useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
 import { Spinner } from "flowbite-react";
-import { FaThList } from "react-icons/fa";
-import { IoArrowBackCircle, IoArrowForwardCircle,IoChevronDown } from "react-icons/io5";
+import { IoArrowBackCircle, IoArrowForwardCircle } from "react-icons/io5";
+import { IoChevronDown } from "react-icons/io5";
 
-
-export default function Product() {
+export default function ProductSeller() {
+  const {userIdPlant } = useParams();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const usersPerPage = 5;
   const [loading, setLoading] = useState(true);
@@ -21,11 +23,10 @@ export default function Product() {
   const [maxPrice, setMaxPrice] = useState('');
   const [priceError, setPriceError] = useState(null);
   const [notification, setNotification] = useState(null);
-  const [name, setName] = useState("");
+  const closeTimeoutRef = useRef(null);
   const [isPriceDropdownOpen, setIsPriceDropdownOpen] = useState(false);
-
   const userIds = localStorage.getItem("userId");
-  const [sortOption, setSortOption] = useState("");
+
   const [userId, setUserId] = useState(null);
   const [role, setRole] = useState(null);
   const [token, setToken] = useState(null);
@@ -33,8 +34,8 @@ export default function Product() {
   const [username, setUserName] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const closeTimeoutRef = useRef(null);
-
+  const [sortOption, setSortOption] = useState("");
+  
   //lấy session
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -64,40 +65,30 @@ export default function Product() {
     }
   }, [location, navigate]);
 
+  // lấy sản phẩm 
   useEffect(() => {
-    // Parse the query parameters
-    const searchParams = new URLSearchParams(location.search);
-    const nameParam = searchParams.get("search"); // Get the "search" parameter from URL
-
-    if (nameParam) {
-      setName(nameParam); // Store the search name in state
-      searchPlants(nameParam); // Call the search function with the name parameter
-    }
-  }, [location.search]);
-  
-
-
-  useEffect(() => {
+    if (!userIdPlant) return;
+    
     const fetchProductsAndCategories = async () => {
       try {
-        // lấy sản phẩm 
-        const productResponse = await fetch(
-          "https://localhost:7098/api/PlantAPI/getVerifiedPlants"
-        );
-        const productsData = await productResponse.json();
-
-        if (!productResponse.ok) {
+        //lấy plants
+        const productResponses = await fetch(
+          `https://localhost:7098/api/PlantAPI/getPlantByUserIsVerify?UserId=${userIdPlant}`);
+        const productsDatas = await productResponses.json();
+            
+        if (!productResponses.ok) {
           throw new Error("Không thể lấy dữ liệu ");
         }
 
-        if (productsData.message === "No plants available currently.") {
+        if (productsDatas.message === "No plants available currently.") {
           setNotification("Hiện tại không có cây trồng nào có sẵn.");
           setProducts([]);
           setLoading(false);
           return;
         }
-        setProducts(productsData);
-        //lấy category
+        setProducts(productsDatas);
+
+        //lấy loại cây
         const categoryResponse = await fetch(
           "https://localhost:7098/api/CategoryAPI/getCategory"
         );
@@ -106,7 +97,17 @@ export default function Product() {
         }
         const categoryData = await categoryResponse.json();
         setCategories(categoryData);
-
+        
+        //lấy tên users
+        const UsersResponse = await fetch(
+          "https://localhost:7098/api/UserAPI/getUser"
+        );
+        if (!UsersResponse.ok) {
+          throw new Error("Failed to fetch categories");
+        }
+        const usersData = await UsersResponse.json();
+        
+        setUsers(usersData);
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -117,49 +118,71 @@ export default function Product() {
     fetchProductsAndCategories();
   }, []);
 
-  // handel chọn phương thức tìm kiếm 
+  //handle tìm kiếm
   const handleSortClick = async (label, id) => {
     if (id === 2) {
-      setSortOption("most-purchased"); // Assign a unique value for "Most Purchased" sorting
-      try {
-        const response = await fetch("https://localhost:7098/api/PlantAPI/most-purchased?limit=7");
-        const data = await response.json();
-        if (!response.ok) throw new Error("Unable to fetch best-selling products");
-  
-        setProducts(data); // Update the product list directly
-      } catch (err) {
-        setError(err.message);
-      }
+        setSortOption("most-purchased"); // Unique value for "Most Purchased"
+        try {
+            const response = await fetch(`https://localhost:7098/api/PlantAPI/most-purchased-by-shop?limit=7&userId=${userIdPlant}`);
+            const data = await response.json();
+            if (!response.ok) throw new Error("Unable to fetch best-selling products");
+
+            setProducts(data); // Update the product list directly for "Most Purchased"
+        } catch (err) {
+            setError(err.message);
+        }
     } else {
-      setSortOption(id); // For all other cases, set `sortOption` as id
-      await searchPlants(name, selectedCategories, minPrice, maxPrice, id); // Trigger search with sort option
+        setSortOption(id); // For other cases, set `sortOption` to the id
+        await searchPlants(selectedCategories, id); // Trigger search with sort option id
     }
   };
-  
 
-  // Search function 
-  const searchPlants = async (name, selectedCategoryIds = [], minPrice = '', maxPrice = '', sortOptionId = null) => {
+  // tìm kiếm cây
+  const searchPlants = async (selectedCategoryIds = [], sortOptionId = null) => {
     try {
-      const query = [];
-      if (name) query.push(`name=${encodeURIComponent(name)}`);
-      if (selectedCategoryIds.length) {
-        query.push(selectedCategoryIds.map(id => `categoryId=${id}`).join("&"));
+      // Construct the category query part
+      const categoryIdsQuery = selectedCategoryIds
+          .map((id) => `categoryId=${id}`)
+          .join("&");
+
+      // Initialize the query string with category filters if any
+      let query = categoryIdsQuery ? `${categoryIdsQuery}` : '';
+
+      // Add min and max price to the query if they are set
+      if (minPrice && maxPrice) {
+          query += `&minPrice=${minPrice}&maxPrice=${maxPrice}`;
       }
-      if (minPrice) query.push(`minPrice=${minPrice}`);
-      if (maxPrice) query.push(`maxPrice=${maxPrice}`);
-      if (sortOptionId) query.push(`sortOption=${sortOptionId}`);
-      
-      const finalQuery = query.length ? `?${query.join("&")}` : "";
-      const productResponse = await fetch(`https://localhost:7098/api/PlantAPI/searchPlants${finalQuery}`);
-      const productsData = await productResponse.json();
-      if (!productResponse.ok) throw new Error(productsData.message || "Không thể lấy cây trồng đã được lọc");
-      setProducts(productsData);
+
+      // Add userId if available
+      if (userIdPlant) {
+          query += `&userId=${userIdPlant}`;
+      }
+
+      // Add sort option if it exists
+      if (sortOptionId) {
+          query += `&sortOption=${sortOptionId}`;
+      }
+
+      // Fetch the products with the constructed query
+      const productResponses = await fetch(
+          `https://localhost:7098/api/PlantAPI/searchPlantsByShop?${query}`
+      );
+      const productsData = await productResponses.json();
+
+      if (!productResponses.ok) {
+          if (productResponses.status === 404 && productsData.message === "Không có kết quả theo yêu cầu.") {
+              setError("Cây trồng không được tìm thấy hoặc chưa được xác minh.");
+          }
+          throw new Error("Không thể lấy cây trồng đã được lọc");
+      }
+
+      setProducts(productsData); // Update products state with the fetched data
     } catch (err) {
-      setError(err.message);
+      setError(err.message); // Set the error message if the fetch fails
     }
   };
 
-  // handle lấy category
+  //handle lấy categoryid 
   const handleCheckboxChange = (e, categoryId) => {
     let updatedCategories = [...selectedCategories];
 
@@ -173,7 +196,7 @@ export default function Product() {
     
   };
   
-  // mở dropdown tự động
+  //mở dropdown tự động
   const openDropdown = () => {
     // Cancel any pending close timeout if it exists
     if (closeTimeoutRef.current) {
@@ -188,17 +211,16 @@ export default function Product() {
       setIsPriceDropdownOpen(false);
     }, 200); // Adjust the delay as needed
   };
-  
 
   
   // Automatically search when price or categories change
   useEffect(() => {
     if (sortOption !== "most-purchased" && !priceError) {
-      searchPlants(name, selectedCategories, minPrice, maxPrice, sortOption);
+        searchPlants(selectedCategories, sortOption); // Only pass selectedCategories and sortOption
     }
-  }, [name, selectedCategories, minPrice, maxPrice, priceError, sortOption]);
+}, [selectedCategories, minPrice, maxPrice, priceError, userIdPlant, sortOption]);
 
-  // phân trang
+//phân trang
   const pageCount = Math.ceil(products.length / usersPerPage);
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
@@ -215,12 +237,19 @@ export default function Product() {
     return category ? category.categoryName : "Danh mục không xác định";
   };
 
+  // lấy tên user hoặc tên shop
+  const getUserName = (userId) => {
+    const user = users.find((u) => u.userId === userId);
+    return user ? user.shopName : "Không tìm thấy người dùng";
+  };
+
   const [showAll, setShowAll] = useState(false); // State to track whether to show all flowers
 
   const toggleShowAll = () => {
     setShowAll(!showAll);
   };
-  // thêm sản phẩm vào giỏ hàng 
+
+  // thêm vào giỏ hàng
   const addToCart = async (productId, quantity) => {
     try {
         const response = await fetch('https://localhost:7098/api/ShoppingCartAPI/createShoppingCart', {
@@ -247,7 +276,6 @@ export default function Product() {
     }
   };
 
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -259,21 +287,69 @@ export default function Product() {
   if (error) {
     return <div>Error: {error}</div>;
   }
-
   return (
     <main>
+      <div className="p-6 bg-white shadow-lg rounded-md md:py-10 dark:bg-gray-900 shadow-gray-200 antialiased">
+        <div className="flex items-center">
+          {/* Profile Image and Info Section */}
+          <div className="bg-green-500 p-4 rounded-lg flex items-center space-x-4">
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+              {/* Placeholder for Profile Image */}
+              <img
+                  src={users.imageUrl || "https://via.placeholder.com/64"}
+                  alt="Profile"
+                  className="rounded-full"
+              />  
+            </div>
+            {productsToDisplay.slice(0, 1).map((product) => (
+            <div key={product.plantId} className="product-card p-2  rounded-lg ">
+              <h2 className="text-white font-semibold ">
+                {getUserName(product.userId)}
+              </h2>
+            </div>
+            ))}
+            <button className="ml-4 px-3 py-1 bg-red-500 text-white rounded text-sm">
+              Theo dõi
+            </button>
+
+            <button className="ml-4 px-3 py-1 bg-red-500 text-white rounded text-sm">
+            💬Chat
+            </button>
+
+       
+          </div>
+
+        </div>
+
+        {/* Stats Section */}
+        <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-6 text-gray-900 dark:text-white">
+          <p className="flex items-center">
+            <span className="mr-2">🏪</span> Sản Phẩm:{" "}
+            <span className="ml-1 text-red-500">{productsToDisplay.length}</span>
+          </p>
+          <p className="flex items-center">
+            <span className="mr-2">👤</span> Người Theo Dõi:{" "}
+            <span className="ml-1 text-red-500">3,3tr</span>
+          </p>
+          <p className="flex items-center">
+            <span className="mr-2">⭐</span> Đánh Giá:{" "}
+            <span className="ml-1 text-red-500">4.7 (3,2tr Đánh Giá)</span>
+          </p>
+          <p className="flex items-center">
+            <span className="mr-2">⏳</span> Tham Gia:{" "}
+            <span className="ml-1 text-red-500">5 Năm Trước</span>
+          </p>
+        </div>
+      </div>
+
       <div className="flex flex-col md:flex-row">
         <div className="md:w-56">
           <Sidebar className="w-full md:w-56">
             <Sidebar.Items>
               <Sidebar.ItemGroup>
-              <Sidebar.Item as="div">
-                  <div className="flex items-center text-gray-900 dark:text-white">
-                    <FaThList className="mr-2 text-sm" />
-                    <p className="text-lg font-medium">Danh Mục</p>
-                  </div>
+                <Sidebar.Item icon={TbShoppingBagSearch} as="div">
+                   Tìm kiếm theo danh mục
                 </Sidebar.Item>
-                
                 <ul className="ml-6 mt-2 space-y-2">                
                   {categories
                   .slice(0, showAll ? categories.length : 3)
@@ -313,10 +389,9 @@ export default function Product() {
             </Sidebar.Items>
           </Sidebar>
         </div>
-
-        <div className=" flex-wrap gap-4">
-          {/* sắp xếp theo */}
-          <div className="bg-white shadow-lg shadow-gray-200  dark:bg-gray-900 antialiased p-2 flex items-center gap-5 w-full md:max-w-[580px] ">
+        <div className=" flex-wrap gap-4">       
+         {/* sắp xếp theo */}
+         <div className="bg-white shadow-lg shadow-gray-200  dark:bg-gray-900 antialiased p-2 flex items-center gap-5 w-full sm:max-w-[580px]  ">
             <span className="text-gray-500">Sắp xếp theo</span>
             <button
             onClick={() => handleSortClick(5)}
@@ -382,7 +457,8 @@ export default function Product() {
              )}
             </div>
           </div>
-          <div className="flex flex-wrap justify-center gap-3 p-4">
+          <div className="flex flex-wrap justify-center gap-3 p-5">
+          
             {productsToDisplay.length === 0 ? (
               <div className="text-center text-green-600 font-semibold">
                 {notification || "Không có sản phẩm nào có sẵn."}
@@ -393,6 +469,7 @@ export default function Product() {
                   key={product.plantId}
                   className="bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto"
                 >
+                    
                   <Link to={`/productdetail/${product.plantId}`}>
                     <div className="relative p-2.5 overflow-hidden rounded-xl bg-clip-border">
                       <img
@@ -458,10 +535,22 @@ export default function Product() {
                       <PiShoppingCartLight />
                     </button>
                   </div>
-                </div>
+                  <div className="p-2 flex items-center justify-between">
+                  <Link to={`/producsSeller/${product.userId}`}>
+                      <div className="flex items-center space-x-5">
+                        <img
+                          src={users.imageUrl || "https://via.placeholder.com/40"}
+                          alt={product.name}
+                          className="h-10 w-10 object-cover bg-gray-500 rounded-full"
+                        />
+                        <span>{getUserName(product.userId)}</span>
+                      </div>
+                    </Link>
+                  </div>
+               </div>
               ))
-            )}          
-          
+            )}
+
           <div className="w-full flex justify-center mt-4">
               <ReactPaginate
                 previousLabel={<IoArrowBackCircle />} // Arrow for previous page
@@ -492,9 +581,8 @@ export default function Product() {
                 disabledClassName={"opacity-50 cursor-not-allowed"} // Disabled button styling
               />
             </div>
-            </div>
+          </div>                  
         </div>
-        
       </div>
     </main>
   );

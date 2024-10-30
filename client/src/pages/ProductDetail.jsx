@@ -3,8 +3,10 @@ import { TiShoppingCart } from "react-icons/ti";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import { AiFillLike } from "react-icons/ai";
 import { useParams } from "react-router-dom";
+import { Spinner } from "flowbite-react";
 import Rating from 'react-rating-stars-component';
-
+import { Link } from "react-router-dom";
+import CustomRating from "../components/CustomRating";
 export default function ProductDetail() {
 
   const { plantId } = useParams();// Get the plantId from the URL
@@ -21,20 +23,30 @@ export default function ProductDetail() {
   const [comment, setComment] = useState(""); // State to store the user's comment
   const [notification, setNotification] = useState("");
   const [userData, setUserData] = useState(null); // State to store the notification message
-
+  const [users, setUsers] = useState([]);
   const userIds = localStorage.getItem("userId");
   // Fetch product data when the component mounts
   useEffect(() => {
-
+    
     const fetchProductData = async () => {
       try {
-        // Fetch product details
+        // lấy data plants theo plantid
         const response = await fetch(`https://localhost:7098/api/PlantAPI/getPlantById?id=${plantId}`);
         if (!response.ok) throw new Error("Không thể lấy dữ liệu sản phẩm");
         const data = await response.json();
         setProductData(data);
-  
-        // Fetch reviews
+        // lấy thông tin user
+        const UsersResponse = await fetch(
+          "https://localhost:7098/api/UserAPI/getUser"
+        );
+        if (!UsersResponse.ok) {
+          throw new Error("Failed to fetch categories");
+        }
+        const usersData = await UsersResponse.json();
+        console.log(usersData)
+        setUsers(usersData);
+
+        // lấy review của plants
         const reviewResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getReviewsByPlantId?plantId=${plantId}`);
         let reviewData = await reviewResponse.json();
   
@@ -45,7 +57,7 @@ export default function ProductDetail() {
         const updatedReviews = await Promise.all(
           reviewData.map(async (review) => {
             // Fetch userName based on userId
-            const userResponse = await fetch(`https://localhost:7098/api/UserAPI/getUserById?userId=${review.userId}`);
+            const userResponse = await fetch(`https://localhost:7098/api/UserAPI/getUserByIds?userId=${review.userId}`);
             if (!userResponse.ok) {
               console.error(`Error fetching user data for userId: ${review.userId}`);
               return review; // Return the review unchanged if the user API call fails
@@ -61,9 +73,9 @@ export default function ProductDetail() {
         
 
         // Fetch rating summary
-        //const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
-        //const ratingData = await ratingResponse.json();
-        //setRatingSummary(ratingData);
+        const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
+        const ratingData = await ratingResponse.json();
+        setRatingSummary(ratingData);
       } catch (error) {
         setError(error.message);
       } finally {
@@ -74,10 +86,15 @@ export default function ProductDetail() {
     fetchProductData(); // Call the fetch function on mount
 
   }, [plantId]);
+  const handleReasonSelect = (reason) => {
+    setSelectedReason(reason);
+    setIsReasonModalOpen(false);
+    setIsFormModalOpen(true);
+  };
   // Hàm để lấy tên người dùng dựa trên userId
   const fetchUserNameForReview = async (userId) => {
     try {
-      const userResponse = await fetch(`https://localhost:7098/api/UserAPI/getUserById?userId=${userId}`);
+      const userResponse = await fetch(`https://localhost:7098/api/UserAPI/getUserByIds?userId=${userId}`);
       if (!userResponse.ok) {
         console.error(`Error fetching user data for userId: ${userId}`);
         return "Unknown User"; 
@@ -150,6 +167,8 @@ export default function ProductDetail() {
       });
       if (response.ok) {
         setNotification("Đánh giá của bạn đã được gửi");
+        setRating(0);
+        setComment("");
         setTimeout(() => {
           setNotification(""); // Ẩn thông báo sau 3 giây
         }, 3000);
@@ -172,9 +191,9 @@ export default function ProductDetail() {
       });
         setReviews(updatedReviews);
 
-       // const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
-        //const ratingData = await ratingResponse.json();
-        //setRatingSummary(ratingData);
+        const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
+        const ratingData = await ratingResponse.json();
+        setRatingSummary(ratingData);
       } else {
         setNotification("Có lỗi xảy ra khi gửi đánh giá của bạn");
         setTimeout(() => {
@@ -215,16 +234,24 @@ export default function ProductDetail() {
       alert("Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.");
     }
   };
-
+  const getUserName = (userId) => {
+    const user = users.find((u) => u.userId === userId);
+    return user ? user.shopName : "Không tìm thấy người dùng";
+  };
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner aria-label="Loading spinner" size="xl" />
+        <span className="ml-3 text-lg font-semibold">Loading...</span>
+      </div>
+    );
   }
 
   if (error) {
     return <div>Error: {error}</div>;
   }
 
-  const { plantName, price, description, imageUrl, rating: productRating } = productData || {};
+  const { plantName, price, description, imageUrl, rating: productRating,userId } = productData || {};
 
   // Tính số sao trung bình
   const averageRating = (ratingSummary.totalRating / ratingSummary.totalReviews).toFixed(1);
@@ -288,9 +315,116 @@ export default function ProductDetail() {
                     onClick={() => setIsReasonModalOpen(true)}
                     className="block text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800"
                   >
-                    Report
+                    Tố cáo
                   </button>
                 </div>
+                {/* Reason Modal */}
+                {isReasonModalOpen && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center w-full h-full bg-gray-900 bg-opacity-50">
+                    <div
+                      className="relative p-4 bg-white rounded-lg shadow dark:bg-gray-700 max-w-md w-full"
+                      onClick={(e) => e.stopPropagation()} // To prevent closing modal on content click
+                    >
+                      <div className="flex items-center justify-between p-4 border-b rounded-t dark:border-gray-600">
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                          Select reason for complaint
+                        </h3>
+                        <button
+                          className="text-2xl"
+                          onClick={() => setIsReasonModalOpen(false)}
+                        >
+                          <IoCloseCircleOutline />
+                        </button>
+                      </div>
+                      <div className="p-4 space-y-4">
+                        <ul className="space-y-2">
+                          <li>
+                            <button
+                              className="block w-full text-left text-gray-900 hover:underline dark:text-white"
+                              onClick={() => handleReasonSelect("Lý do A")}
+                            >
+                              reason A
+                            </button>
+                          </li>
+                          <li>
+                            <button
+                              className="block w-full text-left text-gray-900 hover:underline dark:text-white"
+                              onClick={() => handleReasonSelect("Lý do B")}
+                            >
+                              reason B
+                            </button>
+                          </li>
+                          <li>
+                            <button
+                              className="block w-full text-left text-gray-900 hover:underline dark:text-white"
+                              onClick={() => handleReasonSelect("Lý do C")}
+                            >
+                              reason C
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Form Modal */}
+                {isFormModalOpen && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center w-full h-full bg-gray-900 bg-opacity-50">
+                    <div
+                      className="relative p-4 bg-white rounded-lg shadow dark:bg-gray-700 max-w-md w-full"
+                      onClick={(e) => e.stopPropagation()} // To prevent closing modal on content click
+                    >
+                      <div className="flex items-center justify-between p-4 border-b rounded-t dark:border-gray-600">
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                          Reason
+                        </h3>
+                        <button
+                          className="text-2xl"
+                          onClick={() => setIsFormModalOpen(false)}
+                        >
+                          <IoCloseCircleOutline />
+                        </button>
+                      </div>
+                      <div className="p-4 space-y-4">
+                        <p className="text-sm text-gray-700 dark:text-white">
+                          Reason you selected: {selectedReason}
+                        </p>
+                        <form>
+                          <div className="mb-4">
+                            <label
+                              htmlFor="complaintDetails"
+                              className="block text-sm font-medium text-gray-700 dark:text-gray-200"
+                            >
+                              Details of the reason for the complaint
+                            </label>
+                            <textarea
+                              id="complaintDetails"
+                              name="complaintDetails"
+                              rows="4"
+                              className="block w-full p-2 mt-1 border rounded-md focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                              required
+                            ></textarea>
+                          </div>
+                          <div className="flex items-center justify-end">
+                            <button
+                              type="submit"
+                              className="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700"
+                            >
+                              Summit
+                            </button>
+                            <button
+                              className="ml-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:bg-gray-500 dark:hover:bg-gray-600"
+                              onClick={() => setIsFormModalOpen(false)}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
@@ -300,7 +434,7 @@ export default function ProductDetail() {
                   className="flex items-center justify-center py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                 >
                   <TiShoppingCart className="text-2xl" />
-                  Add to cart
+                  Thêm vào giỏ hàng
                 </button>
 
                 <a
@@ -309,11 +443,11 @@ export default function ProductDetail() {
                   className="flex items-center justify-center py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                 >
                   <TiShoppingCart className="text-2xl" />
-                  Buy Now
+                  Mua ngay
                 </a>
 
                 {/* Quantity */}
-                <label className="text-gray-900 text-sm dark:text-white ml-4">Quantity:</label>
+                <label className="text-gray-900 text-sm dark:text-white ml-4">Số Lượng:</label>
                 <div className="flex items-center mt-2">
                   <button
                     type="button"
@@ -367,9 +501,13 @@ export default function ProductDetail() {
                   </button>
                 </div>
               </div>
-
+              <br></br>
+              <Link to={`/producsSeller/${userId}`}>
+                <p className="ml-3 mt-2 text-sm font-medium text-gray-900 dark:text-white hover:underline">
+                  Người bán: {getUserName(userId)}
+                </p>
+              </Link>
               <hr className="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
-
               <p className="text-gray-500 dark:text-gray-400">{description}</p>
             </div>
           </div>
@@ -388,7 +526,7 @@ export default function ProductDetail() {
       <div className="py-10 bg-white shadow-lg shadow-gray-200 rounded-md md:py-10 dark:bg-gray-900 antialiased p-10 m-10">
         {/* Comments List */}
         <div>
-          <h3 className="text-2xl font-semibold mb-6">{ratingSummary.totalReviews} Comments</h3>
+          <h3 className="text-2xl font-semibold mb-6">{ratingSummary.totalReviews} Bình luận</h3>
           <div className="space-y-8">
             {reviews.length > 0 ? (
               reviews.map((review) => (
@@ -408,10 +546,10 @@ export default function ProductDetail() {
                     <div className="flex items-center space-x-4 mt-2">
                       {/* Like button */}
                       <button className="flex items-center text-sm text-blue-500 hover:underline">
-                        <AiFillLike className="mr-1" /> Like
+                        <AiFillLike className="mr-1" /> Thích
                       </button>
                       {/* Reply button */}
-                      <button className="text-sm text-blue-500 hover:underline">Reply</button>
+                      <button className="text-sm text-blue-500 hover:underline">Phản hồi</button>
                     </div>
                   </div>
                 </div>
@@ -427,11 +565,12 @@ export default function ProductDetail() {
           <h3 className="text-2xl font-semibold mb-4">Đánh giá sản phẩm</h3>
           <form onSubmit={handleReviewSubmit} className="space-y-4">
             {/* Star Rating Component */}
-            <Rating
-              count={5}
-              onChange={handleRatingChange}
-              size={24}
-              activeColor="#ffd700"
+            <CustomRating
+            count={5}
+            value={rating}
+            onChange={handleRatingChange}
+            size={24}
+            activeColor="#ffd700"
             />
             <div>
               <textarea

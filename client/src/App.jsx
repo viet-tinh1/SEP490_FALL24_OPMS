@@ -11,10 +11,12 @@ import Cart from './pages/Cart'
 import ProductDetail from './pages/ProductDetail'
 import Payment from './pages/Payment'
 import Verify_Otp from './pages/Verify_otp'
+
 import ForgotPassword from './pages/ForgotPassword'
 import ChangePassword from './pages/ChangePassword'
 import VerifyOTP from './pages/VerifyOTP'
 
+import ProductSeller from './pages/ProductSeller'
 
 export default function App() {
   return (
@@ -29,13 +31,13 @@ export default function App() {
           <Route path='/dashboard' element={<Dashboard/>}/>
           <Route path='/product' element={<Product/>}/>
           <Route path='/payment' element={<Payment/>}/>
-
           <Route path='/cart' element={<Cart/>}/>
           <Route path="/productdetail/:plantId" element={<ProductDetail />} />
           <Route path='/verify_otp' element={<Verify_Otp/>} />
           <Route path="/forgot-password" element={<ForgotPassword/>}/>
           <Route path="/change-password" element={<ChangePassword/>}/>
           <Route path='/verifyOTP' element={<VerifyOTP/>} />
+          <Route path='/producsSeller/:userIdPlant' element={<ProductSeller/>}/>
 
 
 

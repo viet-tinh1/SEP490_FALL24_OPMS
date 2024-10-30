@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FaCloudArrowUp } from 'react-icons/fa6';
 import { MdOutlineSell } from 'react-icons/md';
+import { Spinner } from "flowbite-react";
 
 export default function DashProfile() {
   // Khởi tạo state `user`, `error` và `loading`
@@ -134,7 +135,14 @@ export default function DashProfile() {
   };
 
   if (loading) {
-    return <div>Loading...</div>; // Hiển thị trạng thái loading khi đang lấy dữ liệu
+    return (
+      <div className="flex items-center justify-center h-screen w-full">
+        <div className="flex flex-col items-center">
+          <Spinner aria-label="Loading spinner" size="xl" />
+          <span className="mt-3 text-lg font-semibold">Loading...</span>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
