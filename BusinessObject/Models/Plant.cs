@@ -26,6 +26,7 @@ public partial class Plant
 
     public int? IsVerfied { get; set; }
 
+    public DateTime? CreateDate { get; set; }
 
     public decimal? Discount { get; set; }
     public virtual ICollection<ShoppingCartItem> ShoppingCartItems { get; set; } = new List<ShoppingCartItem>();
