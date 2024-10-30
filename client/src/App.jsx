@@ -11,6 +11,7 @@ import Cart from './pages/Cart'
 import ProductDetail from './pages/ProductDetail'
 import Payment from './pages/Payment'
 import Verify_Otp from './pages/Verify_otp'
+import ProductSeller from './pages/ProductSeller'
 export default function App() {
   return (
     <BrowserRouter>
@@ -28,6 +29,7 @@ export default function App() {
           <Route path='/cart' element={<Cart/>}/>
           <Route path="/productdetail/:plantId" element={<ProductDetail />} />
           <Route path='/verify_otp' element={<Verify_Otp/>} />
+          <Route path='/producsSeller/:userIdPlant' element={<ProductSeller/>}/>
 
 
     </Routes>

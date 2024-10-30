@@ -7,6 +7,7 @@ import { MdOutlineShoppingCart } from "react-icons/md";
 import { useState, useEffect, useRef } from "react";
 
 export default function Header() {
+  
   const path = useLocation().pathname;
   const [userId, setUserId] = useState(null);
   const [role, setURoles] = useState(null);
@@ -113,7 +114,6 @@ export default function Header() {
           <FaLeaf className="text-green-500" />
         </div>
       </Link>
-
       {/* <form onSubmit={handleSearch}>
         <TextInput
           type="text"
@@ -140,7 +140,6 @@ export default function Header() {
       <Button className="w-12 h-10 lg:hidden" color="gray" pill>
         <AiOutlineSearch />
       </Button>
-
       <div className="flex gap-2 md:order-2">
         <Button className="w-12 h-10 hidden sm:inline" color="gray" pill>
           <FaSun />
