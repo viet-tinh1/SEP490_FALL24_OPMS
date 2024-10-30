@@ -6,10 +6,15 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using Repositories.Implements;
 using Repositories.Interface;
+using Repositories.Service;
 using System.Data;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Configuration;
+using System.Net.Mail;
+using System;
+
 
 namespace Web_API_OPMS.Controllers
 {
@@ -19,12 +24,18 @@ namespace Web_API_OPMS.Controllers
     {
         private UserRepository UserRepository = new UserRepository();
         private readonly Db6213Context _context;
+        private readonly MailService _mailService;
+        private static string storedOtp = "";
+        private static DateTime otpExpiration;
 
-        public UserAPI(Db6213Context context)
+
+        public UserAPI(Db6213Context context, MailService mailService)
         {
             _context = context;
+            _mailService = mailService;
+
         }
-       
+
         //Lấy danh sách user
         [HttpGet("getUser")]
         public ActionResult<IEnumerable<User>> getUser()
@@ -72,6 +83,66 @@ namespace Web_API_OPMS.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
+        
+        [HttpPost("sendOtpToEmail")]
+        public async Task<IActionResult> SendOtpToEmail([FromBody] MailDto mail)
+        {
+            TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTime utcNow = DateTime.UtcNow;
+            DateTime vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            otpExpiration = vietnamTime.AddMinutes(3); // OTP hết hạn sau 3 phút
+            if (string.IsNullOrEmpty(mail.RecipientEmail))
+            {
+                return BadRequest(new { message = "Email is required" });
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == mail.RecipientEmail);
+            if (user == null)
+            {
+                return NotFound(new { message = "Email not registered" });
+            }
+           
+            // Tạo OTP và gửi qua email
+            string otp = GenerateOtp();
+            // Lưu OTP vào biến tạm (hoặc có thể lưu trong DB)
+            storedOtp = otp;
+
+            string subject = "OTP for Password Reset";
+            string body = $"Your OTP for password reset is: {otp}. This OTP is valid for 5 minutes.";
+            bool emailSent = await _mailService.SendMailAsync(mail.RecipientEmail, subject, body);
+
+            if (emailSent)
+            {
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "OTP sent successfully" });
+            }
+
+            return StatusCode(500, "Failed to send OTP");
+        }
+
+        [HttpPost("verify-otp")]
+        public IActionResult VerifyOtp([FromBody] VerifyOtpRequestDto verifyRequest)
+        {
+            // Lấy giờ hiện tại theo giờ Việt Nam (GMT+7)
+            TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTime utcNow = DateTime.UtcNow;
+            DateTime currentVietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            // Kiểm tra mã OTP có đúng và không hết hạn
+            if (verifyRequest.Otp == storedOtp && currentVietnamTime <= otpExpiration)
+            {
+                return Ok(new { message = "OTP is valid and has not expired." });
+            }
+            else if (currentVietnamTime > otpExpiration)
+            {
+                return BadRequest(new { message = "OTP has expired." });
+            }
+            else
+            {
+                return BadRequest(new { message = "Invalid OTP." });
+            }
+        }
+
+
 
         [HttpPost("changePassword")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO changePasswordDto)
@@ -94,6 +165,29 @@ namespace Web_API_OPMS.Controllers
             }
 
             string newHashedPassword = HashPassword(changePasswordDto.NewPassword);
+            if (newHashedPassword == user.Password)
+            {
+                return BadRequest(new { message = "New password cannot be the same as the old password" });
+            }
+
+            user.Password = newHashedPassword;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Password changed successfully" });
+        }
+
+
+        [HttpPost("changePassword_Email")]
+        public async Task<IActionResult> ChangePassword_Email([FromBody] ChangePassword_EmailDTO changePassword_EmailDto)
+        {
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == changePassword_EmailDto.Email);
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
+            string newHashedPassword = HashPassword(changePassword_EmailDto.NewPassword);
             if (newHashedPassword == user.Password)
             {
                 return BadRequest(new { message = "New password cannot be the same as the old password" });
@@ -190,6 +284,11 @@ namespace Web_API_OPMS.Controllers
             }
 
             return Ok(users);
+        }
+       private string GenerateOtp()
+        {
+            Random random = new Random();
+            return random.Next(100000, 999999).ToString();
         }
 
         //hàm mã hóa password khi create user
