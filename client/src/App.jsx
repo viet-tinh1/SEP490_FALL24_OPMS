@@ -10,6 +10,11 @@ import Product from './pages/Product'
 import Cart from './pages/Cart'
 import ProductDetail from './pages/ProductDetail'
 import Verify_Otp from './pages/Verify_otp'
+import ForgotPassword from './pages/ForgotPassword'
+import ChangePassword from './pages/ChangePassword'
+import VerifyOTP from './pages/VerifyOTP'
+
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -25,6 +30,10 @@ export default function App() {
           <Route path='/cart' element={<Cart/>}/>
           <Route path="/productdetail/:plantId" element={<ProductDetail />} />
           <Route path='/verify_otp' element={<Verify_Otp/>} />
+          <Route path="/forgot-password" element={<ForgotPassword/>}/>
+          <Route path="/change-password" element={<ChangePassword/>}/>
+          <Route path='/verifyOTP' element={<VerifyOTP/>} />
+
 
 
     </Routes>
