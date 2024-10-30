@@ -19,11 +19,8 @@ export default function Home() {
             >
               Xem thêm
             </Link>
-          </div>
-          <div className="flex flex-wrap gap-4">
-            <PlantItem />
-          </div>
-         
+          </div>         
+            <PlantItem />        
         </div>
       </div>
       

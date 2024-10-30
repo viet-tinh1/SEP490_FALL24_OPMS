@@ -3,10 +3,11 @@ import { TbShoppingBagSearch } from "react-icons/tb";
 import { Link, useNavigate, useLocation  } from "react-router-dom";
 import { PiShoppingCartLight } from "react-icons/pi";
 import ReactPaginate from "react-paginate";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Spinner } from "flowbite-react";
 import { IoArrowBackCircle, IoArrowForwardCircle } from "react-icons/io5";
+import { IoChevronDown } from "react-icons/io5";
 
 export default function ProductSeller() {
   const {userIdPlant } = useParams();
@@ -22,8 +23,8 @@ export default function ProductSeller() {
   const [maxPrice, setMaxPrice] = useState('');
   const [priceError, setPriceError] = useState(null);
   const [notification, setNotification] = useState(null);
-
-  
+  const closeTimeoutRef = useRef(null);
+  const [isPriceDropdownOpen, setIsPriceDropdownOpen] = useState(false);
   const userIds = localStorage.getItem("userId");
 
   const [userId, setUserId] = useState(null);
@@ -33,7 +34,8 @@ export default function ProductSeller() {
   const [username, setUserName] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
-
+  const [sortOption, setSortOption] = useState("");
+  
   //lấy session
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -62,12 +64,14 @@ export default function ProductSeller() {
       navigate("/product"); // Điều hướng tới trang product sau khi lưu thông tin
     }
   }, [location, navigate]);
-// lấy sản phẩm 
+
+  // lấy sản phẩm 
   useEffect(() => {
     if (!userIdPlant) return;
     
     const fetchProductsAndCategories = async () => {
       try {
+        //lấy plants
         const productResponses = await fetch(
           `https://localhost:7098/api/PlantAPI/getPlantByUserIsVerify?UserId=${userIdPlant}`);
         const productsDatas = await productResponses.json();
@@ -84,6 +88,7 @@ export default function ProductSeller() {
         }
         setProducts(productsDatas);
 
+        //lấy loại cây
         const categoryResponse = await fetch(
           "https://localhost:7098/api/CategoryAPI/getCategory"
         );
@@ -93,6 +98,7 @@ export default function ProductSeller() {
         const categoryData = await categoryResponse.json();
         setCategories(categoryData);
         
+        //lấy tên users
         const UsersResponse = await fetch(
           "https://localhost:7098/api/UserAPI/getUser"
         );
@@ -112,36 +118,71 @@ export default function ProductSeller() {
     fetchProductsAndCategories();
   }, []);
 
-  const searchPlants = async (selectedCategoryIds = []) => {
-    try {
-      const categoryIdsQuery = selectedCategoryIds
-        .map((id) => `categoryId=${id}`)
-        .join("&");
-     
-      let query = `${categoryIdsQuery}`;
-      if (minPrice !== null && maxPrice !== null) {
-        query += `&minPrice=${minPrice}&maxPrice=${maxPrice}`;
-      }
-      if (userIdPlant) {
-        query += `&userId=${userIdPlant}`;
-      }
-      const productResponses = await fetch(
-        `https://localhost:7098/api/PlantAPI/searchPlantsByShop?${query}`
-      );
-      const productsData = await productResponses.json();
-      if (!productResponses.ok) {
-        
-        if(productResponses.status==404 && productsData.message == "Không có kết quả theo yêu cầu."){
-          setError("Cây trồng không được tìm thấy hoặc chưa được xác minh.");
+  //handle tìm kiếm
+  const handleSortClick = async (label, id) => {
+    if (id === 2) {
+        setSortOption("most-purchased"); // Unique value for "Most Purchased"
+        try {
+            const response = await fetch(`https://localhost:7098/api/PlantAPI/most-purchased-by-shop?limit=7&userId=${userIdPlant}`);
+            const data = await response.json();
+            if (!response.ok) throw new Error("Unable to fetch best-selling products");
+
+            setProducts(data); // Update the product list directly for "Most Purchased"
+        } catch (err) {
+            setError(err.message);
         }
-        throw new Error("Không thể lấy cây trồng đã được lọc");
-      }      
-      setProducts(productsData);
-    } catch (err) {
-      setError(err.message);
+    } else {
+        setSortOption(id); // For other cases, set `sortOption` to the id
+        await searchPlants(selectedCategories, id); // Trigger search with sort option id
     }
   };
 
+  // tìm kiếm cây
+  const searchPlants = async (selectedCategoryIds = [], sortOptionId = null) => {
+    try {
+      // Construct the category query part
+      const categoryIdsQuery = selectedCategoryIds
+          .map((id) => `categoryId=${id}`)
+          .join("&");
+
+      // Initialize the query string with category filters if any
+      let query = categoryIdsQuery ? `${categoryIdsQuery}` : '';
+
+      // Add min and max price to the query if they are set
+      if (minPrice && maxPrice) {
+          query += `&minPrice=${minPrice}&maxPrice=${maxPrice}`;
+      }
+
+      // Add userId if available
+      if (userIdPlant) {
+          query += `&userId=${userIdPlant}`;
+      }
+
+      // Add sort option if it exists
+      if (sortOptionId) {
+          query += `&sortOption=${sortOptionId}`;
+      }
+
+      // Fetch the products with the constructed query
+      const productResponses = await fetch(
+          `https://localhost:7098/api/PlantAPI/searchPlantsByShop?${query}`
+      );
+      const productsData = await productResponses.json();
+
+      if (!productResponses.ok) {
+          if (productResponses.status === 404 && productsData.message === "Không có kết quả theo yêu cầu.") {
+              setError("Cây trồng không được tìm thấy hoặc chưa được xác minh.");
+          }
+          throw new Error("Không thể lấy cây trồng đã được lọc");
+      }
+
+      setProducts(productsData); // Update products state with the fetched data
+    } catch (err) {
+      setError(err.message); // Set the error message if the fetch fails
+    }
+  };
+
+  //handle lấy categoryid 
   const handleCheckboxChange = (e, categoryId) => {
     let updatedCategories = [...selectedCategories];
 
@@ -154,41 +195,32 @@ export default function ProductSeller() {
     setSelectedCategories(updatedCategories);
     
   };
-  const handlePriceChange = (e, priceType) => {
-    const value = e.target.value;
   
-    if (priceType === "min") {
-      setMinPrice(value); // Lưu giá trị minPrice từ input Min
-    } else if (priceType === "max") {
-      setMaxPrice(value); // Lưu giá trị maxPrice từ input Max
+  //mở dropdown tự động
+  const openDropdown = () => {
+    // Cancel any pending close timeout if it exists
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
     }
-  
-    const min = parseFloat(priceType === "min" ? value : minPrice);  // Sử dụng giá trị mới nhập cho min
-    const max = parseFloat(priceType === "max" ? value : maxPrice);  // Sử dụng giá trị mới nhập cho max
-  
-    // Validate that minPrice is not greater than maxPrice
-    if (value.length !== 0 && (!isNaN(min) && !isNaN(max))) {
-      if (min < 0) {
-        setPriceError("Giá tối thiểu không được phép là số âm.");
-      } else if (min > max) {
-        setPriceError("Giá tối thiểu không được lớn hơn giá tối đa.");
-      } else {
-        setPriceError("");  // Xóa lỗi nếu giá trị hợp lệ
-      }
-    } else {
-      setPriceError("");  // Xóa lỗi nếu minPrice hoặc maxPrice trống
-    }
+    setIsPriceDropdownOpen(true);
   };
-  
+  // đóng dropdown tự động
+  const closeDropdown = () => {
+    // Start a delay to close the dropdown
+    closeTimeoutRef.current = setTimeout(() => {
+      setIsPriceDropdownOpen(false);
+    }, 200); // Adjust the delay as needed
+  };
 
   
   // Automatically search when price or categories change
   useEffect(() => {
-    if (!priceError) {
-      searchPlants(selectedCategories, minPrice, maxPrice, userIdPlant); // Thêm userIdPlant vào hàm
+    if (sortOption !== "most-purchased" && !priceError) {
+        searchPlants(selectedCategories, sortOption); // Only pass selectedCategories and sortOption
     }
-  }, [selectedCategories, minPrice, maxPrice, priceError, userIdPlant]); // Thêm userIdPlant vào danh sách phụ thuộc
+}, [selectedCategories, minPrice, maxPrice, priceError, userIdPlant, sortOption]);
 
+//phân trang
   const pageCount = Math.ceil(products.length / usersPerPage);
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
@@ -199,10 +231,13 @@ export default function ProductSeller() {
     (currentPage + 1) * usersPerPage
   );
 
+  // lấy tên category
   const getCategoryName = (categoryId) => {
     const category = categories.find((cat) => cat.categoryId === categoryId);
     return category ? category.categoryName : "Danh mục không xác định";
   };
+
+  // lấy tên user hoặc tên shop
   const getUserName = (userId) => {
     const user = users.find((u) => u.userId === userId);
     return user ? user.shopName : "Không tìm thấy người dùng";
@@ -213,6 +248,8 @@ export default function ProductSeller() {
   const toggleShowAll = () => {
     setShowAll(!showAll);
   };
+
+  // thêm vào giỏ hàng
   const addToCart = async (productId, quantity) => {
     try {
         const response = await fetch('https://localhost:7098/api/ShoppingCartAPI/createShoppingCart', {
@@ -238,7 +275,6 @@ export default function ProductSeller() {
       alert("Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.");
     }
   };
-
 
   if (loading) {
     return (
@@ -349,47 +385,78 @@ export default function ProductSeller() {
                   </button>
                 </div>
               </Sidebar.ItemGroup>
-              {/* tìm kiếm theo giá*/} 
-              <Sidebar.ItemGroup>
-                <Sidebar.Item icon={TbShoppingBagSearch} as="div">
-                   Tìm kiếm theo giá 
-                </Sidebar.Item>
-                <ul className="ml-6 mt-2 space-y-2">
-                  <li>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Giá thấp nhất
-                    </label>
-                    <input
-                      type="number"
-                      className="mt-1 bl56rgb ư5ư5ock w-full p-2 border border-gray-300 rounded-md"
-                      value={minPrice}
-                      onChange={(e) => handlePriceChange(e, "min")} 
-                    />
-                  </li>
-                  <li>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Giá cao nhất
-                    </label>
-                    <input
-                      type="number"
-                      className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                      value={maxPrice}
-                      onChange={(e) => handlePriceChange(e, "max")} 
-                    />
-                  </li>
-                  {priceError && (
-                    <li>
-                      <span className="text-red-500">{priceError}</span>
-                    </li>
-                  )}
-                </ul>
-                
-              </Sidebar.ItemGroup>
+              
             </Sidebar.Items>
           </Sidebar>
         </div>
-        <div className="flex flex-wrap gap-4">
-           
+        <div className=" flex-wrap gap-4">       
+         {/* sắp xếp theo */}
+         <div className="bg-white shadow-lg shadow-gray-200  dark:bg-gray-900 antialiased p-2 flex items-center gap-5 w-full sm:max-w-[580px]  ">
+            <span className="text-gray-500">Sắp xếp theo</span>
+            <button
+            onClick={() => handleSortClick(5)}
+              className={`px-4 py-2 rounded-md font-medium ${
+                sortOption === 5
+                  ? "bg-red-500 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+              
+            >
+              Tất Cả
+            </button>
+            <button 
+              onClick={() => handleSortClick("Mới Nhất", 1)} 
+              className={`px-4 py-2 rounded-md font-medium ${
+              sortOption === 1 ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>
+              Mới Nhất
+            </button>
+            <button 
+            onClick={() => handleSortClick("Bán Chạy", 2)} 
+              className={`px-4 py-2 rounded-md font-medium ${
+              sortOption === "most-purchased" ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>
+              Bán Chạy
+            </button>
+            <div
+              className="relative"
+              onMouseEnter={openDropdown} // Keeps dropdown open if hovering over it
+              onMouseLeave={closeDropdown} // Closes dropdown if leaving dropdown area
+             >
+              <button
+              className={`px-4 py-2 flex items-center rounded-md font-medium ${
+                sortOption === 3 || sortOption === 4 ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+               }`}
+               >
+                 Giá
+              <IoChevronDown className="ml-1" />
+              </button>
+
+             {isPriceDropdownOpen && (
+              <div className="absolute top-full mt-1 min-w-[150px] bg-white shadow-md border rounded-md z-10"
+              onMouseEnter={openDropdown} // Keeps dropdown open if hovering over it
+              onMouseLeave={closeDropdown} // Closes dropdown if leaving dropdown area
+               >
+                <button
+                  onClick={() => {
+                    handleSortClick("Giá: Thấp đến Cao", 3);             
+                    setIsPriceDropdownOpen(false); // Close dropdown after selection
+                  }}
+                  className="block w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
+                 >
+                  Thấp đến Cao
+                </button>
+                <button
+                  onClick={() => {
+                    handleSortClick("Giá: Cao đến Thấp", 4);
+                    setIsPriceDropdownOpen(false); // Close dropdown after selection
+                  }}
+                  className="block w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
+                 >
+                  Cao đến Thấp
+                </button>
+             </div>
+             )}
+            </div>
+          </div>
           <div className="flex flex-wrap justify-center gap-3 p-5">
           
             {productsToDisplay.length === 0 ? (
@@ -483,8 +550,7 @@ export default function ProductSeller() {
                </div>
               ))
             )}
-          
-            </div>
+
           <div className="w-full flex justify-center mt-4">
               <ReactPaginate
                 previousLabel={<IoArrowBackCircle />} // Arrow for previous page
@@ -515,8 +581,8 @@ export default function ProductSeller() {
                 disabledClassName={"opacity-50 cursor-not-allowed"} // Disabled button styling
               />
             </div>
+          </div>                  
         </div>
-        
       </div>
     </main>
   );
