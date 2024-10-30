@@ -200,7 +200,7 @@ public partial class Db6213Context : DbContext
             entity.HasOne(d => d.Order).WithMany(p => p.OrderDetails)
                 .HasForeignKey(d => d.OrderId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__OrderDeta__Order__5070F446");
+               .HasConstraintName("FK_OrderDetails_OrderID");
 
             entity.HasOne(d => d.Plant).WithMany(p => p.OrderDetails)
                 .HasForeignKey(d => d.PlantId)
@@ -238,6 +238,7 @@ public partial class Db6213Context : DbContext
 
             entity.Property(e => e.PlantId).HasColumnName("PlantID");
             entity.Property(e => e.CategoryId).HasColumnName("CategoryID");
+            entity.Property(e => e.CreateDate).HasColumnType("datetime");
             entity.Property(e => e.Description).HasMaxLength(255);
             entity.Property(e => e.Discount)
                 .HasColumnType("decimal(5, 2)")
@@ -305,6 +306,9 @@ public partial class Db6213Context : DbContext
             entity.Property(e => e.PhoneNumber)
                 .HasMaxLength(20)
                 .IsUnicode(false);
+            entity.Property(e => e.ShopName)
+                .HasMaxLength(100)
+                .HasColumnName("shop_name");
             entity.Property(e => e.UserImage).HasMaxLength(255);
             entity.Property(e => e.Username)
                 .HasMaxLength(50)

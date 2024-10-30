@@ -61,6 +61,7 @@ namespace DataAccess.DAO
                 user.UserImage = u.UserImage;
                 user.Status = u.Status;
                 user.CreatedDate = u.CreatedDate;
+                user.ShopName = u.ShopName;
 
                 _context.Users.Update(user); // Cập nhật User trong cơ sở dữ liệu.
                 _context.SaveChanges(); // Lưu thay đổi vào cơ sở dữ liệu.

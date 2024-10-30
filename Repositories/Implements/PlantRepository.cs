@@ -57,16 +57,31 @@ namespace Repositories.Implements
             return plantDAO.getPlantByUser(UserId);
 
         }
+        public List<Plant> getPlantByUserIsVerify(int UserId)
+        {
+            return plantDAO.getPlantByUserIsVerify(UserId);
+
+        }
         //hàm để lấy  list plant theo name , price , category 
-        public List<Plant> searchPlants(string name = null, List<int> categoryId = null, decimal? minPrice = null, decimal? maxPrice = null)
+        public List<Plant> searchPlants(string name = null, List<int> categoryId = null, decimal? minPrice = null, decimal? maxPrice = null, int? sortOption = null)
 
         {
             // Gọi phương thức searchPlants từ PlantDAO với các tham số có thể là null
-            return plantDAO.searchPlants(name, categoryId, minPrice, maxPrice);
+            return plantDAO.searchPlants(name, categoryId, minPrice, maxPrice, sortOption);
+        }
+        public List<Plant> SearchPlantsByShop(int userId, string name = null, List<int> categoryId = null, decimal? minPrice = null, decimal? maxPrice = null, int? sortOption = null)
+
+        {
+            // Gọi phương thức searchPlants từ PlantDAO với các tham số có thể là null
+            return plantDAO.SearchPlantsByShop(userId, name, categoryId, minPrice, maxPrice, sortOption);
         }
         public async Task <List<PlantDTOS>> GetMostPurchasedPlantsFromShoppingCartAsync(int limit)
         {
             return  await plantDAO.GetMostPurchasedPlantsFromShoppingCartAsync(limit);
+        }
+        public async Task<List<PlantDTOS>> GetMostPurchasedPlantsByShopFromShoppingCartAsync(int limit, int userId)
+        {
+            return await plantDAO.GetMostPurchasedPlantsByShopFromShoppingCartAsync(limit, userId);
         }
 
     }
