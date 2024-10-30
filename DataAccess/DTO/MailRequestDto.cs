@@ -12,4 +12,9 @@ namespace DataAccess.DTO
         public string RecipientEmail { get; set; }
        
     }
+    public class MailDto
+    {
+        public string RecipientEmail { get; set; }
+
+    }
 }

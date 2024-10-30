@@ -12,4 +12,9 @@ namespace DataAccess.DTO
         public string CurrentPassword { get; set; }
         public string NewPassword { get; set; }
     }
+    public class ChangePassword_EmailDTO
+    {
+        public string Email { get; set; }
+        public string NewPassword { get; set; }
+    }
 }
