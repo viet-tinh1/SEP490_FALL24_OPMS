@@ -4,13 +4,15 @@ import { Link, useNavigate, useLocation  } from "react-router-dom";
 import { PiShoppingCartLight } from "react-icons/pi";
 import ReactPaginate from "react-paginate";
 import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { Spinner } from "flowbite-react";
-import { FaThList } from "react-icons/fa";
 import { IoArrowBackCircle, IoArrowForwardCircle } from "react-icons/io5";
 
-export default function Product() {
+export default function ProductSeller() {
+  const {userIdPlant } = useParams();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const usersPerPage = 5;
   const [loading, setLoading] = useState(true);
@@ -20,7 +22,7 @@ export default function Product() {
   const [maxPrice, setMaxPrice] = useState('');
   const [priceError, setPriceError] = useState(null);
   const [notification, setNotification] = useState(null);
-  const [name, setName] = useState("");
+
   
   const userIds = localStorage.getItem("userId");
 
@@ -60,38 +62,27 @@ export default function Product() {
       navigate("/product"); // Điều hướng tới trang product sau khi lưu thông tin
     }
   }, [location, navigate]);
-
-  useEffect(() => {
-    // Parse the query parameters
-    const searchParams = new URLSearchParams(location.search);
-    const nameParam = searchParams.get("search"); // Get the "search" parameter from URL
-
-    if (nameParam) {
-      setName(nameParam); // Store the search name in state
-      searchPlants(nameParam); // Call the search function with the name parameter
-    }
-  }, [location.search]);
-
 // lấy sản phẩm 
   useEffect(() => {
+    if (!userIdPlant) return;
+    
     const fetchProductsAndCategories = async () => {
       try {
-        const productResponse = await fetch(
-          "https://localhost:7098/api/PlantAPI/getVerifiedPlants"
-        );
-        const productsData = await productResponse.json();
-
-        if (!productResponse.ok) {
+        const productResponses = await fetch(
+          `https://localhost:7098/api/PlantAPI/getPlantByUserIsVerify?UserId=${userIdPlant}`);
+        const productsDatas = await productResponses.json();
+            
+        if (!productResponses.ok) {
           throw new Error("Không thể lấy dữ liệu ");
         }
 
-        if (productsData.message === "No plants available currently.") {
+        if (productsDatas.message === "No plants available currently.") {
           setNotification("Hiện tại không có cây trồng nào có sẵn.");
           setProducts([]);
           setLoading(false);
           return;
         }
-        setProducts(productsData);
+        setProducts(productsDatas);
 
         const categoryResponse = await fetch(
           "https://localhost:7098/api/CategoryAPI/getCategory"
@@ -101,7 +92,16 @@ export default function Product() {
         }
         const categoryData = await categoryResponse.json();
         setCategories(categoryData);
-
+        
+        const UsersResponse = await fetch(
+          "https://localhost:7098/api/UserAPI/getUser"
+        );
+        if (!UsersResponse.ok) {
+          throw new Error("Failed to fetch categories");
+        }
+        const usersData = await UsersResponse.json();
+        
+        setUsers(usersData);
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -112,23 +112,26 @@ export default function Product() {
     fetchProductsAndCategories();
   }, []);
 
-  const searchPlants = async (name, selectedCategoryIds = []) =>  {
+  const searchPlants = async (selectedCategoryIds = []) => {
     try {
       const categoryIdsQuery = selectedCategoryIds
         .map((id) => `categoryId=${id}`)
         .join("&");
      
-        let query = `name=${encodeURIComponent(name)}&${categoryIdsQuery}`;
+      let query = `${categoryIdsQuery}`;
       if (minPrice !== null && maxPrice !== null) {
         query += `&minPrice=${minPrice}&maxPrice=${maxPrice}`;
       }
-      const productResponse = await fetch(
-        `https://localhost:7098/api/PlantAPI/searchPlants?${query}`
+      if (userIdPlant) {
+        query += `&userId=${userIdPlant}`;
+      }
+      const productResponses = await fetch(
+        `https://localhost:7098/api/PlantAPI/searchPlantsByShop?${query}`
       );
-      const productsData = await productResponse.json();
-      if (!productResponse.ok) {
+      const productsData = await productResponses.json();
+      if (!productResponses.ok) {
         
-        if(productResponse.status==404 && productsData.message == "Không có kết quả theo yêu cầu."){
+        if(productResponses.status==404 && productsData.message == "Không có kết quả theo yêu cầu."){
           setError("Cây trồng không được tìm thấy hoặc chưa được xác minh.");
         }
         throw new Error("Không thể lấy cây trồng đã được lọc");
@@ -182,9 +185,9 @@ export default function Product() {
   // Automatically search when price or categories change
   useEffect(() => {
     if (!priceError) {
-      searchPlants(name ,selectedCategories, minPrice, maxPrice);
+      searchPlants(selectedCategories, minPrice, maxPrice, userIdPlant); // Thêm userIdPlant vào hàm
     }
-  }, [selectedCategories, minPrice, maxPrice, priceError]);
+  }, [selectedCategories, minPrice, maxPrice, priceError, userIdPlant]); // Thêm userIdPlant vào danh sách phụ thuộc
 
   const pageCount = Math.ceil(products.length / usersPerPage);
   const handlePageClick = ({ selected }) => {
@@ -199,6 +202,10 @@ export default function Product() {
   const getCategoryName = (categoryId) => {
     const category = categories.find((cat) => cat.categoryId === categoryId);
     return category ? category.categoryName : "Danh mục không xác định";
+  };
+  const getUserName = (userId) => {
+    const user = users.find((u) => u.userId === userId);
+    return user ? user.shopName : "Không tìm thấy người dùng";
   };
 
   const [showAll, setShowAll] = useState(false); // State to track whether to show all flowers
@@ -244,21 +251,69 @@ export default function Product() {
   if (error) {
     return <div>Error: {error}</div>;
   }
-
   return (
     <main>
+      <div className="p-6 bg-white shadow-lg rounded-md md:py-10 dark:bg-gray-900 shadow-gray-200 antialiased">
+        <div className="flex items-center">
+          {/* Profile Image and Info Section */}
+          <div className="bg-green-500 p-4 rounded-lg flex items-center space-x-4">
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+              {/* Placeholder for Profile Image */}
+              <img
+                  src={users.imageUrl || "https://via.placeholder.com/64"}
+                  alt="Profile"
+                  className="rounded-full"
+              />  
+            </div>
+            {productsToDisplay.slice(0, 1).map((product) => (
+            <div key={product.plantId} className="product-card p-2  rounded-lg ">
+              <h2 className="text-white font-semibold ">
+                {getUserName(product.userId)}
+              </h2>
+            </div>
+            ))}
+            <button className="ml-4 px-3 py-1 bg-red-500 text-white rounded text-sm">
+              Theo dõi
+            </button>
+
+            <button className="ml-4 px-3 py-1 bg-red-500 text-white rounded text-sm">
+            💬Chat
+            </button>
+
+       
+          </div>
+
+        </div>
+
+        {/* Stats Section */}
+        <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-6 text-gray-900 dark:text-white">
+          <p className="flex items-center">
+            <span className="mr-2">🏪</span> Sản Phẩm:{" "}
+            <span className="ml-1 text-red-500">{productsToDisplay.length}</span>
+          </p>
+          <p className="flex items-center">
+            <span className="mr-2">👤</span> Người Theo Dõi:{" "}
+            <span className="ml-1 text-red-500">3,3tr</span>
+          </p>
+          <p className="flex items-center">
+            <span className="mr-2">⭐</span> Đánh Giá:{" "}
+            <span className="ml-1 text-red-500">4.7 (3,2tr Đánh Giá)</span>
+          </p>
+          <p className="flex items-center">
+            <span className="mr-2">⏳</span> Tham Gia:{" "}
+            <span className="ml-1 text-red-500">5 Năm Trước</span>
+          </p>
+        </div>
+      </div>
+
       <div className="flex flex-col md:flex-row">
         <div className="md:w-56">
           <Sidebar className="w-full md:w-56">
             <Sidebar.Items>
               <Sidebar.ItemGroup>
-              <Sidebar.Item as="div">
-                  <div className="flex items-center text-gray-900 dark:text-white">
-                    <FaThList className="mr-2 text-sm" />
-                    <p className="text-lg font-medium">Danh Mục</p>
-                  </div>
+                <Sidebar.Item icon={TbShoppingBagSearch} as="div">
+                   Tìm kiếm theo danh mục
                 </Sidebar.Item>
-                
                 <ul className="ml-6 mt-2 space-y-2">                
                   {categories
                   .slice(0, showAll ? categories.length : 3)
@@ -333,9 +388,10 @@ export default function Product() {
             </Sidebar.Items>
           </Sidebar>
         </div>
-
         <div className="flex flex-wrap gap-4">
+           
           <div className="flex flex-wrap justify-center gap-3 p-5">
+          
             {productsToDisplay.length === 0 ? (
               <div className="text-center text-green-600 font-semibold">
                 {notification || "Không có sản phẩm nào có sẵn."}
@@ -346,6 +402,7 @@ export default function Product() {
                   key={product.plantId}
                   className="bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto"
                 >
+                    
                   <Link to={`/productdetail/${product.plantId}`}>
                     <div className="relative p-2.5 overflow-hidden rounded-xl bg-clip-border">
                       <img
@@ -411,11 +468,23 @@ export default function Product() {
                       <PiShoppingCartLight />
                     </button>
                   </div>
-                </div>
+                  <div className="p-2 flex items-center justify-between">
+                  <Link to={`/producsSeller/${product.userId}`}>
+                      <div className="flex items-center space-x-5">
+                        <img
+                          src={users.imageUrl || "https://via.placeholder.com/40"}
+                          alt={product.name}
+                          className="h-10 w-10 object-cover bg-gray-500 rounded-full"
+                        />
+                        <span>{getUserName(product.userId)}</span>
+                      </div>
+                    </Link>
+                  </div>
+               </div>
               ))
             )}
           
-          </div>
+            </div>
           <div className="w-full flex justify-center mt-4">
               <ReactPaginate
                 previousLabel={<IoArrowBackCircle />} // Arrow for previous page
