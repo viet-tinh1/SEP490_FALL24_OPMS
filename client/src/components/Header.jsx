@@ -7,6 +7,7 @@ import { MdOutlineShoppingCart } from "react-icons/md";
 import { useState, useEffect, useRef } from "react";
 
 export default function Header() {
+  
   const path = useLocation().pathname;
   const [userId, setUserId] = useState(null);
   const [role, setURoles] = useState(null);
@@ -99,14 +100,17 @@ export default function Header() {
         </div>
       </Link>
 
-      <form>
-        <TextInput
-          type="text"
-          placeholder="Tìm kiếm..."
-          rightIcon={AiOutlineSearch}
-          className="hidden lg:inline"
-        />
-      </form>
+      {/* Conditionally render the search bar only on the /product page */}
+      {path === "/product" && (
+        <form>
+          <TextInput
+            type="text"
+            placeholder="Tìm kiếm..."
+            rightIcon={AiOutlineSearch}
+            className="hidden lg:inline"
+          />
+        </form>
+      )}
       <Button className="w-12 h-10 lg:hidden" color="gray" pill>
         <AiOutlineSearch />
       </Button>
