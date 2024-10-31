@@ -66,7 +66,7 @@ export default function DashUsers() {
                 className="w-full"
               />
             </form>
-            <Button className="ml-3 w-full md:w-auto">Thêm người dùng</Button>
+            <Button className="w-full md:w-auto">Thêm người dùng</Button>
           </div>
         </div>
       </div>

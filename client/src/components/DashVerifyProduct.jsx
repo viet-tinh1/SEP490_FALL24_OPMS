@@ -1,4 +1,4 @@
-import { Modal, Table, Button } from "flowbite-react";
+import { Table, Button } from "flowbite-react";
 import { useState } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 import ReactPaginate from "react-paginate";
@@ -47,8 +47,7 @@ export default function DashVerifyProduct() {
         product.id === productId
           ? {
               ...product,
-              verify:
-                product.verify === "Verified" ? "Not Verified" : "Verified",
+              verify: product.verify === "Verified" ? "Not Verified" : "Verified",
             }
           : product
       )
@@ -68,13 +67,13 @@ export default function DashVerifyProduct() {
           <h1 className="text-2xl font-semibold text-gray-900 mb-4">
             Duyệt sản phẩm
           </h1>
-          <div className="flex justify-between items-center mb-6">
-            <form className="flex-grow max-w-xs">
+          <div className="flex flex-wrap gap-4 items-center mb-6">
+            <form className="flex-grow max-w-xs w-full md:w-1/2">
               <TextInput
                 type="text"
                 placeholder="Tìm kiếm  ..."
                 rightIcon={AiOutlineSearch}
-                className=" lg:inline w-full"
+                className="w-full"
               />
             </form>
           </div>
@@ -98,21 +97,11 @@ export default function DashVerifyProduct() {
             <Table.HeadCell>Tên</Table.HeadCell>
             <Table.HeadCell>Mô tả</Table.HeadCell>
             <Table.HeadCell>Giá</Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">
-              Số lượng
-            </Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">
-              Giảm giá
-            </Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">
-              Trạng thái
-            </Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">
-              Xác thực
-            </Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">
-              Hành động
-            </Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Số lượng</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Giảm giá</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Trạng thái</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Xác thực</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Hành động</Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y">
             {productsToDisplay.map((product) => (
@@ -130,22 +119,12 @@ export default function DashVerifyProduct() {
                 <Table.Cell className="p-4">{product.category}</Table.Cell>
                 <Table.Cell className="p-4">{product.name}</Table.Cell>
                 <Table.Cell className="p-4">{product.description}</Table.Cell>
-                <Table.Cell className="p-4 text-center">
-                  {product.price}
-                </Table.Cell>
-                <Table.Cell className="p-4 text-center">
-                  {product.stock}
-                </Table.Cell>
-                <Table.Cell className="p-4 text-center">
-                  {product.discount}
-                </Table.Cell>
-                <Table.Cell className="p-4 text-center">
-                  {product.status}
-                </Table.Cell>
-                <Table.Cell className="p-4 text-center">
-                  {product.verify}
-                </Table.Cell>
-                <Table.Cell className="py-4 flex space-x-2">
+                <Table.Cell className="p-4 text-center">{product.price}</Table.Cell>
+                <Table.Cell className="p-4 text-center">{product.stock}</Table.Cell>
+                <Table.Cell className="p-4 text-center">{product.discount}</Table.Cell>
+                <Table.Cell className="p-4 text-center">{product.status}</Table.Cell>
+                <Table.Cell className="p-4 text-center">{product.verify}</Table.Cell>
+                <Table.Cell className="py-4 flex space-x-2 justify-center">
                   <Button
                     onClick={() => toggleVerifyStatus(product.id)}
                     className={
@@ -174,8 +153,8 @@ export default function DashVerifyProduct() {
           nextLabel={"Trước →"}
           pageCount={pageCount}
           onPageChange={handlePageClick}
-          containerClassName={"flex space-x-4"}
-          pageLinkClassName={"py-2 px-4 border rounded"}
+          containerClassName={"flex flex-wrap justify-center space-x-2 md:space-x-4"}
+          pageLinkClassName={"py-2 px-3 border rounded text-sm"}
           activeClassName={"bg-blue-600 text-white"}
           disabledClassName={"opacity-50 cursor-not-allowed"}
         />
