@@ -58,15 +58,15 @@ export default function DashUsers() {
         <div className="mb-4">
           <h1 className="text-2xl font-semibold text-gray-900">Tất cả người dùng</h1>
           <div className="flex flex-wrap justify-between mt-4 gap-3">
-            <form className="flex-grow max-w-xs">
+            <form className="flex-grow max-w-xs w-full md:w-1/2">
               <TextInput
                 type="text"
                 placeholder="Tìm kiếm..."
                 rightIcon={AiOutlineSearch}
-                className=" lg:inline w-full"
+                className="w-full"
               />
             </form>
-            <Button className="ml-3">Thêm người dùng</Button>
+            <Button className="ml-3 w-full md:w-auto">Thêm người dùng</Button>
           </div>
         </div>
       </div>
@@ -124,8 +124,8 @@ export default function DashUsers() {
           nextLabel={"Trước →"}
           pageCount={pageCount}
           onPageChange={handlePageClick}
-          containerClassName={"flex space-x-4"}
-          pageLinkClassName={"py-2 px-4 border rounded"}
+          containerClassName={"flex flex-wrap justify-center space-x-2 md:space-x-4"}
+          pageLinkClassName={"py-2 px-3 border rounded text-sm"}
           activeClassName={"bg-blue-600 text-white"}
           disabledClassName={"opacity-50 cursor-not-allowed"}
         />
