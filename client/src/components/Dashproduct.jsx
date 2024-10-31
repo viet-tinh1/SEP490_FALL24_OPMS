@@ -2,222 +2,197 @@ import { Modal, Table, Button } from "flowbite-react";
 import { useState } from "react";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 import { AiOutlineSearch } from "react-icons/ai";
-import { MdDelete, MdEdit } from "react-icons/md"; // Import delete and edit icons
-import ReactPaginate from "react-paginate"; // Import the pagination library
+import { MdDelete, MdEdit } from "react-icons/md";
+import ReactPaginate from "react-paginate";
 import { TextInput } from "flowbite-react";
 
 export default function Dashproduct() {
-  const [users, setUsers] = useState([
+  const [products, setProducts] = useState([
     {
       id: 1,
-      dateCreated: "2023-09-01",
-      userImage: "https://via.placeholder.com/40",
-      username: "john_doe",
-      email: "john@example.com",
-      phoneNumber: "123-456-7890",
-      roles: "User",
-      fullName: "John Doe",
-      address: "123 Main St, Springfield",
+      image: "https://via.placeholder.com/40",
+      category: "Electronics",
+      name: "Smartphone",
+      description: "High-quality smartphone with advanced features",
+      price: "$699",
+      stock: 25,
+      discount: "10%",
+      status: "Available",
+      verify: "Verified",
     },
     {
       id: 2,
-      dateCreated: "2023-09-02",
-      userImage: "https://via.placeholder.com/40",
-      username: "jane_smith",
-      email: "jane@example.com",
-      phoneNumber: "987-654-3210",
-      roles: "Admin",
-      fullName: "Jane Smith",
-      address: "456 Elm St, Shelbyville",
+      image: "https://via.placeholder.com/40",
+      category: "Home Appliances",
+      name: "Air Conditioner",
+      description: "Energy-efficient AC with fast cooling",
+      price: "$499",
+      stock: 15,
+      discount: "15%",
+      status: "Out of Stock",
+      verify: "Not Verified",
     },
     {
       id: 3,
-      dateCreated: "2023-09-03",
-      userImage: "https://via.placeholder.com/40",
-      username: "samuel_lee",
-      email: "samuel@example.com",
-      phoneNumber: "555-123-4567",
-      roles: "Seller",
-      fullName: "Samuel Lee",
-      address: "789 Oak St, Ogdenville",
+      image: "https://via.placeholder.com/40",
+      category: "Fashion",
+      name: "T-Shirt",
+      description: "Comfortable cotton t-shirt",
+      price: "$29",
+      stock: 100,
+      discount: "5%",
+      status: "Available",
+      verify: "Verified",
     },
     {
       id: 4,
-      dateCreated: "2023-09-04",
-      userImage: "https://via.placeholder.com/40",
-      username: "linda_jones",
-      email: "linda@example.com",
-      phoneNumber: "111-222-3333",
-      roles: "User",
-      fullName: "Linda Jones",
-      address: "555 Pine St, Springfield",
+      image: "https://via.placeholder.com/40",
+      category: "Electronics",
+      name: "Laptop",
+      description: "Powerful laptop for work and gaming",
+      price: "$999",
+      stock: 10,
+      discount: "8%",
+      status: "Available",
+      verify: "Verified",
     },
   ]);
 
   const [showModal, setShowModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null); // Store selected user
-  const [currentPage, setCurrentPage] = useState(0); // Track current page
-  const usersPerPage = 3; // Limit the number of users per page
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const productsPerPage = 3;
 
-  const handleDelete = (user) => {
-    setSelectedUser(user); // Set the current user
-    setShowModal(true); // Show the modal for deletion
-  };
-
-  const handleEdit = (user) => {
-    // Logic for editing user (can show a form or redirect to another page)
-    console.log("Edit user", user);
+  const handleDelete = (product) => {
+    setSelectedProduct(product);
+    setShowModal(true);
   };
 
   const handleConfirmDelete = () => {
-    // Remove the selected user
-    setUsers((prevUsers) =>
-      prevUsers.filter((user) => user.id !== selectedUser.id)
+    setProducts((prevProducts) =>
+      prevProducts.filter((product) => product.id !== selectedProduct.id)
     );
-    setShowModal(false); // Close the modal
+    setShowModal(false);
   };
 
   const handleCancel = () => {
-    setShowModal(false); // Close the modal without making changes
+    setShowModal(false);
   };
 
-  // Pagination: Calculate the number of pages
-  const pageCount = Math.ceil(users.length / usersPerPage);
+  const pageCount = Math.ceil(products.length / productsPerPage);
 
-  // Handle page click
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
   };
 
-  // Get users to display on the current page
-  const usersToDisplay = users.slice(
-    currentPage * usersPerPage,
-    (currentPage + 1) * usersPerPage
+  const productsToDisplay = products.slice(
+    currentPage * productsPerPage,
+    (currentPage + 1) * productsPerPage
   );
 
   return (
-    <main className="overflow-x-auto md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
-      <div className="shadow-md md:mx-auto p-3 rounded-lg bg-white dark:bg-gray-800 my-4">
-        <div className="mb-1 w-full">
-          <div className="mb-4">
-            <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl">
-              All Products
-            </h1>
-            <div className="sm:flex">
-              <div className="hidden items-center mb-3 sm:flex sm:divide-x sm:divide-gray-100 sm:mb-0">
-                <form>
-                  <TextInput
-                    type="text"
-                    placeholder="Search..."
-                    rightIcon={AiOutlineSearch}
-                    className="hidden lg:inline"
-                  />
-                </form>
-              </div>
-              <div className="flex items-center ml-auto space-x-2 sm:space-x-3">
-                <Button>Add Product</Button>
-              </div>
-            </div>
+    <main className="overflow-x-auto md:mx-auto p-4">
+      <div className="shadow-md rounded-lg bg-white dark:bg-gray-800 mb-6 p-4">
+        <div className="mb-4">
+          <h1 className="text-2xl font-semibold text-gray-900">Tất cả sản phẩm</h1>
+          <div className="flex justify-between mt-4">
+            <form className="flex-grow max-w-xs">
+              <TextInput
+                type="text"
+                placeholder="Tìm kiếm..."
+                rightIcon={AiOutlineSearch}
+                className="hidden lg:inline w-full"
+              />
+            </form>
+            <Button className="ml-3">Thêm sản phẩm</Button>
           </div>
         </div>
       </div>
 
-      <div className="table-auto ">
-        <Table hoverable className="shadow-md">
+      <div className="overflow-x-auto shadow-md rounded-lg">
+        <Table hoverable className="w-full">
           <Table.Head>
-            <Table.HeadCell>Date Created</Table.HeadCell>
-            <Table.HeadCell>Image</Table.HeadCell>
-            <Table.HeadCell>Username</Table.HeadCell>
-            <Table.HeadCell>Email</Table.HeadCell>
-            <Table.HeadCell>Phone Number</Table.HeadCell>
-            <Table.HeadCell>Roles</Table.HeadCell>
-            <Table.HeadCell>Address</Table.HeadCell>
-            <Table.HeadCell>Edit / Delete</Table.HeadCell>
+            <Table.HeadCell>Ảnh</Table.HeadCell>
+            <Table.HeadCell>Loại</Table.HeadCell>
+            <Table.HeadCell>Tên</Table.HeadCell>
+            <Table.HeadCell>Mô tả</Table.HeadCell>
+            <Table.HeadCell>Giá</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Số lượng</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Giảm giá</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Trạng thái</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Xác thực</Table.HeadCell>
+            <Table.HeadCell className="text-center">Sửa/Xóa</Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y">
-            {usersToDisplay.map((user) => (
-              <Table.Row
-                className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
-                key={user.id}
-              >
-                <Table.Cell className="py-4">{user.dateCreated}</Table.Cell>
-                <Table.Cell className="py-4 flex items-center">
+            {productsToDisplay.map((product) => (
+              <Table.Row key={product.id} className="align-middle">
+                <Table.Cell className="p-4 flex items-center justify-center">
                   <img
-                    src={user.userImage}
-                    alt={user.username}
+                    src={product.image}
+                    alt={product.name}
                     className="h-10 w-10 object-cover bg-gray-500 rounded-full"
                   />
                 </Table.Cell>
-                <Table.Cell className="py-4">{user.username}</Table.Cell>
-                <Table.Cell className="py-4">{user.email}</Table.Cell>
-                <Table.Cell className="py-4">{user.phoneNumber}</Table.Cell>
-                <Table.Cell className="py-4">{user.roles}</Table.Cell>
-                <Table.Cell className="py-4">{user.address}</Table.Cell>
-                <Table.Cell className="py-4 flex space-x-2">
-                  {/* Edit Icon */}
-                  <span
-                    onClick={() => handleEdit(user)}
-                    style={{
-                      cursor: "pointer",
-                      fontSize: "20px",
-                      color: "blue",
-                    }}
-                  >
-                    <MdEdit className="mr-2" />
-                  </span>
-
-                  {/* Delete Icon */}
-                  <span
-                    onClick={() => handleDelete(user)}
-                    style={{
-                      cursor: "pointer",
-                      fontSize: "20px",
-                      color: "red",
-                    }}
-                  >
-                    <MdDelete className="mr-2" />
-                  </span>
+                <Table.Cell className="p-4">{product.category}</Table.Cell>
+                <Table.Cell className="p-4">{product.name}</Table.Cell>
+                <Table.Cell className="p-4">{product.description}</Table.Cell>
+                <Table.Cell className="p-4">{product.price}</Table.Cell>
+                <Table.Cell className="p-4">{product.stock}</Table.Cell>
+                <Table.Cell className="p-4">{product.discount}</Table.Cell>
+                <Table.Cell className="p-4">{product.status}</Table.Cell>
+                <Table.Cell className="p-4">{product.verify}</Table.Cell>
+                <Table.Cell className="p-4 flex space-x-2 justify-center">
+                  <MdEdit
+                    onClick={() => handleEdit(product)}
+                    className="cursor-pointer text-blue-600"
+                    size={20}
+                  />
+                  <MdDelete
+                    onClick={() => handleDelete(product)}
+                    className="cursor-pointer text-red-600"
+                    size={20}
+                  />
                 </Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>
         </Table>
-
-        {/* Pagination Component */}
-        <div className="mt-4">
-          <ReactPaginate
-            previousLabel={"← Previous"}
-            nextLabel={"Next →"}
-            pageCount={pageCount}
-            onPageChange={handlePageClick}
-            containerClassName={"flex justify-center space-x-4"}
-            pageLinkClassName={"py-2 px-4 border rounded"}
-            activeClassName={"bg-blue-600 text-white"}
-            disabledClassName={"opacity-50 cursor-not-allowed"}
-          />
-        </div>
-
-        {/* Modal for Delete Confirmation */}
-        <Modal show={showModal} onClose={handleCancel}>
-          <Modal.Header>Delete User</Modal.Header>
-          <Modal.Body>
-            <div className="text-center">
-              <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
-              <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
-                Are you sure you want to delete {selectedUser?.username}?
-              </h3>
-              <div className="flex justify-center gap-4">
-                <Button color="failure" onClick={handleConfirmDelete}>
-                  Yes
-                </Button>
-                <Button color="gray" onClick={handleCancel}>
-                  No
-                </Button>
-              </div>
-            </div>
-          </Modal.Body>
-        </Modal>
       </div>
+
+      {/* Pagination */}
+      <div className="mt-6 flex justify-center">
+        <ReactPaginate
+          previousLabel={"← Previous"}
+          nextLabel={"Next →"}
+          pageCount={pageCount}
+          onPageChange={handlePageClick}
+          containerClassName={"flex space-x-4"}
+          pageLinkClassName={"py-2 px-4 border rounded"}
+          activeClassName={"bg-blue-600 text-white"}
+          disabledClassName={"opacity-50 cursor-not-allowed"}
+        />
+      </div>
+
+      {/* Modal for Delete Confirmation */}
+      <Modal show={showModal} onClose={handleCancel}>
+        <Modal.Header>Xóa sản phẩm</Modal.Header>
+        <Modal.Body>
+          <div className="text-center">
+            <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 mb-4 mx-auto" />
+            <h3 className="mb-5 text-lg text-gray-500">
+              Bạn có chắc chắn muốn xóa sản phẩm {selectedProduct?.name}?
+            </h3>
+            <div className="flex justify-center space-x-4 mt-4">
+              <Button color="failure" onClick={handleConfirmDelete}>
+                Có
+              </Button>
+              <Button color="gray" onClick={handleCancel}>
+                Không
+              </Button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
     </main>
   );
 }

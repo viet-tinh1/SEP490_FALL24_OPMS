@@ -31,74 +31,12 @@ export default function PlantIteam() {
       discount: "50%",
       rating: "4.5",
     },
-    {
-      id: 4,
-      name: "2023-09-01",
-      productImage:
-        "https://firebasestorage.googleapis.com/v0/b/project-team-7-blog.appspot.com/o/459575711_945200750961543_4220295711316204168_n.jpg?alt=media&token=d3c1e587-ca9f-46b5-a9ef-62de57ae0aea",
-      price: "25.000",
-      discount: "50%",
-      rating: "4.5",
-    },
-    {
-      id: 5,
-      name: "2023-09-01",
-      productImage:
-        "https://firebasestorage.googleapis.com/v0/b/project-team-7-blog.appspot.com/o/459575711_945200750961543_4220295711316204168_n.jpg?alt=media&token=d3c1e587-ca9f-46b5-a9ef-62de57ae0aea",
-      price: "25.000",
-      discount: "50%",
-      rating: "4.5",
-    },
-    {
-      id: 6,
-      name: "2023-09-01",
-      productImage:
-        "https://firebasestorage.googleapis.com/v0/b/project-team-7-blog.appspot.com/o/459575711_945200750961543_4220295711316204168_n.jpg?alt=media&token=d3c1e587-ca9f-46b5-a9ef-62de57ae0aea",
-      price: "25.000",
-      discount: "50%",
-      rating: "4.5",
-    },
-    {
-      id: 7,
-      name: "2023-09-01",
-      productImage:
-        "https://firebasestorage.googleapis.com/v0/b/project-team-7-blog.appspot.com/o/459575711_945200750961543_4220295711316204168_n.jpg?alt=media&token=d3c1e587-ca9f-46b5-a9ef-62de57ae0aea",
-      price: "25.000",
-      discount: "50%",
-      rating: "4.5",
-    },
-    {
-      id: 8,
-      name: "2023-09-01",
-      productImage:
-        "https://firebasestorage.googleapis.com/v0/b/project-team-7-blog.appspot.com/o/459575711_945200750961543_4220295711316204168_n.jpg?alt=media&token=d3c1e587-ca9f-46b5-a9ef-62de57ae0aea",
-      price: "25.000",
-      discount: "50%",
-      rating: "4.5",
-    },
-    {
-      id: 9,
-      name: "2023-09-01",
-      productImage:
-        "https://firebasestorage.googleapis.com/v0/b/project-team-7-blog.appspot.com/o/459575711_945200750961543_4220295711316204168_n.jpg?alt=media&token=d3c1e587-ca9f-46b5-a9ef-62de57ae0aea",
-      price: "25.000",
-      discount: "50%",
-      rating: "4.5",
-    },
-    {
-      id: 10,
-      name: "2023-09-01",
-      productImage:
-        "https://firebasestorage.googleapis.com/v0/b/project-team-7-blog.appspot.com/o/459575711_945200750961543_4220295711316204168_n.jpg?alt=media&token=d3c1e587-ca9f-46b5-a9ef-62de57ae0aea",
-      price: "25.000",
-      discount: "50%",
-      rating: "4.5",
-    },
+   
   ];
 
   
   return (
-    <div className="flex flex-wrap justify-center gap-3 p-5">
+    <div className="flex flex-wrap justify-center  gap-9 p-5">
       {/*Card1*/}
 
       {products.map((product)=> 

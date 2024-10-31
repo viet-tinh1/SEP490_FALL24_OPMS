@@ -250,7 +250,7 @@ export default function ProductSeller() {
           </Sidebar>
         </div>
 
-        <div className="flex flex-wrap gap-4">
+        <div className=" flex-wrap gap-4">
           {/* sắp xếp theo */}
 
           <div className="bg-white shadow-lg shadow-gray-200  dark:bg-gray-900 antialiased p-2 flex items-center gap-5  ">

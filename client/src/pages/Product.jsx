@@ -132,8 +132,9 @@ export default function Product() {
     setShowAll(!showAll);
   };
 
-
- {/* sắp xếp theo */}
+  {
+    /* sắp xếp theo */
+  }
   const [sortOption, setSortOption] = useState("Liên Quan");
   const [priceSort, setPriceSort] = useState(null);
   const [isPriceDropdownOpen, setIsPriceDropdownOpen] = useState(false);
@@ -203,7 +204,7 @@ export default function Product() {
           </Sidebar>
         </div>
 
-        <div className="flex flex-wrap gap-4">
+        <div className=" flex-wrap gap-4">
           {/* sắp xếp theo */}
 
           <div className="bg-white shadow-lg shadow-gray-200  dark:bg-gray-900 antialiased p-2 flex items-center gap-5  ">
