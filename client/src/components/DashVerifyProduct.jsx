@@ -68,17 +68,17 @@ export default function DashVerifyProduct() {
   );
 
   return (
-   <main className="overflow-x-auto mx-auto p-4 sm:p-6 lg:p-8">
-  <div className="shadow-md rounded-lg bg-white dark:bg-gray-800 mb-6 p-6 lg:p-8">
+   <main className="overflow-x-auto md:mx-auto p-4">
+  <div className="shadow-md rounded-lg bg-white dark:bg-gray-800 mb-6 p-6 lg:p-2">
     <div className="mb-6">
       <h1 className="text-2xl font-semibold text-gray-900 mb-4">
-        All Products
+        Duyệt sản phẩm
       </h1>
       <div className="flex justify-between items-center mb-6">
         <form className="flex-grow max-w-xs">
           <TextInput
             type="text"
-            placeholder="Tìm kiếm..."
+            placeholder="Tìm kiếm  ..."
             rightIcon={AiOutlineSearch}
             className="hidden lg:inline w-full"
           />
@@ -89,19 +89,19 @@ export default function DashVerifyProduct() {
           id="1"
           className="bg-green-600 text-white border-green-700 py-1 px-3 text-sm font-semibold rounded-lg shadow hover:bg-green-700"
         >
-          Verified Products
+          Sản phẩm đã duyệt
         </Button>
         <Button
           id="2"
           className="bg-gray-200 text-gray-700 border-gray-300 py-1 px-3 text-sm font-semibold rounded-lg shadow hover:bg-gray-300 hover:text-gray-900"
         >
-          Unverified Products
+          Sản phẩm chưa duyệt
         </Button>
       </div>
     </div>
   </div>
 
-  <div className="overflow-x-auto shadow-md rounded-lg mb-6">
+  <div className="overflow-x-auto shadow-md rounded-lg">
     <Table hoverable className="w-full">
       <Table.Head>
         <Table.HeadCell>Ảnh</Table.HeadCell>
@@ -129,22 +129,22 @@ export default function DashVerifyProduct() {
             className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
             key={product.id}
           >
-            <Table.Cell className="py-4 flex items-center justify-center">
+            <Table.Cell className="p-4 flex items-center justify-center">
               <img
                 src={product.image}
                 alt={product.name}
                 className="h-10 w-10 object-cover bg-gray-500 rounded-full"
               />
             </Table.Cell>
-            <Table.Cell className="py-4">{product.category}</Table.Cell>
-            <Table.Cell className="py-4">{product.name}</Table.Cell>
-            <Table.Cell className="py-4">{product.description}</Table.Cell>
-            <Table.Cell className="py-4">{product.price}</Table.Cell>
-            <Table.Cell className="py-4">{product.stock}</Table.Cell>
-            <Table.Cell className="py-4">{product.discount}</Table.Cell>
-            <Table.Cell className="py-4">{product.status}</Table.Cell>
-            <Table.Cell className="py-4">{product.verify}</Table.Cell>
-            <Table.Cell className="py-4 flex space-x-2 justify-center">
+            <Table.Cell className="p-4">{product.category}</Table.Cell>
+            <Table.Cell className="p-4">{product.name}</Table.Cell>
+            <Table.Cell className="p-4">{product.description}</Table.Cell>
+            <Table.Cell className="p-4">{product.price}</Table.Cell>
+            <Table.Cell className="p-4">{product.stock}</Table.Cell>
+            <Table.Cell className="p-4">{product.discount}</Table.Cell>
+            <Table.Cell className="p-4">{product.status}</Table.Cell>
+            <Table.Cell className="p-4">{product.verify}</Table.Cell>
+            <Table.Cell className="p-4 flex space-x-2 justify-center">
               <MdEdit
                 onClick={() => console.log("Edit product", product)}
                 className="cursor-pointer text-blue-600"
@@ -162,7 +162,7 @@ export default function DashVerifyProduct() {
     </Table>
   </div>
 
-  <div className="mt-8 flex justify-center">
+  <div className="mt-6 flex justify-center">
     <ReactPaginate
       previousLabel={"← Previous"}
       nextLabel={"Next →"}
