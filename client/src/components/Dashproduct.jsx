@@ -5,6 +5,7 @@ import { AiOutlineSearch } from "react-icons/ai";
 import { MdDelete, MdEdit } from "react-icons/md";
 import ReactPaginate from "react-paginate";
 import { TextInput } from "flowbite-react";
+import { Link } from "react-router-dom";
 
 export default function Dashproduct() {
   const [products, setProducts] = useState([
@@ -94,19 +95,17 @@ export default function Dashproduct() {
     <main className="overflow-x-auto md:mx-auto p-4">
       <div className="shadow-md rounded-lg bg-white dark:bg-gray-800 mb-6 p-4">
         <div className="mb-4">
-          <h1 className="text-2xl font-semibold text-gray-900">
-            Tất cả sản phẩm
-          </h1>
-          <div className="flex justify-between mt-4">
-            <form className="flex-grow max-w-xs">
+          <h1 className="text-2xl font-semibold text-gray-900">Tất cả sản phẩm</h1>
+          <div className="flex flex-wrap gap-4 justify-between mt-4">
+            <form className="flex-grow max-w-xs w-full md:w-1/2">
               <TextInput
                 type="text"
                 placeholder="Tìm kiếm..."
                 rightIcon={AiOutlineSearch}
-                className=" lg:inline w-full"
+                className="w-full"
               />
             </form>
-            <Button className="ml-3">Thêm sản phẩm</Button>
+            <Button className="w-full md:w-auto">Thêm sản phẩm</Button>
           </div>
         </div>
       </div>
@@ -119,18 +118,10 @@ export default function Dashproduct() {
             <Table.HeadCell>Tên</Table.HeadCell>
             <Table.HeadCell>Mô tả</Table.HeadCell>
             <Table.HeadCell>Giá</Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">
-              Số lượng
-            </Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">
-              Giảm giá
-            </Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">
-              Trạng thái
-            </Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">
-              Xác thực
-            </Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Số lượng</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Giảm giá</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Trạng thái</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Xác thực</Table.HeadCell>
             <Table.HeadCell className="text-center">Sửa/Xóa</Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y">
@@ -146,27 +137,15 @@ export default function Dashproduct() {
                 <Table.Cell className="p-4">{product.category}</Table.Cell>
                 <Table.Cell className="p-4">{product.name}</Table.Cell>
                 <Table.Cell className="p-4">{product.description}</Table.Cell>
-                <Table.Cell className="p-4 text-center">
-                  {product.price}
-                </Table.Cell>
-                <Table.Cell className="p-4 text-center">
-                  {product.stock}
-                </Table.Cell>
-                <Table.Cell className="p-4 text-center">
-                  {product.discount}
-                </Table.Cell>
-                <Table.Cell className="p-4 text-center">
-                  {product.status}
-                </Table.Cell>
-                <Table.Cell className="p-4 text-center">
-                  {product.verify}
-                </Table.Cell>
+                <Table.Cell className="p-4 text-center">{product.price}</Table.Cell>
+                <Table.Cell className="p-4 text-center">{product.stock}</Table.Cell>
+                <Table.Cell className="p-4 text-center">{product.discount}</Table.Cell>
+                <Table.Cell className="p-4 text-center">{product.status}</Table.Cell>
+                <Table.Cell className="p-4 text-center">{product.verify}</Table.Cell>
                 <Table.Cell className="p-4 flex space-x-2 justify-center">
-                  <MdEdit
-                    onClick={() => handleEdit(product)}
-                    className="cursor-pointer text-blue-600"
-                    size={20}
-                  />
+                  <Link to="/ProductEdit">
+                    <MdEdit className="cursor-pointer text-blue-600" size={20} />
+                  </Link>
                   <MdDelete
                     onClick={() => handleDelete(product)}
                     className="cursor-pointer text-red-600"
@@ -186,8 +165,8 @@ export default function Dashproduct() {
           nextLabel={"Trước →"}
           pageCount={pageCount}
           onPageChange={handlePageClick}
-          containerClassName={"flex space-x-4"}
-          pageLinkClassName={"py-2 px-4 border rounded"}
+          containerClassName={"flex flex-wrap justify-center space-x-2 md:space-x-4"}
+          pageLinkClassName={"py-2 px-3 border rounded text-sm"}
           activeClassName={"bg-blue-600 text-white"}
           disabledClassName={"opacity-50 cursor-not-allowed"}
         />
@@ -203,12 +182,8 @@ export default function Dashproduct() {
               Bạn có chắc chắn muốn xóa sản phẩm {selectedProduct?.name}?
             </h3>
             <div className="flex justify-center space-x-4 mt-4">
-              <Button color="failure" onClick={handleConfirmDelete}>
-                Có
-              </Button>
-              <Button color="gray" onClick={handleCancel}>
-                Không
-              </Button>
+              <Button color="failure" onClick={handleConfirmDelete}>Có</Button>
+              <Button color="gray" onClick={handleCancel}>Không</Button>
             </div>
           </div>
         </Modal.Body>

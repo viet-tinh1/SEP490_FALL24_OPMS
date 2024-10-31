@@ -11,6 +11,7 @@ import Cart from './pages/Cart'
 import ProductDetail from './pages/ProductDetail'
 import Payment from './pages/Payment'
 import ProductSeller from './pages/ProductSeller'
+import ProductEdit from './pages/ProductEdit'
 export default function App() {
   return (
     <BrowserRouter>
@@ -28,6 +29,7 @@ export default function App() {
           <Route path='/cart' element={<Cart/>}/>
           <Route path='/productdetail' element={<ProductDetail/>}/>
           <Route path='/producsSeller' element={<ProductSeller/>}/>
+          <Route path='/ProductEdit' element={<ProductEdit/>}/>
 
 
     </Routes>
