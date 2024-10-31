@@ -94,14 +94,16 @@ export default function Dashproduct() {
     <main className="overflow-x-auto md:mx-auto p-4">
       <div className="shadow-md rounded-lg bg-white dark:bg-gray-800 mb-6 p-4">
         <div className="mb-4">
-          <h1 className="text-2xl font-semibold text-gray-900">Tất cả sản phẩm</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            Tất cả sản phẩm
+          </h1>
           <div className="flex justify-between mt-4">
             <form className="flex-grow max-w-xs">
               <TextInput
                 type="text"
                 placeholder="Tìm kiếm..."
                 rightIcon={AiOutlineSearch}
-                className="hidden lg:inline w-full"
+                className=" lg:inline w-full"
               />
             </form>
             <Button className="ml-3">Thêm sản phẩm</Button>
@@ -117,10 +119,18 @@ export default function Dashproduct() {
             <Table.HeadCell>Tên</Table.HeadCell>
             <Table.HeadCell>Mô tả</Table.HeadCell>
             <Table.HeadCell>Giá</Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">Số lượng</Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">Giảm giá</Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">Trạng thái</Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">Xác thực</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">
+              Số lượng
+            </Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">
+              Giảm giá
+            </Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">
+              Trạng thái
+            </Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">
+              Xác thực
+            </Table.HeadCell>
             <Table.HeadCell className="text-center">Sửa/Xóa</Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y">
@@ -136,11 +146,21 @@ export default function Dashproduct() {
                 <Table.Cell className="p-4">{product.category}</Table.Cell>
                 <Table.Cell className="p-4">{product.name}</Table.Cell>
                 <Table.Cell className="p-4">{product.description}</Table.Cell>
-                <Table.Cell className="p-4">{product.price}</Table.Cell>
-                <Table.Cell className="p-4">{product.stock}</Table.Cell>
-                <Table.Cell className="p-4">{product.discount}</Table.Cell>
-                <Table.Cell className="p-4">{product.status}</Table.Cell>
-                <Table.Cell className="p-4">{product.verify}</Table.Cell>
+                <Table.Cell className="p-4 text-center">
+                  {product.price}
+                </Table.Cell>
+                <Table.Cell className="p-4 text-center">
+                  {product.stock}
+                </Table.Cell>
+                <Table.Cell className="p-4 text-center">
+                  {product.discount}
+                </Table.Cell>
+                <Table.Cell className="p-4 text-center">
+                  {product.status}
+                </Table.Cell>
+                <Table.Cell className="p-4 text-center">
+                  {product.verify}
+                </Table.Cell>
                 <Table.Cell className="p-4 flex space-x-2 justify-center">
                   <MdEdit
                     onClick={() => handleEdit(product)}
@@ -162,8 +182,8 @@ export default function Dashproduct() {
       {/* Pagination */}
       <div className="mt-6 flex justify-center">
         <ReactPaginate
-          previousLabel={"← Previous"}
-          nextLabel={"Next →"}
+          previousLabel={"← Sau"}
+          nextLabel={"Trước →"}
           pageCount={pageCount}
           onPageChange={handlePageClick}
           containerClassName={"flex space-x-4"}
