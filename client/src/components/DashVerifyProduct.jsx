@@ -47,7 +47,8 @@ export default function DashVerifyProduct() {
         product.id === productId
           ? {
               ...product,
-              verify: product.verify === "Verified" ? "Not Verified" : "Verified",
+              verify:
+                product.verify === "Verified" ? "Not Verified" : "Verified",
             }
           : product
       )
@@ -59,13 +60,21 @@ export default function DashVerifyProduct() {
     (currentPage + 1) * productsPerPage
   );
 
+  {
+    /* active button */
+  }
+  const [activeButton, setActiveButton] = useState(null);
+
+  const handleButtonClick = (buttonName) => {
+    setActiveButton(buttonName);
+  };
   return (
     <main className="overflow-x-auto md:mx-auto p-4">
       {/* Header Section */}
       <div className="shadow-md rounded-lg bg-white dark:bg-gray-800 mb-6 p-6 lg:p-2">
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-900 mb-4">
-            Duyệt sản phẩm
+            Tất cả người dùng
           </h1>
           <div className="flex flex-wrap gap-4 items-center mb-6">
             <form className="flex-grow max-w-xs w-full md:w-1/2">
@@ -78,12 +87,27 @@ export default function DashVerifyProduct() {
             </form>
           </div>
           <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0 mt-4">
-            <Button className="bg-green-600 text-white border-green-700 py-1 px-3 text-sm font-semibold rounded-lg shadow hover:bg-green-700">
+            <button
+              onClick={() => handleButtonClick("nguoi-dung")}
+              className={`px-5 py-2 rounded-md font-medium  ${
+                activeButton === "nguoi-dung"
+                  ? "bg-green-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
               Sản phẩm đã duyệt
-            </Button>
-            <Button className="bg-gray-200 text-gray-700 border-gray-300 py-1 px-3 text-sm font-semibold rounded-lg shadow hover:bg-gray-300 hover:text-gray-900">
+            </button>
+
+            <button
+              onClick={() => handleButtonClick("quan-tri-vien")}
+              className={`px-5 py-2 rounded-md font-medium ${
+                activeButton === "quan-tri-vien"
+                  ? "bg-green-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
               Sản phẩm chưa duyệt
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -97,11 +121,21 @@ export default function DashVerifyProduct() {
             <Table.HeadCell>Tên</Table.HeadCell>
             <Table.HeadCell>Mô tả</Table.HeadCell>
             <Table.HeadCell>Giá</Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">Số lượng</Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">Giảm giá</Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">Trạng thái</Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">Xác thực</Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">Hành động</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">
+              Số lượng
+            </Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">
+              Giảm giá
+            </Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">
+              Trạng thái
+            </Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">
+              Xác thực
+            </Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">
+              Hành động
+            </Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y">
             {productsToDisplay.map((product) => (
@@ -119,11 +153,21 @@ export default function DashVerifyProduct() {
                 <Table.Cell className="p-4">{product.category}</Table.Cell>
                 <Table.Cell className="p-4">{product.name}</Table.Cell>
                 <Table.Cell className="p-4">{product.description}</Table.Cell>
-                <Table.Cell className="p-4 text-center">{product.price}</Table.Cell>
-                <Table.Cell className="p-4 text-center">{product.stock}</Table.Cell>
-                <Table.Cell className="p-4 text-center">{product.discount}</Table.Cell>
-                <Table.Cell className="p-4 text-center">{product.status}</Table.Cell>
-                <Table.Cell className="p-4 text-center">{product.verify}</Table.Cell>
+                <Table.Cell className="p-4 text-center">
+                  {product.price}
+                </Table.Cell>
+                <Table.Cell className="p-4 text-center">
+                  {product.stock}
+                </Table.Cell>
+                <Table.Cell className="p-4 text-center">
+                  {product.discount}
+                </Table.Cell>
+                <Table.Cell className="p-4 text-center">
+                  {product.status}
+                </Table.Cell>
+                <Table.Cell className="p-4 text-center">
+                  {product.verify}
+                </Table.Cell>
                 <Table.Cell className="py-4 flex space-x-2 justify-center">
                   <Button
                     onClick={() => toggleVerifyStatus(product.id)}
@@ -153,7 +197,9 @@ export default function DashVerifyProduct() {
           nextLabel={"Trước →"}
           pageCount={pageCount}
           onPageChange={handlePageClick}
-          containerClassName={"flex flex-wrap justify-center space-x-2 md:space-x-4"}
+          containerClassName={
+            "flex flex-wrap justify-center space-x-2 md:space-x-4"
+          }
           pageLinkClassName={"py-2 px-3 border rounded text-sm"}
           activeClassName={"bg-blue-600 text-white"}
           disabledClassName={"opacity-50 cursor-not-allowed"}

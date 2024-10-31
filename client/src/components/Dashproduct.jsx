@@ -116,7 +116,7 @@ export default function Dashproduct() {
             <Table.HeadCell>Ảnh</Table.HeadCell>
             <Table.HeadCell>Loại</Table.HeadCell>
             <Table.HeadCell>Tên</Table.HeadCell>
-            <Table.HeadCell>Mô tả</Table.HeadCell>
+            <Table.HeadCell  className="whitespace-nowrap" >Mô tả</Table.HeadCell>
             <Table.HeadCell>Giá</Table.HeadCell>
             <Table.HeadCell className="whitespace-nowrap">Số lượng</Table.HeadCell>
             <Table.HeadCell className="whitespace-nowrap">Giảm giá</Table.HeadCell>
