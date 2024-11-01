@@ -392,6 +392,7 @@ export default function ProductSeller() {
         <div className=" flex-wrap gap-4">       
          {/* sắp xếp theo */}
          <div className="bg-white shadow-lg shadow-gray-200  dark:bg-gray-900 antialiased p-2 flex items-center gap-5 w-full sm:max-w-[580px]  ">
+
             <span className="text-gray-500">Sắp xếp theo</span>
             <button
             onClick={() => handleSortClick(5)}

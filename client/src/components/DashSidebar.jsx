@@ -1,4 +1,4 @@
-import { Sidebar } from 'flowbite-react';
+import { Sidebar } from "flowbite-react";
 import {
   HiUser,
   HiArrowSmRight,
@@ -6,14 +6,15 @@ import {
   HiOutlineUserGroup,
   HiAnnotation,
   HiChartPie,
-} from 'react-icons/hi';
-import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+} from "react-icons/hi";
+import { AiOutlineAppstore } from "react-icons/ai";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 export default function DashSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [tab, setTab] = useState('');
+  const [tab, setTab] = useState("");
   const [role, setURoles] = useState(null);
   useEffect(() => {
     // Fetch role from localStorage during the initial mount
@@ -35,7 +36,7 @@ export default function DashSidebar() {
   }, []);
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
-    const tabFromUrl = urlParams.get('tab');
+    const tabFromUrl = urlParams.get("tab");
     if (tabFromUrl) {
       setTab(tabFromUrl);
     }
@@ -68,22 +69,22 @@ export default function DashSidebar() {
       <Sidebar.Items>
         <Sidebar.ItemGroup className='flex flex-col gap-1'>
         {(role === '1' || role === '3') &&(
-          <Link to='/dashboard?tab=dash'>
-          <Sidebar.Item active={tab === 'dash' || !tab} icon={HiChartPie} as='div'>
+          <Link to="/dashboard?tab=dash">
+          <Sidebar.Item active={tab === "dash" || !tab} icon={HiChartPie} as="div">
             Dashboard
           </Sidebar.Item>
         </Link>
         )}
           
 
-          <Link to='/dashboard?tab=profile'>
-            <Sidebar.Item active={tab === 'profile'} icon={HiUser} labelColor='dark' as='div'>
+          <Link to="/dashboard?tab=profile">
+            <Sidebar.Item  active={tab === "profile"} icon={HiUser}  labelColor="dark" as="div">
             Hồ sơ
             </Sidebar.Item>
           </Link>
           {(role === '1' || role === '3') &&(
-            <Link to='/dashboard?tab=posts'>
-            <Sidebar.Item active={tab === 'posts'} icon={HiDocumentText} as='div'>
+            <Link to="/dashboard?tab=posts">
+            <Sidebar.Item active={tab === "posts"} icon={HiDocumentText} as="div">
             Bài Viết
             </Sidebar.Item>
           </Link>
@@ -92,28 +93,37 @@ export default function DashSidebar() {
 
           <>
             {role =='1'&&(
-            <Link to='/dashboard?tab=users'>
-              <Sidebar.Item active={tab === 'users'} icon={HiOutlineUserGroup} as='div'>
+            <Link to="/dashboard?tab=users">
+              <Sidebar.Item active={tab === "users"} icon={HiOutlineUserGroup} as="div">
               Quản lý tài khoản 
               </Sidebar.Item>
             </Link>
             )}
             {(role === '1' || role === '3') &&(
-            <Link to='/dashboard?tab=comments'>
-              <Sidebar.Item active={tab === 'comments'} icon={HiAnnotation} as='div'>
+            <Link to="/dashboard?tab=comments">
+              <Sidebar.Item active={tab === "comments"} icon={HiAnnotation} as="div">
               Quản lý bình luận
               </Sidebar.Item>
             </Link>
             )}
             {(role === '1' || role === '3') &&(
-              <Link to='/dashboard?tab=product'>
-              <Sidebar.Item active={tab === 'product'} icon={HiAnnotation} as='div'>
+              <Link to="/dashboard?tab=product">
+              <Sidebar.Item active={tab === "product"} icon={HiAnnotation} as="div">
               Quản Lý Sản phẩm
               </Sidebar.Item>
             </Link>
             )}           
-          </>
-
+          
+            <Link to="/dashboard?tab=DashVerifyProduct">
+              <Sidebar.Item
+                active={tab === "product"}
+                icon={AiOutlineAppstore}
+                as="div"
+              >
+                Duyệt Sản Phẩm
+              </Sidebar.Item>
+            </Link>
+            </>
           <Sidebar.Item icon={HiArrowSmRight} className='cursor-pointer' onClick={handleSignOut}>
           Đăng xuất
           </Sidebar.Item>

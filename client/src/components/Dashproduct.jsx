@@ -6,6 +6,7 @@ import { AiOutlineSearch } from "react-icons/ai";
 import { MdDelete, MdEdit } from "react-icons/md";
 import { Spinner } from "flowbite-react";
 import ReactPaginate from "react-paginate";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 export default function DashProduct() {
   const [plants, setPlants] = useState([]);
@@ -159,14 +160,15 @@ useEffect(() => {
       </div>
     );
   }
+  ///ui
   return (
-    <main className="overflow-x-auto md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
-      <div className="shadow-md md:mx-auto p-3 rounded-lg bg-white dark:bg-gray-800 my-4">
-        <div className="mb-1 w-full">
-          <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl">All Products</h1>
-          <div className="sm:flex">
-          <div className="hidden items-center mb-3 sm:flex sm:divide-x sm:divide-gray-100 sm:mb-0">
-        <form>
+    <main className="overflow-x-auto md:mx-auto p-4">
+      <div className="shadow-md rounded-lg bg-white dark:bg-gray-800 mb-6 p-4">
+        <div className="mb-4">  
+        <h1 className="text-2xl font-semibold text-gray-900">Tất cả sản phẩm</h1>
+        <div className="flex flex-wrap gap-4 justify-between mt-4">
+          
+        <form className="flex-grow max-w-xs w-full md:w-1/2">
         <TextInput 
         type="text"
         placeholder="Search..."
@@ -174,11 +176,11 @@ useEffect(() => {
         className="hidden lg:inline"
         />
         </form>
-        </div>
+        
           {role !== '1' && (
-          <div className="flex items-center ml-auto space-x-2 sm:space-x-3">
-            <Button>Add Product</Button>
-          </div>
+          <Link to="/ProductUpdate">
+          <Button className="w-full md:w-auto">Thêm sản phẩm</Button>
+        </Link>
           )}
            
           </div>
@@ -212,19 +214,19 @@ useEffect(() => {
         </div>
       </div>
 
-      <div className="table-auto">
-        <Table hoverable className="shadow-md">
-          <Table.Head>          
-            <Table.HeadCell>Image</Table.HeadCell>
-            <Table.HeadCell>Category</Table.HeadCell>
-            <Table.HeadCell>Name</Table.HeadCell>
-            <Table.HeadCell>Description</Table.HeadCell>
-            <Table.HeadCell>Price</Table.HeadCell>
-            <Table.HeadCell>Stock</Table.HeadCell>
-            <Table.HeadCell>Discount</Table.HeadCell>
-            <Table.HeadCell>Status</Table.HeadCell>
-            <Table.HeadCell>Verify</Table.HeadCell>
-            <Table.HeadCell className="text-center" >Actions</Table.HeadCell>
+      <div className="overflow-x-auto shadow-md rounded-lg">
+      <Table hoverable className="w-full">
+      <Table.Head>
+            <Table.HeadCell>Ảnh</Table.HeadCell>
+            <Table.HeadCell>Loại</Table.HeadCell>
+            <Table.HeadCell>Tên</Table.HeadCell>
+            <Table.HeadCell  className="whitespace-nowrap" >Mô tả</Table.HeadCell>
+            <Table.HeadCell>Giá</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Số lượng</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Giảm giá</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Trạng thái</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Xác thực</Table.HeadCell>
+            <Table.HeadCell className="text-center">Sửa/Xóa</Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y">
             {plantsToDisplay.map((plant) => (
@@ -240,26 +242,26 @@ useEffect(() => {
                     className="h-10 w-10 object-cover bg-gray-500 rounded-full"
                   />
                 </Table.Cell>
-                <Table.Cell className="py-4">{getCategoryName(plant.categoryId)}</Table.Cell>
-                <Table.Cell className="py-4">{plant.plantName}</Table.Cell>
-                <Table.Cell className="py-4">{plant.description}</Table.Cell>
-                <Table.Cell className="py-4">{(plant.price).toFixed(3)}</Table.Cell>
-                <Table.Cell className="py-4">{(plant.stock)}</Table.Cell>
-                <Table.Cell className="py-4">{(plant.discount)|| 0}%</Table.Cell>
-                <Table.Cell className="py-4">
+                <Table.Cell className="p-4">{getCategoryName(plant.categoryId)}</Table.Cell>
+                <Table.Cell className="p-4">{plant.plantName}</Table.Cell>
+                <Table.Cell className="p-4">{plant.description}</Table.Cell>
+                <Table.Cell className="p-4 text-center">{(plant.price).toFixed(3)}</Table.Cell>
+                <Table.Cell className="p-4 text-center">{(plant.stock)}</Table.Cell>
+                <Table.Cell className="p-4 text-center">{(plant.discount)|| 0}%</Table.Cell>
+                <Table.Cell className="p-4 text-center">
                     {plant.status === 1 ? "Còn hàng" : "Hết hàng"}
                 </Table.Cell>
-                <Table.Cell className="py-4">{plant.isVerfied === 1 ? "Đã xác thực" : "Chưa xác thực"}</Table.Cell>
+                <Table.Cell className="p-4 text-center">{plant.isVerfied === 1 ? "Đã xác thực" : "Chưa xác thực"}</Table.Cell>
                 <Table.Cell className="py-4 flex space-x-2">
                   {role !== '1' ? (
                   <>
-                  <MdEdit
-                    onClick={() => handleEdit(plant)}
-                    style={{ cursor: "pointer", fontSize: "20px", color: "blue" }}
-                  />
+                   <Link to="/ProductEdit">
+                    <MdEdit className="cursor-pointer text-green-600" size={20} />
+                  </Link>
                   <MdDelete
                     onClick={() => handleDelete(plant)}
-                    style={{ cursor: "pointer", fontSize: "20px", color: "red" }}
+                    className="cursor-pointer text-red-600"
+                    size={20}
                   />
                   </>
                   ) : (
@@ -286,28 +288,28 @@ useEffect(() => {
 
         <div className="mt-4">
           <ReactPaginate
-            previousLabel={"← Previous"}
-            nextLabel={"Next →"}
+            previousLabel={"← Sau"}
+            nextLabel={"Trước →"}
             pageCount={pageCount}
             onPageChange={handlePageClick}
-            containerClassName={"flex justify-center space-x-4"}
-            pageLinkClassName={"py-2 px-4 border rounded"}
+            containerClassName={"flex flex-wrap justify-center space-x-2 md:space-x-4"}
+            pageLinkClassName={"py-2 px-3 border rounded text-sm"}
             activeClassName={"bg-blue-600 text-white"}
             disabledClassName={"opacity-50 cursor-not-allowed"}
           />
         </div>
 
         <Modal show={showModal} onClose={handleCancel}>
-          <Modal.Header>Delete Plant</Modal.Header>
+        <Modal.Header>Xóa sản phẩm</Modal.Header>
           <Modal.Body>
             <div className="text-center">
-              <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
-              <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
-                Are you sure you want to delete {selectedPlant?.name}?
+            <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 mb-4 mx-auto" />
+              <h3 className="mb-5 text-lg text-gray-500">
+              Bạn có chắc chắn muốn xóa sản phẩm {selectedPlant?.name}?
               </h3>
-              <div className="flex justify-center gap-4">
-                <Button color="failure" onClick={handleConfirmDelete}>Yes</Button>
-                <Button color="gray" onClick={handleCancel}>No</Button>
+              <div className="flex justify-center space-x-4 mt-4">
+                <Button color="failure" onClick={handleConfirmDelete}>Có</Button>
+                <Button color="gray" onClick={handleCancel}>Không</Button>
               </div>
             </div>
           </Modal.Body>
