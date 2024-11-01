@@ -116,8 +116,10 @@ export default function DashUsers() {
                 placeholder="Tìm kiếm  ..."
                 rightIcon={AiOutlineSearch}
                 className="w-full"/>
+
             </form>           
             <Button className="flex items-center ml-auto space-x-2 sm:space-x-3">Thêm người dùng</Button>
+
           </div>
             <br></br>
             <div className="sm:flex space-x-4">
