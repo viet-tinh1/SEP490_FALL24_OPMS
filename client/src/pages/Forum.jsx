@@ -13,10 +13,12 @@ export default function Forum() {
     {
       id: 1,
       username: "Nguyễn Ngọc Nhân",
-      profileImage: "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/464957439_3783099075334445_1801193416209890520_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=zuxQ_dDEyV8Q7kNvgHzsiWf&_nc_zt=23&_nc_ht=scontent.fdad4-1.fna&_nc_gid=AlQ5isUXxbJy3xi8RRYNWdz&oh=00_AYAz3GLlyvmMu4uot4gE5ZcLgSLkkk5brnGoDOewKIFtxg&oe=672A3853",
+      profileImage:
+        "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/464957439_3783099075334445_1801193416209890520_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=zuxQ_dDEyV8Q7kNvgHzsiWf&_nc_zt=23&_nc_ht=scontent.fdad4-1.fna&_nc_gid=AlQ5isUXxbJy3xi8RRYNWdz&oh=00_AYAz3GLlyvmMu4uot4gE5ZcLgSLkkk5brnGoDOewKIFtxg&oe=672A3853",
       postContent:
         "Kể tên một char mà thời newbie các ông từng mong ước. Tôi trước: Qiqi:))",
-      postImage: "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/464957439_3783099075334445_1801193416209890520_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=zuxQ_dDEyV8Q7kNvgHzsiWf&_nc_zt=23&_nc_ht=scontent.fdad4-1.fna&_nc_gid=AlQ5isUXxbJy3xi8RRYNWdz&oh=00_AYAz3GLlyvmMu4uot4gE5ZcLgSLkkk5brnGoDOewKIFtxg&oe=672A3853",
+      postImage:
+        "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/464957439_3783099075334445_1801193416209890520_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=zuxQ_dDEyV8Q7kNvgHzsiWf&_nc_zt=23&_nc_ht=scontent.fdad4-1.fna&_nc_gid=AlQ5isUXxbJy3xi8RRYNWdz&oh=00_AYAz3GLlyvmMu4uot4gE5ZcLgSLkkk5brnGoDOewKIFtxg&oe=672A3853",
       time: "12 giờ",
       comments: [
         {
@@ -42,9 +44,12 @@ export default function Forum() {
     {
       id: 2,
       username: "Hà Anh Tuấn",
-      profileImage: "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/464957439_3783099075334445_1801193416209890520_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=zuxQ_dDEyV8Q7kNvgHzsiWf&_nc_zt=23&_nc_ht=scontent.fdad4-1.fna&_nc_gid=AlQ5isUXxbJy3xi8RRYNWdz&oh=00_AYAz3GLlyvmMu4uot4gE5ZcLgSLkkk5brnGoDOewKIFtxg&oe=672A3853",
-      postContent: "Có một lần Momoca phát hiện ra bạn trai (cũ) của mình đang xem A::V. Tuy nhiên cô nàng không t:ứ:c g:i:ận, trái lại còn vào xem ké và cảm thấy bất ngờ vì nữ chính trong phim quá dễ thương. Nữ diễn viên được nhắc đến ở đây là Mia Nanasawa và kể từ đó Mia cũng đã trở thành một trong những nữ diễn viên yêu thích của em (ngoài ra còn có Yu Shinoda",
-      postImage: "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/465268702_1098707525313891_1711980144806636327_n.jpg?stp=dst-jpg_s640x640&_nc_cat=102&ccb=1-7&_nc_sid=127cfc&_nc_ohc=x7oSHiayf6QQ7kNvgGvY4qo&_nc_zt=23&_nc_ht=scontent.fdad4-1.fna&_nc_gid=ARF7ycbIFrd31xJ0tBylhV2&oh=00_AYBiwjnNjipHyOQZRuakzRy5_a9PjLsZTDJtONWNem_DdQ&oe=672A53A5",
+      profileImage:
+        "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/464957439_3783099075334445_1801193416209890520_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=zuxQ_dDEyV8Q7kNvgHzsiWf&_nc_zt=23&_nc_ht=scontent.fdad4-1.fna&_nc_gid=AlQ5isUXxbJy3xi8RRYNWdz&oh=00_AYAz3GLlyvmMu4uot4gE5ZcLgSLkkk5brnGoDOewKIFtxg&oe=672A3853",
+      postContent:
+        "Có một lần Momoca phát hiện ra bạn trai (cũ) của mình đang xem A::V. Tuy nhiên cô nàng không t:ứ:c g:i:ận, trái lại còn vào xem ké và cảm thấy bất ngờ vì nữ chính trong phim quá dễ thương. Nữ diễn viên được nhắc đến ở đây là Mia Nanasawa và kể từ đó Mia cũng đã trở thành một trong những nữ diễn viên yêu thích của em (ngoài ra còn có Yu Shinoda",
+      postImage:
+        "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/465268702_1098707525313891_1711980144806636327_n.jpg?stp=dst-jpg_s640x640&_nc_cat=102&ccb=1-7&_nc_sid=127cfc&_nc_ohc=x7oSHiayf6QQ7kNvgGvY4qo&_nc_zt=23&_nc_ht=scontent.fdad4-1.fna&_nc_gid=ARF7ycbIFrd31xJ0tBylhV2&oh=00_AYBiwjnNjipHyOQZRuakzRy5_a9PjLsZTDJtONWNem_DdQ&oe=672A53A5",
       time: "5 giờ",
       comments: [
         {
@@ -114,12 +119,21 @@ export default function Forum() {
     setPosts(posts.filter((post) => post.id !== postId));
   };
 
+  const [showAllComments, setShowAllComments] = useState({});
+
+  const handleShowMoreComments = (postId) => {
+    setShowAllComments((prev) => ({
+      ...prev,
+      [postId]: !prev[postId],
+    }));
+  };
+
   return (
     <main className="bg-gray-100 min-h-screen p-4">
       <div className="max-w-full lg:max-w-lg w-full bg-white shadow-md rounded-lg mx-auto p-4 my-4">
         <div className="flex items-center border-b border-gray-200 pb-4 mb-4">
           <img
-            src="https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/464957439_3783099075334445_1801193416209890520_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=zuxQ_dDEyV8Q7kNvgHzsiWf&_nc_zt=23&_nc_ht=scontent.fdad4-1.fna&_nc_gid=AlQ5isUXxbJy3xi8RRYNWdz&oh=00_AYAz3GLlyvmMu4uot4gE5ZcLgSLkkk5brnGoDOewKIFtxg&oe=672A3853"
+            src="https://via.placeholder.com/40"
             alt="Profile"
             className="w-10 h-10 rounded-full mr-3"
           />
@@ -236,6 +250,17 @@ export default function Forum() {
             </div>
 
             <div className="mt-3">
+              {/* View More Comments Button */}
+              <button
+                    onClick={() => handleShowMoreComments(post.id)}
+                    className="text-blue-500 text-sm font-medium mt-2"
+                  >
+                    {showAllComments[post.id]
+                      ? "Ẩn bớt bình luận"
+                      : "Xem thêm bình luận"}
+                  </button>
+
+              {/* Comment Input Field */}
               <div className="flex items-center space-x-3 mb-3">
                 <img
                   src={post.profileImage}
@@ -251,7 +276,10 @@ export default function Forum() {
 
               {post.comments && post.comments.length > 0 && (
                 <div className="space-y-2">
-                  {post.comments.map((comment) => (
+                  {(showAllComments[post.id]
+                    ? post.comments
+                    : post.comments.slice(0, 2)
+                  ).map((comment) => (
                     <div
                       key={comment.id}
                       className="flex items-start space-x-2"
@@ -284,6 +312,8 @@ export default function Forum() {
                       </div>
                     </div>
                   ))}
+
+            
                 </div>
               )}
             </div>
