@@ -103,47 +103,42 @@ export default function DashUsers() {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <main className="overflow-x-auto md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
-      <div className="shadow-md md:mx-auto p-3  rounded-lg bg-white dark:bg-gray-800 my-4">
-        <div className="mb-1 w-full">
-          <div className=" mb-4">
-            <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl">Quản lí tài khoản </h1>
+    <main className="overflow-x-auto md:mx-auto p-4">
+       <div className="shadow-md rounded-lg bg-white dark:bg-gray-800 mb-6 p-6 lg:p-2">
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-gray-900 mb-4">
+            Tất cả người dùng
+          </h1>
+          <div className="flex flex-wrap gap-4 items-center mb-6">
+          <form className="flex-grow max-w-xs w-full md:w-1/2">
+              <TextInput
+                type="text"
+                placeholder="Tìm kiếm  ..."
+                rightIcon={AiOutlineSearch}
+                className="w-full"/>
+            </form>
+            <Button className="ml-3 w-full md:w-auto">Thêm người dùng</Button>
+          </div>
             <br></br>
-            <div className="sm:flex">
-              <div className="hidden items-center mb-3 sm:flex sm:divide-x sm:divide-gray-100 sm:mb-0">
-                <form>
-                  <TextInput
-                    type="text"
-                    placeholder="Search..."
-                    rightIcon={AiOutlineSearch}
-                    className="hidden lg:inline"
-                  />
-                </form>
-              </div>
-              <div className="flex items-center ml-auto space-x-2 sm:space-x-3">
-                <Button>Add User</Button>
-              </div>
-            </div>
-            <br></br>
-            <div className="sm:flex space-x-4">
-              <Button 
+            <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0 mt-4">
+              <button 
               id="1" 
               onClick={() => handleRoleChange(1)}
               className={`${
                 activeButton === 1
-                  ? "bg-green-600 text-white border-green-700"
-                  : "bg-gray-200 text-gray-700 border-gray-300"
-              } py-1 px-3 text-sm font-semibold rounded-lg shadow`}
+                   ? 'bg-green-600 text-white'
+            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              } `}
               >
-                Admin
-              </Button>
+                Quản trị viên
+              </button>
               <Button 
               id="2" 
               onClick={() => handleRoleChange(2)}
               className={`${
                 activeButton === 2
-                  ? "bg-green-600 text-white border-green-700"
-                  : "bg-gray-200 text-gray-700 border-gray-300"
+                   ? 'bg-green-600 text-white'
+            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               } py-1 px-3 text-sm font-semibold rounded-lg shadow`}
               >
                 Người dùng
@@ -151,30 +146,31 @@ export default function DashUsers() {
               <Button 
               id="3" 
               onClick={() => handleRoleChange(3)}
-              className={`${
+              className={`px-5 py-2 rounded-md font-medium ${
                activeButton === 3
-                ? "bg-green-600 text-white border-green-700"
-                : "bg-gray-200 text-gray-700 border-gray-300"
-              } py-1 px-3 text-sm font-semibold rounded-lg shadow`}
+                 ? 'bg-green-600 text-white'
+            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              } `}
               >
                 Người bán
               </Button>
             </div>
-          </div>
-        </div>
+          </div>       
       </div>
 
-      <div className="table-auto ">
-        <Table hoverable className="shadow-md">
+      <div className="overflow-x-auto shadow-md rounded-lg">
+      <Table hoverable className="w-full">
           <Table.Head>
-            <Table.HeadCell>Date Created</Table.HeadCell>
-            <Table.HeadCell>Image</Table.HeadCell>
-            <Table.HeadCell>Username</Table.HeadCell>
+          <Table.HeadCell className="whitespace-nowrap">
+          Ngày tạo
+          </Table.HeadCell>
+            <Table.HeadCell>Ảnh</Table.HeadCell>
+            <Table.HeadCell>Tên</Table.HeadCell>
             <Table.HeadCell>Email</Table.HeadCell>
-            <Table.HeadCell>Phone Number</Table.HeadCell>
-            <Table.HeadCell>Roles</Table.HeadCell>
-            <Table.HeadCell>Address</Table.HeadCell>
-            <Table.HeadCell>Status</Table.HeadCell>
+            <Table.HeadCell>Phone</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Chức vụ</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Địa chỉ</Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">Trạng thái</Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y">
             {usersToDisplay.map((user) => (
@@ -190,25 +186,31 @@ export default function DashUsers() {
                     className="h-10 w-10 object-cover bg-gray-500 rounded-full"
                   />
                 </Table.Cell>
-                <Table.Cell className="py-4">{user.username}</Table.Cell>
-                <Table.Cell className="py-4">{user.email}</Table.Cell>
-                <Table.Cell className="py-4">{user.phoneNumber}</Table.Cell>
-                <Table.Cell className="py-4">{getRoleName(user.roles)}</Table.Cell>
-                <Table.Cell className="py-4">{user.address}</Table.Cell>
-                <Table.Cell>
-                  <label className="inline-flex items-center mb-5 cursor-pointer">
-                    <span className="text-2xl hover:underline cursor-pointer">
+                <Table.Cell>{user.username}</Table.Cell>
+                <Table.Cell >{user.email}</Table.Cell>
+                <Table.Cell className="text-center">{user.phoneNumber}</Table.Cell>
+                <Table.Cell className="text-center">{getRoleName(user.roles)}</Table.Cell>
+                <Table.Cell >{user.address}</Table.Cell>
+                <Table.Cell  className="text-center">
+                <label className="inline-flex items-center mb-5 cursor-pointer">
+                    {/* Conditionally render lock or lock-open icon and the label */}
+                    <span className="text-2xl  hover:underline cursor-pointer">
                       {user.blocked ? (
-                        <TbLock className="inline-block mr-2 text-red-500" />
-                      ) : (
-                        <TbLockOpen className="inline-block mr-2 text-green-500" />
+                         <TbLock
+                         className="inline-block mr-2 text-red-500"
+                         onClick={() => handleToggle(user)}
+                       />
+                     ) : (
+                       <TbLockOpen
+                         className="inline-block mr-2 text-green-500"
+                         onClick={() => handleToggle(user)} />
                       )}
-                    </span>
-                    <input
+                   </span>
+                   <input
                       type="checkbox"
                       className="sr-only peer"
                       checked={user.blocked}
-                      onChange={() => handleToggle(user)}
+                      onChange={() => handleToggle(user)} // Pass the specific user
                     />
                     <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                     <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300"></span>
@@ -220,14 +222,14 @@ export default function DashUsers() {
         </Table>
 
         {/* Pagination Component */}
-        <div className="mt-4">
+        <div className="mt-6 flex justify-center">
           <ReactPaginate
-            previousLabel={"← Previous"}
-            nextLabel={"Next →"}
+           previousLabel={"← Sau"}
+           nextLabel={"Trước →"}
             pageCount={pageCount}
             onPageChange={handlePageClick}
-            containerClassName={"flex justify-center space-x-4"}
-            pageLinkClassName={"py-2 px-4 border rounded"}
+            containerClassName={"flex flex-wrap justify-center space-x-2 md:space-x-4"}
+            pageLinkClassName={"py-2 px-3 border rounded text-sm"}
             activeClassName={"bg-blue-600 text-white"}
             disabledClassName={"opacity-50 cursor-not-allowed"}
           />
@@ -235,22 +237,23 @@ export default function DashUsers() {
 
         {/* Modal for Block/Unblock */}
         <Modal show={showModal} onClose={handleCancel}>
-          <Modal.Header>
-            {selectedUser?.blocked ? "Unblock User" : "Block User"}
-          </Modal.Header>
-          <Modal.Body>
-            <div className="text-center">
-              <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
-              <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
-                Are you sure you want to {selectedUser?.blocked ? "Unblock" : "Block"} {selectedUser?.username}?
-              </h3>
-              <div className="flex justify-center gap-4">
-                <Button color="failure" onClick={handleConfirmBlock}>
-                  Yes
-                </Button>
-                <Button color="gray" onClick={handleCancel}>
-                  No
-                </Button>
+        <Modal.Header>
+          {selectedUser?.blocked ? "Unblock User" : "Block User"}
+        </Modal.Header>
+        <Modal.Body>
+          <div className="text-center">
+          <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
+            <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
+              Bán có muốn {selectedUser?.blocked ? "Mở khóa" : "Khóa"}{" "}
+              {selectedUser?.username}?
+            </h3>
+            <div className="flex justify-center gap-4">
+              <Button color="failure" onClick={handleConfirmBlock}>
+                Có
+              </Button>
+              <Button color="gray" onClick={handleCancel}>
+                Không
+              </Button>
               </div>
             </div>
           </Modal.Body>
