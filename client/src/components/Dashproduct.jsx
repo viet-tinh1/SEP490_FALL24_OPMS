@@ -105,7 +105,9 @@ export default function Dashproduct() {
                 className="w-full"
               />
             </form>
-            <Button className="w-full md:w-auto">Thêm sản phẩm</Button>
+            <Link to="/ProductUpdate">
+              <Button className="w-full md:w-auto">Thêm sản phẩm</Button>
+            </Link>
           </div>
         </div>
       </div>
@@ -144,7 +146,7 @@ export default function Dashproduct() {
                 <Table.Cell className="p-4 text-center">{product.verify}</Table.Cell>
                 <Table.Cell className="p-4 flex space-x-2 justify-center">
                   <Link to="/ProductEdit">
-                    <MdEdit className="cursor-pointer text-blue-600" size={20} />
+                    <MdEdit className="cursor-pointer text-green-600" size={20} />
                   </Link>
                   <MdDelete
                     onClick={() => handleDelete(product)}
