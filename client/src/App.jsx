@@ -11,6 +11,9 @@ import Cart from './pages/Cart'
 import ProductDetail from './pages/ProductDetail'
 import Payment from './pages/Payment'
 import Verify_Otp from './pages/Verify_otp'
+import ProductEdit from "./pages/ProductEdit";
+import ProductUpdate from "./pages/ProductUpdate";
+
 
 import ForgotPassword from './pages/ForgotPassword'
 import ChangePassword from './pages/ChangePassword'
@@ -38,7 +41,8 @@ export default function App() {
           <Route path="/change-password" element={<ChangePassword/>}/>
           <Route path='/verifyOTP' element={<VerifyOTP/>} />
           <Route path='/producsSeller/:userIdPlant' element={<ProductSeller/>}/>
-
+          <Route path="/ProductEdit" element={<ProductEdit />} />
+          <Route path="/ProductUpdate" element={<ProductUpdate />} />
 
 
     </Routes>

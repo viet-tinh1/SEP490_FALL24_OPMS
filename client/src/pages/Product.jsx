@@ -246,8 +246,6 @@ export default function Product() {
       alert("Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.");
     }
   };
-
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">

@@ -116,29 +116,31 @@ export default function DashUsers() {
                 placeholder="Tìm kiếm  ..."
                 rightIcon={AiOutlineSearch}
                 className="w-full"/>
-            </form>
-            <Button className="ml-3 w-full md:w-auto">Thêm người dùng</Button>
+
+            </form>           
+            <Button className="flex items-center ml-auto space-x-2 sm:space-x-3">Thêm người dùng</Button>
+
           </div>
             <br></br>
-            <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0 mt-4">
-              <button 
+            <div className="sm:flex space-x-4">
+              <Button 
               id="1" 
               onClick={() => handleRoleChange(1)}
               className={`${
                 activeButton === 1
-                   ? 'bg-green-600 text-white'
-            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              } `}
+                  ? "bg-green-600 text-white border-green-700"
+                  : "bg-gray-200 text-gray-700 border-gray-300"
+              } py-1 px-3 text-sm font-semibold rounded-lg shadow`}
               >
                 Quản trị viên
-              </button>
+              </Button>
               <Button 
               id="2" 
               onClick={() => handleRoleChange(2)}
               className={`${
                 activeButton === 2
-                   ? 'bg-green-600 text-white'
-            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  ? "bg-green-600 text-white border-green-700"
+                  : "bg-gray-200 text-gray-700 border-gray-300"
               } py-1 px-3 text-sm font-semibold rounded-lg shadow`}
               >
                 Người dùng
@@ -146,11 +148,11 @@ export default function DashUsers() {
               <Button 
               id="3" 
               onClick={() => handleRoleChange(3)}
-              className={`px-5 py-2 rounded-md font-medium ${
+              className={`${
                activeButton === 3
-                 ? 'bg-green-600 text-white'
-            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              } `}
+                ? "bg-green-600 text-white border-green-700"
+                : "bg-gray-200 text-gray-700 border-gray-300"
+              } py-1 px-3 text-sm font-semibold rounded-lg shadow`}
               >
                 Người bán
               </Button>
