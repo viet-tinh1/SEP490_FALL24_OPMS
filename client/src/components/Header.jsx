@@ -1,7 +1,6 @@
 import { Avatar, Button, Dropdown, Navbar, TextInput } from "flowbite-react";
 import { Link, useLocation } from "react-router-dom";
 import { FaLeaf } from "react-icons/fa";
-import { FaMoon, FaSun } from "react-icons/fa";
 import { AiOutlineSearch } from "react-icons/ai";
 import { MdOutlineShoppingCart } from "react-icons/md";
 export default function Header() {
