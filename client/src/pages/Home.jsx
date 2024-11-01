@@ -21,6 +21,7 @@ export default function Home() {
             </Link>
           </div>         
             <PlantItem />        
+
         </div>
       </div>
       

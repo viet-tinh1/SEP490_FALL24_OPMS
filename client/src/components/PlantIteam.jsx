@@ -75,7 +75,7 @@ export default function PlantItem() {
   }
  
   return (
-    <div className="flex flex-wrap justify-center gap-3 p-5">
+    <div className="flex flex-wrap justify-center  gap-9 p-5">
       {/*Card1*/}
       {products.map((product) => (
         <div
