@@ -15,6 +15,7 @@ import ProductEdit from "./pages/ProductEdit";
 import ProductUpdate from "./pages/ProductUpdate";
 import DiscountEdit from "./pages/DiscountEdit";
 import DiscountUpdate from "./pages/DiscountUpdate";
+import Forum from "./pages/Forum";
 export default function App() {
   return (
     <BrowserRouter>
@@ -34,6 +35,8 @@ export default function App() {
         <Route path="/ProductUpdate" element={<ProductUpdate />} />
         <Route path="/DiscountEdit" element={<DiscountEdit />} />
         <Route path="/DiscountUpdate" element={<DiscountUpdate />} />
+        <Route path="/Forum" element={<Forum />} />
+
       </Routes>
       <Footer />
     </BrowserRouter>
