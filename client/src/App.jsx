@@ -13,11 +13,12 @@ import Payment from './pages/Payment'
 import Verify_Otp from './pages/Verify_otp'
 import ProductEdit from "./pages/ProductEdit";
 import ProductUpdate from "./pages/ProductUpdate";
-
-
+import DiscountEdit from "./pages/DiscountEdit";
+import DiscountUpdate from "./pages/DiscountUpdate";
 import ForgotPassword from './pages/ForgotPassword'
 import ChangePassword from './pages/ChangePassword'
 import VerifyOTP from './pages/VerifyOTP'
+import Forum from "./pages/Forum";
 
 import ProductSeller from './pages/ProductSeller'
 
@@ -43,7 +44,9 @@ export default function App() {
           <Route path='/producsSeller/:userIdPlant' element={<ProductSeller/>}/>
           <Route path="/ProductEdit" element={<ProductEdit />} />
           <Route path="/ProductUpdate" element={<ProductUpdate />} />
-
+          <Route path="/DiscountEdit" element={<DiscountEdit />} />
+          <Route path="/DiscountUpdate" element={<DiscountUpdate />} />
+          <Route path="/Forum" element={<Forum />} />
 
     </Routes>
     <Footer/>

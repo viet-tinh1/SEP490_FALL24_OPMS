@@ -33,11 +33,10 @@ export default function DashProduct() {
 
   try {
     let response;
-    if (storedRoles === '3') {
+    
       response = await fetch(`https://localhost:7098/api/PlantAPI/getPlantByUser?UserId=${userId}`);
-    } else if (storedRoles === '1') {
-      response = await fetch("https://localhost:7098/api/PlantAPI/getVerifiedPlants");
-    }
+    
+      
 
     if (response && response.ok) {
       const data = await response.json();
@@ -64,33 +63,7 @@ useEffect(() => {
 }, []);
 
   // Hàm xử lý sự kiện click của các button
-  const handleRoleChange = async (buttonId) => {
-    setActiveButton(buttonId);
-    if (role === '1') {
-      setLoading(true);
-      try {
-        let response;
-        if (buttonId === 1) {
-          response = await fetch("https://localhost:7098/api/PlantAPI/getVerifiedPlants");
-        } else if (buttonId === 2) {
-          response = await fetch("https://localhost:7098/api/PlantAPI/getNonVerifiedPlants");
-        }
-
-        if (response && response.ok) {
-          const data = await response.json();
-          setPlants(data);
-          
-        } else {
-          throw new Error("Failed to fetch plants based on button selection");
-        }
-      } catch (error) {
-        console.error("Error fetching plants:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    
-  };
+  
 
   const getCategoryName = (categoryId) => {
     const category = categories.find((cat) => cat.categoryId === categoryId);
@@ -116,36 +89,7 @@ useEffect(() => {
     setShowModal(false);
   };
   // Hàm handleVerify kiểm tra trạng thái isVerified và gọi API thích hợp
-  const handleVerify = async (plant) => {
-    try {
-      let apiUrl;
-      if (plant.isVerfied === 1) {
-        apiUrl = `https://localhost:7098/api/PlantAPI/updateNonVerifyStatus?plantId=${plant.plantId}`;
-      } else {
-        apiUrl = `https://localhost:7098/api/PlantAPI/updateVerifyStatus?plantId=${plant.plantId}`;
-      }
-
-      // Gọi API
-      await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'accept': '*/*',
-        },
-      });
-      await fetchPlants();
-
-      // Cập nhật trạng thái sau khi xác thực/hủy xác thực thành công
-      setPlants((prevPlants) =>
-        prevPlants.map((p) =>
-          p.id === plant.id ? { ...p, isVerified: plant.isVerified === 1 ? 0 : 1 } : p
-        )
-      );
-      setActiveButton(1); 
-    } catch (error) {
-      console.error('Error updating verify status:', error);
-    }
-  };
+  
   // Pagination
   const pageCount = Math.ceil(plants.length / plantsPerPage);
   const handlePageClick = ({ selected }) => setCurrentPage(selected);
@@ -175,42 +119,11 @@ useEffect(() => {
         rightIcon={AiOutlineSearch}
         className="hidden lg:inline"
         />
-        </form>
-        
-          {role !== '1' && (
+        </form>              
           <Link to="/ProductUpdate">
           <Button className="w-full md:w-auto">Thêm sản phẩm</Button>
-        </Link>
-          )}
-           
-          </div>
-          <br></br>
-          {role == '1' && (
-            <div className="sm:flex space-x-4">
-              <Button
-        id="1"
-        onClick={() => handleRoleChange(1)}
-        className={`${
-          activeButton === 1
-            ? "bg-green-600 text-white border-green-700"
-            : "bg-gray-200 text-gray-700 border-gray-300"
-        } py-1 px-3 text-sm font-semibold rounded-lg shadow`}
-      >
-        Cây đã xác thực
-      </Button>
-      
-      <Button
-        id="2"
-        onClick={() => handleRoleChange(2)}
-        className={`${
-          activeButton === 2
-            ? "bg-green-600 text-white border-green-700"
-            : "bg-gray-200 text-gray-700 border-gray-300"
-        } py-1 px-3 text-sm font-semibold rounded-lg shadow`}
-      >
-        Cây chưa xác thực
-      </Button>           
-            </div>)}
+        </Link>                   
+          </div>         
         </div>
       </div>
 
@@ -229,7 +142,27 @@ useEffect(() => {
             <Table.HeadCell className="text-center">Sửa/Xóa</Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y">
-            {plantsToDisplay.map((plant) => (
+            {plantsToDisplay.map((plant) => {
+
+            let imageSrc;
+
+                try {
+                  // Giải mã Base64
+                  const decodedData = atob(plant.imageUrl);
+              
+                  // Kiểm tra xem chuỗi đã giải mã có phải là URL không
+                  if (decodedData.startsWith("http://") || decodedData.startsWith("https://")) {
+                    // Nếu là URL, dùng trực tiếp
+                    imageSrc = decodedData;
+                  } else {
+                    // Nếu không phải URL, giả định đây là dữ liệu hình ảnh
+                    imageSrc = `data:image/jpeg;base64,${plant.imageUrl}`;
+                  }
+                } catch (error) {
+                  console.error("Error decoding Base64:", error);
+                  imageSrc = ""; // Đặt giá trị mặc định nếu giải mã thất bại
+                }
+              return (
               <Table.Row
                 className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
                 key={plant.plantId}
@@ -237,7 +170,7 @@ useEffect(() => {
                 
                 <Table.Cell className="py-4 flex items-center">
                   <img
-                    src={plant.imageUrl || "https://via.placeholder.com/40"}
+                    src={imageSrc || "https://via.placeholder.com/40"}
                     alt={plant.name}
                     className="h-10 w-10 object-cover bg-gray-500 rounded-full"
                   />
@@ -252,8 +185,7 @@ useEffect(() => {
                     {plant.status === 1 ? "Còn hàng" : "Hết hàng"}
                 </Table.Cell>
                 <Table.Cell className="p-4 text-center">{plant.isVerfied === 1 ? "Đã xác thực" : "Chưa xác thực"}</Table.Cell>
-                <Table.Cell className="py-4 flex space-x-2">
-                  {role !== '1' ? (
+                <Table.Cell className="py-4 flex space-x-2">                 
                   <>
                    <Link to="/ProductEdit">
                     <MdEdit className="cursor-pointer text-green-600" size={20} />
@@ -263,26 +195,11 @@ useEffect(() => {
                     className="cursor-pointer text-red-600"
                     size={20}
                   />
-                  </>
-                  ) : (
-                    <Button onClick={() => handleVerify(plant)}
-                    className={`py-0.5 px-1 text-xs font-medium rounded-xl whitespace-nowrap text-center text-white 
-                      ${plant.isVerfied === 1 ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
-                    >
-                    {plant.isVerfied === 1 ? (
-                    <>
-                    <AiOutlineClose className="mr-1 mt-1" /> Hủy xác thực
-                    </>
-                    ) : (
-                    <>
-                   <AiOutlineCheck className="mr-1 mt-1" /> Xác thực
-                     </>
-                    )}
-                  </Button>
-                  )}
+                  </>                                       
                 </Table.Cell>
               </Table.Row>
-            ))}
+            )}
+            )}
           </Table.Body>
         </Table>
 

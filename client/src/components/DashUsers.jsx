@@ -175,7 +175,27 @@ export default function DashUsers() {
             <Table.HeadCell className="whitespace-nowrap">Trạng thái</Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y">
-            {usersToDisplay.map((user) => (
+            {usersToDisplay.map((user) => {
+              let imageSrc;
+
+              try {
+            // Giải mã Base64
+            const decodedData = atob(user.userImage);
+
+            // Kiểm tra xem chuỗi đã giải mã có phải là URL không
+            if (decodedData.startsWith("http://") || decodedData.startsWith("https://")) {
+            // Nếu là URL, dùng trực tiếp
+            imageSrc = decodedData;
+            } else {
+              // Nếu không phải URL, giả định đây là dữ liệu hình ảnh
+            imageSrc = `data:image/jpeg;base64,${user.userImage}`;
+            }
+              } catch (error) {
+              console.error("Error decoding Base64:", error);
+              imageSrc = ""; // Đặt giá trị mặc định nếu giải mã thất bại
+              }
+
+              return(
               <Table.Row
                 className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
                 key={user.userId}
@@ -183,7 +203,7 @@ export default function DashUsers() {
                 <Table.Cell className="py-4"> {new Date(user.createdDate).toLocaleDateString('en-CA')}</Table.Cell>
                 <Table.Cell className="py-4 flex items-center">
                   <img
-                    src={user.userImage}
+                    src={imageSrc}
                     alt={user.username}
                     className="h-10 w-10 object-cover bg-gray-500 rounded-full"
                   />
@@ -219,7 +239,9 @@ export default function DashUsers() {
                   </label>
                 </Table.Cell>
               </Table.Row>
-            ))}
+              
+              )}
+            )}
           </Table.Body>
         </Table>
 
