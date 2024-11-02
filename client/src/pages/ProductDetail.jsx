@@ -255,7 +255,24 @@ export default function ProductDetail() {
 
   // Tính số sao trung bình
   const averageRating = (ratingSummary.totalRating / ratingSummary.totalReviews).toFixed(1);
+  let imageSrc;
 
+  try {
+    // Giải mã Base64
+    const decodedData = atob(imageUrl);
+
+    // Kiểm tra xem chuỗi đã giải mã có phải là URL không
+    if (decodedData.startsWith("http://") || decodedData.startsWith("https://")) {
+      // Nếu là URL, dùng trực tiếp
+      imageSrc = decodedData;
+    } else {
+      // Nếu không phải URL, giả định đây là dữ liệu hình ảnh
+      imageSrc = `data:image/jpeg;base64,${imageUrl}`;
+    }
+  } catch (error) {
+    console.error("Error decoding Base64:", error);
+    imageSrc = ""; // Đặt giá trị mặc định nếu giải mã thất bại
+  }
   return (
     <body className="overflow-hidden bg-gray-100">
       <section className="py-10 bg-white shadow-lg shadow-gray-200 rounded-md md:py-10 dark:bg-gray-900 antialiased p-10 m-10">
@@ -264,7 +281,7 @@ export default function ProductDetail() {
             <div className="shrink-0 max-w-md lg:max-w-lg mx-auto">
               <img
                 className="w-full dark:hidden"
-                src={imageUrl || "https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front.svg"}
+                src={imageSrc || "https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front.svg"}
                 alt={plantName || "Product Image"}
               />
               <img

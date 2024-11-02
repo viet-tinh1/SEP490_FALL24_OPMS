@@ -5,7 +5,7 @@ import { FaMoon, FaSun } from "react-icons/fa";
 import { AiOutlineSearch } from "react-icons/ai";
 import { MdOutlineShoppingCart } from "react-icons/md";
 import { useState, useEffect, useRef } from "react";
-
+import ConfirmationDialog from "../components/ConfirmationDialog";
 export default function Header() {
   
   const path = useLocation().pathname;
@@ -17,7 +17,7 @@ export default function Header() {
   const [searchResults, setSearchResults] = useState([]); // State for search results
   const navigate = useNavigate();
   const timeoutRef = useRef(null);
-
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const INACTIVITY_LIMIT = 30 * 60 * 1000;
 
   const resetInactivityTimeout = () => {
@@ -72,15 +72,46 @@ export default function Header() {
       }
     };
   }, []);
+  useEffect(() => {
+    const handleSignOutAcrossTabs = (event) => {
+      if (event.key === "signOut") {
+        // Clear state and navigate to home page
+        setUserId(null);
+        setURoles(null);
+        setEmail(null);
+        setUserName(null);
+        navigate("/");
+      }
+    };
+
+    window.addEventListener("storage", handleSignOutAcrossTabs);
+
+    return () => {
+      window.removeEventListener("storage", handleSignOutAcrossTabs);
+    };
+  }, []);
 
   const handleSignOut = () => {
-    localStorage.removeItem("userId");
-    localStorage.removeItem("role");
+    // Xóa tất cả các mục trong localStorage
+    localStorage.clear();
+
+    // Phát sự kiện đăng xuất
+    localStorage.setItem("signOut", Date.now());
+
+    // Đặt lại trạng thái
     setUserId(null);
     setURoles(null);
-    navigate("/");
+    setEmail(null);
+    setUserName(null);
+    navigate("/"); 
   };
 
+  const openConfirmationDialog = () => {
+    setShowConfirmation(true);
+  };
+  const closeConfirmationDialog = () => {
+    setShowConfirmation(false);
+  };
   const handleSearch = async (e) => {
     e.preventDefault();
     try {
@@ -153,7 +184,7 @@ export default function Header() {
           >
             <Dropdown.Header>
               <span className="block text-sm font-medium truncate">
-                Username : {username}
+                Tên : {username}
               </span>
               <span className="block text-sm font-medium truncate">
                 Email : {email}
@@ -163,14 +194,25 @@ export default function Header() {
               <Dropdown.Item>Profile</Dropdown.Item>
             </Link>
             <Dropdown.Divider />
-            <Dropdown.Item onClick={handleSignOut}>Sign out</Dropdown.Item>
+            <Dropdown.Item onClick={openConfirmationDialog}>Đăng Xuất</Dropdown.Item>
+            
           </Dropdown>
         ) : (
           <Link to="/sign-in">
             <Button gradientDuoTone="greenToBlue">Đăng nhập</Button>
           </Link>
         )}
-
+        {/* Hiển thị hộp thoại xác nhận nếu `showConfirmation` là true */}
+        {showConfirmation && (
+          <ConfirmationDialog
+          message="Bạn có chắc chắn muốn đăng xuất không?"
+          onConfirm={() => {
+            handleSignOut();
+            closeConfirmationDialog();
+          }}
+          onCancel={closeConfirmationDialog}
+          />
+        )}
         <Navbar.Toggle />
       </div>
       <Navbar.Collapse>
@@ -188,6 +230,9 @@ export default function Header() {
             <Link to="/dashboard">Dashboard</Link>
           </Navbar.Link>
         )}
+         <Navbar.Link active={path === "/Forum"} as={"div"}>
+          <Link to="/Forum">Diễn đàn</Link>
+        </Navbar.Link>
         <Navbar.Link active={path === "/cart"} as={"div"}>
           <Link to="/cart" className="text-2xl">
             <MdOutlineShoppingCart />
