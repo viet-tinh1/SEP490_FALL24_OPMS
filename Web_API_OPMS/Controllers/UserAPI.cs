@@ -60,10 +60,21 @@ namespace Web_API_OPMS.Controllers
                     Password = hashedPassword,
                     Email = u.Email,
                     Roles = u.Roles,
-                    Status = u.Status,
+                    Status = u.Status,              
                     // Kiểm tra nếu CreatedDate không được đặt từ trước thì sẽ gán ngày hiện tại theo giờ Việt Nam
                     CreatedDate = currentVietnamTime
                 };
+                if (!string.IsNullOrEmpty(u.UserImage))
+                {
+                    if (Uri.IsWellFormedUriString(u.UserImage, UriKind.Absolute)) // Kiểm tra nếu là URL
+                    {
+                        user.UserImage = await GetImageBytesFromUrl(u.UserImage);
+                    }
+                    else // Nếu là chuỗi Base64
+                    {
+                        user.UserImage = Convert.FromBase64String(u.UserImage);
+                    }
+                }
                 UserRepository.CreateUser(user);
                 return CreatedAtAction(nameof(getUserById), new { id = user.UserId }, user);
             }
@@ -106,7 +117,7 @@ namespace Web_API_OPMS.Controllers
         }
         // Chỉnh sửa user đã tạo
         [HttpPost("updateUser")]
-        public IActionResult UpdateUser([FromBody] UserDTO u)
+        public async Task<IActionResult> UpdateUserAsync([FromBody] UserDTO u)
         {
             if (u == null || string.IsNullOrEmpty(u.Username))
             {
@@ -131,7 +142,17 @@ namespace Web_API_OPMS.Controllers
                 existingUser.Roles = u.Roles;
                 existingUser.FullName = u.FullName;
                 existingUser.Address = u.Address;
-                existingUser.UserImage = u.UserImage;
+                if (!string.IsNullOrEmpty(u.UserImage))
+                {
+                    if (Uri.IsWellFormedUriString(u.UserImage, UriKind.Absolute)) // Kiểm tra nếu là URL
+                    {
+                        existingUser.UserImage = await GetImageBytesFromUrl(u.UserImage);
+                    }
+                    else // Nếu là chuỗi Base64
+                    {
+                        existingUser.UserImage = Convert.FromBase64String(u.UserImage);
+                    }
+                }
                 existingUser.Status = u.Status;
                 existingUser.ShopName = u.ShopName;
 
@@ -202,5 +223,13 @@ namespace Web_API_OPMS.Controllers
                 return Convert.ToBase64String(hashedBytes);
             }
         }
+        private async Task<byte[]> GetImageBytesFromUrl(string imageUrl)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                return await client.GetByteArrayAsync(imageUrl);
+            }
+        }
     }
+    
 }

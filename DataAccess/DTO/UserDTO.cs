@@ -30,4 +30,5 @@ namespace DataAccess.DTO
         public int? Status { get; set; }
         public string? ShopName { get; set; }
     }
+
 }
