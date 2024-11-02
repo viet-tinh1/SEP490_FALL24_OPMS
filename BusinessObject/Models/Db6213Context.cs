@@ -243,10 +243,7 @@ public partial class Db6213Context : DbContext
             entity.Property(e => e.Discount)
                 .HasColumnType("decimal(5, 2)")
                 .HasColumnName("discount");
-            entity.Property(e => e.ImageUrl)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("ImageURL");
+            entity.Property(e => e.ImageUrl).HasColumnName("ImageURL");
             entity.Property(e => e.IsVerfied).HasDefaultValueSql("((0))");
             entity.Property(e => e.PlantName).HasMaxLength(100);
             entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
@@ -309,7 +306,12 @@ public partial class Db6213Context : DbContext
             entity.Property(e => e.ShopName)
                 .HasMaxLength(100)
                 .HasColumnName("shop_name");
-            entity.Property(e => e.UserImage).HasMaxLength(255);
+            //entity.Property(e => e.IsVerifyEmail)
+            //    .HasColumnName("IsVerifyEmail")
+            //    .HasDefaultValue(0);
+            //entity.Property(e => e.UserImage)
+            //    .HasColumnName("UserImage")
+            //    .HasColumnType("VARBINARY(MAX)");
             entity.Property(e => e.Username)
                 .HasMaxLength(50)
                 .IsUnicode(false);

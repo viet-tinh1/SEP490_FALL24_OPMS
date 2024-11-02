@@ -106,6 +106,12 @@ namespace Web_API_OPMS.Controllers
                         }
                         // Giảm số lượng hàng trong kho
                         plant.Stock -= cart.Quantity;
+                        // cập nhật lại trạng thái khi hết hàng 
+                        if (plant.Stock <= 0)
+                        {
+                            plant.Stock = 0;
+                            plant.Status = 0;
+                        }
                         PlantRepository.updatePlant(plant);
                     }
                     // Commit transaction sau khi tất cả các bước trên thành công
