@@ -110,7 +110,7 @@ namespace DataAccess.DAO
                     PlantName = p.PlantName,
                     CategoryId = p.CategoryId,
                     Price = p.Price,
-                    ImageUrl = p.ImageUrl,
+                    ImageUrl = p.ImageUrl != null ? Convert.ToBase64String(p.ImageUrl) : string.Empty,
                     Discount = p.Discount,
                     TotalPurchased = g.TotalQuantity // Gán tổng số lượng đã mua cho mỗi Plant
                 })
@@ -135,7 +135,7 @@ namespace DataAccess.DAO
                     PlantName = p.PlantName,
                     CategoryId = p.CategoryId,
                     Price = p.Price,
-                    ImageUrl = p.ImageUrl,
+                    ImageUrl = p.ImageUrl != null ? Convert.ToBase64String(p.ImageUrl) : string.Empty,
                     Discount = p.Discount,
                     UserId = p.UserId,
                     TotalPurchased = g.TotalQuantity // Gán tổng số lượng đã mua cho mỗi Plant

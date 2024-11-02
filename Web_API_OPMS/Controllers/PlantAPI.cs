@@ -60,7 +60,7 @@ namespace Web_API_OPMS.Controllers
         }
         //Tạo 1 plant mới
         [HttpPost("createPlant")]
-        public IActionResult CreatePlant([FromBody] PlantDTO p)
+        public async Task<IActionResult> CreatePlantAsync([FromBody] PlantDTO p)
         {
             //using session userId from login api 
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -84,8 +84,7 @@ namespace Web_API_OPMS.Controllers
                     PlantName = p.PlantName,
                     CategoryId = p.CategoryId,
                     Description = p.Description,
-                    Price = p.Price,
-                    ImageUrl = p.ImageUrl,
+                    Price = p.Price,                   
                     Stock = p.Stock,
                     Status = p.Status,
                     IsVerfied = 0,
@@ -93,8 +92,19 @@ namespace Web_API_OPMS.Controllers
                     CreateDate = currentVietnamTime
 
                 };
+                if (!string.IsNullOrEmpty(p.ImageUrl))
+                {
+                    if (Uri.IsWellFormedUriString(p.ImageUrl, UriKind.Absolute)) // Kiểm tra nếu là URL
+                    {
+                        plant.ImageUrl = await GetImageBytesFromUrl(p.ImageUrl);
+                    }
+                    else // Nếu là chuỗi Base64
+                    {
+                        plant.ImageUrl = Convert.FromBase64String(p.ImageUrl);
+                    }
+                }
                 plantRepository.createPlant(plant);
-                return CreatedAtAction(nameof(CreatePlant), new { id = plant.PlantId}, plant);
+                return CreatedAtAction(nameof(getPlantById), new { id = plant.PlantId }, plant);
             }
             catch (Exception ex)
             {
@@ -103,7 +113,7 @@ namespace Web_API_OPMS.Controllers
         }
         // Chỉnh sửa plant đã tạo
         [HttpPost("updatePlant")]
-        public IActionResult UpdatePlant([FromBody] PlantDTOU p)
+        public async Task<IActionResult> UpdatePlantAsync([FromBody] PlantDTOU p)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)// If the user is not logged in or session expired
@@ -132,12 +142,25 @@ namespace Web_API_OPMS.Controllers
                 existingPlant.PlantName = p.PlantName;
                 existingPlant.CategoryId = p.CategoryId;
                 existingPlant.Description = p.Description;
-                existingPlant.Price = p.Price;
-                existingPlant.ImageUrl = p.ImageUrl;
+                existingPlant.Price = p.Price;               
                 existingPlant.Stock = p.Stock;
-                existingPlant.Status = p.Status;
-                
-
+                existingPlant.IsVerfied = 0;
+                if (!string.IsNullOrEmpty(p.ImageUrl))
+                {
+                    if (Uri.IsWellFormedUriString(p.ImageUrl, UriKind.Absolute)) // Kiểm tra nếu là URL
+                    {
+                        existingPlant.ImageUrl = await GetImageBytesFromUrl(p.ImageUrl);
+                    }
+                    else // Nếu là chuỗi Base64
+                    {
+                        existingPlant.ImageUrl = Convert.FromBase64String(p.ImageUrl);
+                    }
+                }
+                if (existingPlant.Stock > 0)
+                {
+                   
+                    existingPlant.Status = 1;
+                }
                 // Save changes
                 plantRepository.updatePlant(existingPlant);
 
@@ -278,6 +301,13 @@ namespace Web_API_OPMS.Controllers
         public ActionResult<IEnumerable<Plant>> getPlantByUserIsVerify(int UserId)
         {
             return plantRepository.getPlantByUserIsVerify(UserId);
+        }
+        private async Task<byte[]> GetImageBytesFromUrl(string imageUrl)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                return await client.GetByteArrayAsync(imageUrl);
+            }
         }
 
     }

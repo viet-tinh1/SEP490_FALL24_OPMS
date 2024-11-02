@@ -18,7 +18,7 @@ public partial class Plant
 
     public decimal Price { get; set; }
 
-    public string ImageUrl { get; set; } = null!;
+    public byte[]? ImageUrl { get; set; }
 
     public int? Stock { get; set; }
 
@@ -27,6 +27,7 @@ public partial class Plant
     public int? IsVerfied { get; set; }
 
     public DateTime? CreateDate { get; set; }
+   
 
     public decimal? Discount { get; set; }
     public virtual ICollection<ShoppingCartItem> ShoppingCartItems { get; set; } = new List<ShoppingCartItem>();
