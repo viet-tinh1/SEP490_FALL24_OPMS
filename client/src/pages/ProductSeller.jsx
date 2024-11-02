@@ -14,6 +14,7 @@ export default function ProductSeller() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [users, setUsers] = useState([]);
+  const [ userimg,setUserImg] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const usersPerPage = 5;
   const [loading, setLoading] = useState(true);
@@ -87,7 +88,10 @@ export default function ProductSeller() {
           return;
         }
         setProducts(productsDatas);
-
+        const UserResponses = await fetch(
+          `https://localhost:7098/api/UserAPI/getUserById?userId=${userIdPlant}`);
+        const UserimgDatas = await UserResponses.json();
+        setUserImg(UserimgDatas);
         //lấy loại cây
         const categoryResponse = await fetch(
           "https://localhost:7098/api/CategoryAPI/getCategory"
@@ -287,6 +291,23 @@ export default function ProductSeller() {
   if (error) {
     return <div>Error: {error}</div>;
   }
+  const isValidUrl = (string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  const getImageSrc = () => {
+    if (userimg.userImage && isValidUrl(userimg.userImage)) {
+      return userimg.userImage;
+    } else if (userimg.userImage) {
+      return `data:image/jpeg;base64,${userimg.userImage}`;
+    }
+    return ""; // Trả về chuỗi rỗng nếu không có ảnh
+  };
   return (
     <main>
       <div className="p-6 bg-white shadow-lg rounded-md md:py-10 dark:bg-gray-900 shadow-gray-200 antialiased">
@@ -296,9 +317,9 @@ export default function ProductSeller() {
             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
               {/* Placeholder for Profile Image */}
               <img
-                  src={users.imageUrl || "https://via.placeholder.com/64"}
+                  src={getImageSrc(userimg.userImage) || "https://via.placeholder.com/64"}
                   alt="Profile"
-                  className="rounded-full"
+                  className="w-full h-full object-cover rounded-full"
               />  
             </div>
             {productsToDisplay.slice(0, 1).map((product) => (
@@ -465,7 +486,25 @@ export default function ProductSeller() {
                 {notification || "Không có sản phẩm nào có sẵn."}
               </div>
             ) : (
-              productsToDisplay.map((product) => (
+              productsToDisplay.map((product) => {let imageSrc;
+
+                try {
+                  // Giải mã Base64
+                  const decodedData = atob(product.imageUrl);
+              
+                  // Kiểm tra xem chuỗi đã giải mã có phải là URL không
+                  if (decodedData.startsWith("http://") || decodedData.startsWith("https://")) {
+                    // Nếu là URL, dùng trực tiếp
+                    imageSrc = decodedData;
+                  } else {
+                    // Nếu không phải URL, giả định đây là dữ liệu hình ảnh
+                    imageSrc = `data:image/jpeg;base64,${product.imageUrl}`;
+                  }
+                } catch (error) {
+                  console.error("Error decoding Base64:", error);
+                  imageSrc = ""; // Đặt giá trị mặc định nếu giải mã thất bại
+                }
+                return(
                 <div
                   key={product.plantId}
                   className="bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto"
@@ -474,7 +513,7 @@ export default function ProductSeller() {
                   <Link to={`/productdetail/${product.plantId}`}>
                     <div className="relative p-2.5 overflow-hidden rounded-xl bg-clip-border">
                       <img
-                        src={product.imageUrl}
+                        src={imageSrc}
                         alt={product.plantName}
                         className="w-[175px] h-[200px] object-cover rounded-md hover:scale-105 transition-scale duration-300 mx-auto"
                       />
@@ -540,7 +579,7 @@ export default function ProductSeller() {
                   <Link to={`/producsSeller/${product.userId}`}>
                       <div className="flex items-center space-x-5">
                         <img
-                          src={users.imageUrl || "https://via.placeholder.com/40"}
+                         src={getImageSrc(userimg.userImage) || "https://via.placeholder.com/40"}
                           alt={product.name}
                           className="h-10 w-10 object-cover bg-gray-500 rounded-full"
                         />
@@ -549,8 +588,9 @@ export default function ProductSeller() {
                     </Link>
                   </div>
                </div>
-              ))
-            )}
+                );
+              })
+            )}   
 
           <div className="w-full flex justify-center mt-4">
               <ReactPaginate
