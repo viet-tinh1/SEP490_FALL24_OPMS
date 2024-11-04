@@ -19,6 +19,7 @@ export default function DashProduct() {
   const plantsPerPage = 3;
   const [activeButton, setActiveButton] = useState(1);
 
+
  // Reusable function to fetch plants
  const fetchPlants = async () => {
   const userId = localStorage.getItem("userId");
@@ -74,15 +75,29 @@ useEffect(() => {
     setShowModal(true);
   };
 
-  const handleEdit = (plant) => {
-    console.log("Edit plant", plant);
-  };
+  
 
-  const handleConfirmDelete = () => {
-    setPlants((prevPlants) =>
-      prevPlants.filter((plant) => plant.id !== selectedPlant.id)
-    );
-    setShowModal(false);
+  const handleConfirmDelete = async () => {
+    if (!selectedPlant) return;
+  
+    try {
+      // API call to delete the plant
+      const response = await fetch(`https://localhost:7098/api/PlantAPI/deletePlant?PlantId=${selectedPlant.plantId}`, {
+        method: "GET",
+      });
+  
+      if (response.ok) {
+        // If successful, remove the plant from local state
+        setPlants((prevPlants) => prevPlants.filter((plant) => plant.id !== selectedPlant.id));
+        setShowModal(false);
+      } else {
+        console.error("Failed to delete plant:", response.statusText);
+        // Handle unsuccessful delete (e.g., show an error message)
+      }
+    } catch (error) {
+      console.error("Error deleting plant:", error);
+      // Handle fetch error
+    }
   };
 
   const handleCancel = () => {
@@ -120,26 +135,26 @@ useEffect(() => {
         className="hidden lg:inline"
         />
         </form>              
-          <Link to="/ProductUpdate">
+          <Link to="/ProductCreate">
           <Button className="w-full md:w-auto">Thêm sản phẩm</Button>
         </Link>                   
           </div>         
         </div>
       </div>
 
-      <div className="overflow-x-auto shadow-md rounded-lg">
-      <Table hoverable className="w-full">
+      <div className="overflow-x-auto w-full shadow-md rounded-lg">
+      <Table hoverable className="min-w-full">
       <Table.Head>
-            <Table.HeadCell>Ảnh</Table.HeadCell>
-            <Table.HeadCell>Loại</Table.HeadCell>
-            <Table.HeadCell>Tên</Table.HeadCell>
-            <Table.HeadCell  className="whitespace-nowrap" >Mô tả</Table.HeadCell>
-            <Table.HeadCell>Giá</Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">Số lượng</Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">Giảm giá</Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">Trạng thái</Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">Xác thực</Table.HeadCell>
-            <Table.HeadCell className="text-center">Sửa/Xóa</Table.HeadCell>
+      <Table.HeadCell className="w-20">Ảnh</Table.HeadCell>
+      <Table.HeadCell className="w-28">Loại</Table.HeadCell>
+      <Table.HeadCell className="w-32">Tên</Table.HeadCell>
+      <Table.HeadCell className="w-64">Mô tả</Table.HeadCell>
+      <Table.HeadCell className="w-20">Giá</Table.HeadCell>
+      <Table.HeadCell className="w-20 whitespace-nowrap">Số lượng</Table.HeadCell>
+      <Table.HeadCell className="w-20 whitespace-nowrap">Giảm giá</Table.HeadCell>
+      <Table.HeadCell className="w-28 whitespace-nowrap">Trạng thái</Table.HeadCell>
+      <Table.HeadCell className="w-28 whitespace-nowrap">Xác thực</Table.HeadCell>
+      <Table.HeadCell className="w-32 whitespace-nowrap">Sửa/Xóa</Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y">
             {plantsToDisplay.map((plant) => {
@@ -177,7 +192,7 @@ useEffect(() => {
                 </Table.Cell>
                 <Table.Cell className="p-4">{getCategoryName(plant.categoryId)}</Table.Cell>
                 <Table.Cell className="p-4">{plant.plantName}</Table.Cell>
-                <Table.Cell className="p-4">{plant.description}</Table.Cell>
+                <Table.Cell className="p-4 line-clamp-2" dangerouslySetInnerHTML={{ __html: plant.description }} />
                 <Table.Cell className="p-4 text-center">{(plant.price).toFixed(3)}</Table.Cell>
                 <Table.Cell className="p-4 text-center">{(plant.stock)}</Table.Cell>
                 <Table.Cell className="p-4 text-center">{(plant.discount)|| 0}%</Table.Cell>
@@ -187,7 +202,7 @@ useEffect(() => {
                 <Table.Cell className="p-4 text-center">{plant.isVerfied === 1 ? "Đã xác thực" : "Chưa xác thực"}</Table.Cell>
                 <Table.Cell className="py-4 flex space-x-2">                 
                   <>
-                   <Link to="/ProductEdit">
+                   <Link to={`/ProductEdit/${plant.plantId}`}>
                     <MdEdit className="cursor-pointer text-green-600" size={20} />
                   </Link>
                   <MdDelete
@@ -200,9 +215,9 @@ useEffect(() => {
               </Table.Row>
             )}
             )}
-          </Table.Body>
+          </Table.Body>   
         </Table>
-
+        </div>
         <div className="mt-4">
           <ReactPaginate
             previousLabel={"← Sau"}
@@ -215,14 +230,13 @@ useEffect(() => {
             disabledClassName={"opacity-50 cursor-not-allowed"}
           />
         </div>
-
         <Modal show={showModal} onClose={handleCancel}>
         <Modal.Header>Xóa sản phẩm</Modal.Header>
           <Modal.Body>
             <div className="text-center">
             <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 mb-4 mx-auto" />
               <h3 className="mb-5 text-lg text-gray-500">
-              Bạn có chắc chắn muốn xóa sản phẩm {selectedPlant?.name}?
+              Bạn có chắc chắn muốn xóa sản phẩm {selectedPlant}?
               </h3>
               <div className="flex justify-center space-x-4 mt-4">
                 <Button color="failure" onClick={handleConfirmDelete}>Có</Button>
@@ -230,8 +244,7 @@ useEffect(() => {
               </div>
             </div>
           </Modal.Body>
-        </Modal>
-      </div>
+        </Modal>     
     </main>
   );
 }
