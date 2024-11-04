@@ -63,11 +63,7 @@ namespace Web_API_OPMS.Controllers
         public async Task<IActionResult> CreatePlantAsync([FromBody] PlantDTO p)
         {
             //using session userId from login api 
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null)// If the user is not logged in or session expired
-            {
-                return Unauthorized(new { message = "User not logged in" });
-            }
+            
             if (p == null || string.IsNullOrEmpty(p.PlantName))
             {
                 return BadRequest("Invalid plant data");
@@ -80,7 +76,7 @@ namespace Web_API_OPMS.Controllers
                 DateTime currentVietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
                 Plant plant = new Plant()
                 {
-                    UserId = userId.Value,
+                    UserId = p.UserId,
                     PlantName = p.PlantName,
                     CategoryId = p.CategoryId,
                     Description = p.Description,
@@ -114,12 +110,7 @@ namespace Web_API_OPMS.Controllers
         // Chỉnh sửa plant đã tạo
         [HttpPost("updatePlant")]
         public async Task<IActionResult> UpdatePlantAsync([FromBody] PlantDTOU p)
-        {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null)// If the user is not logged in or session expired
-            {
-                return Unauthorized(new { message = "User not logged in" });
-            }
+        {          
             if (p == null || string.IsNullOrEmpty(p.PlantName))
             {
                 return BadRequest("Invalid plant data");
@@ -133,7 +124,7 @@ namespace Web_API_OPMS.Controllers
                 {
                     return NotFound($"Plant with name {p.PlantName} not found.");
                 }
-                if(userId != existingPlant.UserId)
+                if(p.UserId != existingPlant.UserId)
                 {
                     return Unauthorized(new { message = "You do not have permission to update " });
                 }
@@ -160,6 +151,11 @@ namespace Web_API_OPMS.Controllers
                 {
                    
                     existingPlant.Status = 1;
+                }
+                
+                if(existingPlant.Stock <= 0)
+                {
+                    existingPlant.Status = 0;
                 }
                 // Save changes
                 plantRepository.updatePlant(existingPlant);

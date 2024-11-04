@@ -313,6 +313,11 @@ namespace Web_API_OPMS.Controllers
             Random random = new Random();
             return random.Next(100000, 999999).ToString();
         }
+       private string GenerateOtp()
+        {
+            Random random = new Random();
+            return random.Next(100000, 999999).ToString();
+        }
 
         //hàm mã hóa password khi create user
         private string HashPassword(string password)
