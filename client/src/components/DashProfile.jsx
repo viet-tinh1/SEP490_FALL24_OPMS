@@ -14,6 +14,7 @@ export default function DashProfile() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [LimitPasswordError, setLimitPasswordError] = useState('');
 
   // Hàm lấy dữ liệu người dùng từ API
   useEffect(() => {
@@ -77,8 +78,13 @@ export default function DashProfile() {
     event.preventDefault();
     setPasswordError('');
     setConfirmPasswordError('');
+    setLimitPasswordError('');
 
     try {
+      if (newPassword.length < 7) {
+        setLimitPasswordError("Mật khẩu mới phải từ 7 chữ trở lên.");
+        return;
+      }
       if (newPassword !== confirmPassword) {
         setConfirmPasswordError("Mật khẩu xác nhận phải giống với mật khẩu mới.");
         return;
@@ -126,7 +132,7 @@ export default function DashProfile() {
   const getRoleDescription = (role) => {
     switch (role) {
       case 1:
-        return 'Admin';  // Vai trò Admin
+        return 'Quản lí';  // Vai trò Admin
       case 2:
         return 'Người dùng';   // Vai trò Người dùng
       case 3:
@@ -358,6 +364,7 @@ export default function DashProfile() {
                      {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
                   </div>
 
+
                   <div className="col-span-6 sm:col-span-3">
                     <label className="block mb-2 text-sm font-medium text-gray-900">
                       Mật Khẩu Mới
@@ -371,6 +378,7 @@ export default function DashProfile() {
                       placeholder="••••••••"
                       required
                     />
+                    {LimitPasswordError && <p className="text-red-500 text-sm mt-1">{LimitPasswordError}</p>}
                   </div>
 
                   <div className="col-span-6 sm:col-span-3">
