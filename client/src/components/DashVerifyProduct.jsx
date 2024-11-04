@@ -201,101 +201,83 @@ export default function DashVerifyProduct() {
       </div>
     </div>
   </div>
+  {/* bảng */ }
+  <div className="overflow-x-auto w-full shadow-md rounded-lg">
+  <Table hoverable className="min-w-full">
+    <Table.Head>
+      <Table.HeadCell className="w-20">Ảnh</Table.HeadCell>
+      <Table.HeadCell className="w-28">Loại</Table.HeadCell>
+      <Table.HeadCell className="w-32">Tên</Table.HeadCell>
+      <Table.HeadCell className="w-64">Mô tả</Table.HeadCell>
+      <Table.HeadCell className="w-20">Giá</Table.HeadCell>
+      <Table.HeadCell className="w-20 whitespace-nowrap">Số lượng</Table.HeadCell>
+      <Table.HeadCell className="w-20 whitespace-nowrap">Giảm giá</Table.HeadCell>
+      <Table.HeadCell className="w-28 whitespace-nowrap">Trạng thái</Table.HeadCell>
+      <Table.HeadCell className="w-28 whitespace-nowrap">Xác thực</Table.HeadCell>
+      <Table.HeadCell className="w-32 whitespace-nowrap">Hành động</Table.HeadCell>
+    </Table.Head>
+    <Table.Body className="divide-y">
+      {plantsToDisplay.map((plant) => {
+        let imageSrc;
 
-  <div className="overflow-x-auto shadow-md rounded-lg">
-    <Table hoverable className="w-full">
-      <Table.Head>
-        <Table.HeadCell>Ảnh</Table.HeadCell>
-        <Table.HeadCell>Loại</Table.HeadCell>
-        <Table.HeadCell>Tên</Table.HeadCell>
-        <Table.HeadCell>Mô tả</Table.HeadCell>
-        <Table.HeadCell>Giá</Table.HeadCell>
-        <Table.HeadCell className="whitespace-nowrap">
-              Số lượng
-        </Table.HeadCell>
-        <Table.HeadCell className="whitespace-nowrap">
-              Giảm giá
-        </Table.HeadCell>
-        <Table.HeadCell className="whitespace-nowrap">
-              Trạng thái
-        </Table.HeadCell>
-        <Table.HeadCell className="whitespace-nowrap">
-              Xác thực
-        </Table.HeadCell>
-        <Table.HeadCell className="whitespace-nowrap">
-              Hành động
-        </Table.HeadCell>
-      </Table.Head>
-      <Table.Body className="divide-y">
-        {plantsToDisplay.map((plant) => {
-          let imageSrc;
-
-          try {
-            // Giải mã Base64
-            const decodedData = atob(plant.imageUrl);
+        try {
+          // Decode Base64
+          const decodedData = atob(plant.imageUrl);
         
-            // Kiểm tra xem chuỗi đã giải mã có phải là URL không
-            if (decodedData.startsWith("http://") || decodedData.startsWith("https://")) {
-              // Nếu là URL, dùng trực tiếp
-              imageSrc = decodedData;
-            } else {
-              // Nếu không phải URL, giả định đây là dữ liệu hình ảnh
-              imageSrc = `data:image/jpeg;base64,${plant.imageUrl}`;
-            }
-          } catch (error) {
-            console.error("Error decoding Base64:", error);
-            imageSrc = ""; // Đặt giá trị mặc định nếu giải mã thất bại
+          // Check if decoded string is a URL
+          if (decodedData.startsWith("http://") || decodedData.startsWith("https://")) {
+            imageSrc = decodedData;
+          } else {
+            imageSrc = `data:image/jpeg;base64,${plant.imageUrl}`;
           }
-          return(
+        } catch (error) {
+          console.error("Error decoding Base64:", error);
+          imageSrc = ""; // Default value if decoding fails
+        }
+
+        return (
           <Table.Row
             className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
             key={plant.plantId}
           >
             <Table.Cell className="p-4 flex items-center justify-center">
-                <img
-                    src={imageSrc || "https://via.placeholder.com/40"}
-                    alt={plant.name}
-                    className="h-10 w-10 object-cover bg-gray-500 rounded-full"
-                  />
+              <img
+                src={imageSrc || "https://via.placeholder.com/40"}
+                alt={plant.name}
+                className="h-10 w-10 object-cover bg-gray-500 rounded-full"
+              />
             </Table.Cell>
             <Table.Cell className="p-4">{getCategoryName(plant.categoryId)}</Table.Cell>
             <Table.Cell className="p-4">{plant.plantName}</Table.Cell>
-            <Table.Cell className="p-4">{plant.description}</Table.Cell>
-            <Table.Cell className="p-4 text-center">
-            {(plant.price).toFixed(3)}
-                </Table.Cell>
-                <Table.Cell className="p-4 text-center">
-                {(plant.stock)}
-                </Table.Cell>
-                <Table.Cell className="p-4 text-center">
-                {(plant.discount)|| 0}%
-                </Table.Cell>
-                <Table.Cell className="p-4 text-center">
-                    {plant.status === 1 ? "Còn hàng" : "Hết hàng"}
-                </Table.Cell>
-                <Table.Cell className="p-4 text-center">{plant.isVerfied === 1 ? "Đã xác thực" : "Chưa xác thực"}</Table.Cell>
+            <Table.Cell className="p-4 line-clamp-2" dangerouslySetInnerHTML={{ __html: plant.description }} />
+            <Table.Cell className="p-4 text-center">{plant.price.toFixed(3)}</Table.Cell>
+            <Table.Cell className="p-4 text-center">{plant.stock}</Table.Cell>
+            <Table.Cell className="p-4 text-center">{plant.discount || 0}%</Table.Cell>
+            <Table.Cell className="p-4 text-center">{plant.status === 1 ? "Còn hàng" : "Hết hàng"}</Table.Cell>
+            <Table.Cell className="p-4 text-center">{plant.isVerfied === 1 ? "Đã xác thực" : "Chưa xác thực"}</Table.Cell>
             <Table.Cell className="py-4 flex space-x-2">
-                  <Button
-                    onClick={() => handleVerify(plant)}
-                    className={
-                      plant.isVerfied === 1
-                        ? "bg-red-600 py-0.5 px-1 text-xs font-medium rounded-xl text-white hover:bg-red-700"
-                        : "bg-green-600 py-0.5 px-1 text-xs font-medium rounded-xl text-white hover:bg-green-700"
-                    }
-                  >
-                    {plant.isVerfied === 1 ? (
-                      <AiOutlineClose className="text-white" />
-                    ) : (
-                      <AiOutlineCheck className="text-white" />
-                    )}
-                  </Button>
-                </Table.Cell>
+              <Button
+                onClick={() => handleVerify(plant)}
+                className={
+                  plant.isVerfied === 1
+                    ? "bg-red-600 py-0.5 px-1 text-xs font-medium rounded-xl text-white hover:bg-red-700"
+                    : "bg-green-600 py-0.5 px-1 text-xs font-medium rounded-xl text-white hover:bg-green-700"
+                }
+              >
+                {plant.isVerfied === 1 ? (
+                  <AiOutlineClose className="text-white" />
+                ) : (
+                  <AiOutlineCheck className="text-white" />
+                )}
+              </Button>
+            </Table.Cell>
           </Table.Row>
-          )}  
-      )}
-      </Table.Body>
-    </Table>
-  </div>
+        );
+      })}
+    </Table.Body>
+  </Table>
+</div>
+
 
   <div className="mt-6 flex justify-center">
     <ReactPaginate
