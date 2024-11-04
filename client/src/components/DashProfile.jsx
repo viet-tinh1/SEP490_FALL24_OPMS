@@ -324,6 +324,7 @@ export default function DashProfile() {
               </form>
             </div>
 
+
             {/* Password information*/}
             <div className="bg-white shadow-lg shadow-gray-200 rounded-2xl p-4 mb-6">
               <h3 className="mb-4 text-xl font-bold">Thông Tin Mật Khẩu</h3>
