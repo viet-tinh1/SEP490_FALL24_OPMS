@@ -85,10 +85,6 @@ export default function DashProfile() {
         setLimitPasswordError("Mật khẩu mới phải từ 7 chữ trở lên.");
         return;
       }
-      
-    
-
-    
       if (newPassword !== confirmPassword) {
         setConfirmPasswordError("Mật khẩu xác nhận phải giống với mật khẩu mới.");
         return;
@@ -136,7 +132,7 @@ export default function DashProfile() {
   const getRoleDescription = (role) => {
     switch (role) {
       case 1:
-        return 'Admin';  // Vai trò Admin
+        return 'Quản lí';  // Vai trò Admin
       case 2:
         return 'Người dùng';   // Vai trò Người dùng
       case 3:
