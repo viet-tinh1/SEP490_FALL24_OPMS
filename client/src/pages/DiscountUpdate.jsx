@@ -67,7 +67,7 @@ export default function DiscountUpdate() {
             Ngày bắt đầu
           </label>
           <input
-            type="date"
+            type="datetime-local"
             id="startDate"
             name="startDate"
             value={formData.startDate}
@@ -84,7 +84,7 @@ export default function DiscountUpdate() {
             Ngày kết thúc
           </label>
           <input
-            type="date"
+            type="datetime-local"
             id="endDate"
             name="endDate"
             value={formData.endDate}

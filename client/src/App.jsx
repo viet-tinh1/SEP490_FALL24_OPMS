@@ -12,7 +12,7 @@ import ProductDetail from './pages/ProductDetail'
 import Payment from './pages/Payment'
 import Verify_Otp from './pages/Verify_otp'
 import ProductEdit from "./pages/ProductEdit";
-import ProductUpdate from "./pages/ProductUpdate";
+import ProductCreate from "./pages/ProductCreate";
 import DiscountEdit from "./pages/DiscountEdit";
 import DiscountUpdate from "./pages/DiscountUpdate";
 import ForgotPassword from './pages/ForgotPassword'
@@ -42,8 +42,8 @@ export default function App() {
           <Route path="/change-password" element={<ChangePassword/>}/>
           <Route path='/verifyOTP' element={<VerifyOTP/>} />
           <Route path='/producsSeller/:userIdPlant' element={<ProductSeller/>}/>
-          <Route path="/ProductEdit" element={<ProductEdit />} />
-          <Route path="/ProductUpdate" element={<ProductUpdate />} />
+          <Route path="/ProductEdit/:plantId" element={<ProductEdit />} />
+          <Route path="/ProductCreate" element={<ProductCreate />} />
           <Route path="/DiscountEdit" element={<DiscountEdit />} />
           <Route path="/DiscountUpdate" element={<DiscountUpdate />} />
           <Route path="/Forum" element={<Forum />} />

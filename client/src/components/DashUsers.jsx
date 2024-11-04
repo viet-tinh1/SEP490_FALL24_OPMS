@@ -62,14 +62,14 @@ export default function DashUsers() {
   };
 
   const handleToggle = (user) => {
-    setSelectedUser(user);
+    setSelectedUser(user.userId);
     setShowModal(true);
   };
 
   const handleConfirmBlock = () => {
     setUsers((prevUsers) =>
       prevUsers.map((user) =>
-        user.id === selectedUser.id ? { ...user, blocked: !user.blocked } : user
+        user.userId === selectedUser.userId ? { ...user, blocked: !user.blocked } : user
       )
     );
     setShowModal(false);
@@ -230,7 +230,7 @@ export default function DashUsers() {
                    </span>
                    <input
                       type="checkbox"
-                      className="sr-only peer"
+                      className="sr-only peer"  
                       checked={user.blocked}
                       onChange={() => handleToggle(user)} // Pass the specific user
                     />
