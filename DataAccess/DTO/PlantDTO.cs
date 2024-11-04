@@ -17,7 +17,7 @@ namespace DataAccess.DTO
         public int? Stock { get; set; }
         public int? Status { get; set; }
         public int? IsVerfied { get; set; }
-
+        public int UserId { get; set; }
         public decimal? Discount { get; set; }
 
 
