@@ -73,7 +73,7 @@ export default function SignIn() {
         } else {
             setError(`API Error: ${response.status}`);
         }
-        console.log(response.status, data.message);
+        
         return;
     }
   
@@ -85,7 +85,7 @@ export default function SignIn() {
         localStorage.setItem("role", data.role); 
         localStorage.setItem("email", data.email);
         localStorage.setItem("username", data.username);// Store userId in localStorage
-        console.log("Logged in as UserId:", data.userId);
+        
         
         // Dispatch a custom event to notify other components of the login state
         window.dispatchEvent(new Event("storage"));
@@ -146,6 +146,11 @@ export default function SignIn() {
               {loading ? <Spinner size="sm" /> : "Sign In"}
             </Button>
             {error && <Alert color="failure">{error}</Alert>}
+            <div className="flex justify-between mt-2">
+              <Link to="/forgot-password" className="text-blue-500">
+              Forgot Password?
+              </Link>
+            </div>
             <Button 
             type="button" 
             gradientDuoTone="pinkToOrange" 

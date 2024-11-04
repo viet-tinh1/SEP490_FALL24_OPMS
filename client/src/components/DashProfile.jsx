@@ -6,6 +6,7 @@ import { Spinner } from "flowbite-react";
 export default function DashProfile() {
   // Khởi tạo state `user`, `error` và `loading`
   const [user, setUserData] = useState({});
+  const [role, setURoles] = useState(null); 
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -19,7 +20,8 @@ export default function DashProfile() {
   useEffect(() => {
     const fetchUserData = async () => {
       const userId = localStorage.getItem("userId");
-
+      const storedRoles = localStorage.getItem("role");
+      setURoles(storedRoles);
       if (!userId || userId === "undefined") {
         console.error("User is not logged in or userId is invalid.");
         setError("User is not logged in or userId is invalid.");
@@ -158,6 +160,23 @@ export default function DashProfile() {
   if (error) {
     return <div>{error}</div>;  // Hiển thị lỗi nếu có
   }
+  const isValidUrl = (string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  const getImageSrc = () => {
+    if (user.userImage && isValidUrl(user.userImage)) {
+      return user.userImage;
+    } else if (user.userImage) {
+      return `data:image/jpeg;base64,${user.userImage}`;
+    }
+    return ""; // Trả về chuỗi rỗng nếu không có ảnh
+  };
 
   return (
     <div className="flex overflow-hidden bg-white pt-16 w-full">
@@ -178,8 +197,8 @@ export default function DashProfile() {
               <div className="items-center sm:flex xl:block 2xl:flex sm:space-x-4 xl:space-x-0 2xl:space-x-4">
                 <img
                   className="mb-4 w-28 h-28 rounded-lg sm:mb-0 xl:mb-4 2xl:mb-0 shadow-lg shadow-gray-300"
-                  src={user.userImage || 'https://via.placeholder.com/150'}  // Hình ảnh người dùng
-                  alt="IMG"
+                  src={getImageSrc(user.userImage)} // Hình ảnh người dùng
+                  alt={getImageSrc(user.userImage)}
                 />
                 <div>
                   <h3 className="mb-1 text-2xl font-bold text-gray-900">
@@ -187,9 +206,9 @@ export default function DashProfile() {
                   </h3>
                   <div className="mb-4 text-base font-normal text-gray-500">
                     {user.status === 1 ? (
-                      <span className="text-green-500">Active</span>
+                      <span className="text-green-500">Hoạt động </span>
                     ) : user.status === 0 ? (
-                      <span className="text-red-500">Offline</span>
+                      <span className="text-red-500">Khóa</span>
                     ) : (
                       'Status not available'
                     )}
@@ -208,8 +227,9 @@ export default function DashProfile() {
               </div>
             </div>
 
-            {/* Register to become seller */}
-            <div className="bg-white shadow-lg shadow-gray-200 rounded-2xl p-4 mb-6">
+            {/* Register to become seller */}{
+              (user.roles !== 3 && user.roles !== 1)&&(
+                <div className="bg-white shadow-lg shadow-gray-200 rounded-2xl p-4 mb-6">
               <div className="text-sm font-medium">
                 *Đăng ký thành người bán cây
               </div>
@@ -221,6 +241,9 @@ export default function DashProfile() {
                 Đăng Ký Người Bán
               </a>
             </div>
+              )
+            }
+            
           </div>
 
           {/* General Information Form */}

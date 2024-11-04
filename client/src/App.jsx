@@ -11,6 +11,17 @@ import Cart from './pages/Cart'
 import ProductDetail from './pages/ProductDetail'
 import Payment from './pages/Payment'
 import Verify_Otp from './pages/Verify_otp'
+import ProductEdit from "./pages/ProductEdit";
+import ProductCreate from "./pages/ProductCreate";
+import DiscountEdit from "./pages/DiscountEdit";
+import DiscountUpdate from "./pages/DiscountUpdate";
+import ForgotPassword from './pages/ForgotPassword'
+import ChangePassword from './pages/ChangePassword'
+import VerifyOTP from './pages/VerifyOTP'
+import Forum from "./pages/Forum";
+
+import ProductSeller from './pages/ProductSeller'
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -24,11 +35,18 @@ export default function App() {
           <Route path='/dashboard' element={<Dashboard/>}/>
           <Route path='/product' element={<Product/>}/>
           <Route path='/payment' element={<Payment/>}/>
-
           <Route path='/cart' element={<Cart/>}/>
           <Route path="/productdetail/:plantId" element={<ProductDetail />} />
           <Route path='/verify_otp' element={<Verify_Otp/>} />
-
+          <Route path="/forgot-password" element={<ForgotPassword/>}/>
+          <Route path="/change-password" element={<ChangePassword/>}/>
+          <Route path='/verifyOTP' element={<VerifyOTP/>} />
+          <Route path='/producsSeller/:userIdPlant' element={<ProductSeller/>}/>
+          <Route path="/ProductEdit/:plantId" element={<ProductEdit />} />
+          <Route path="/ProductCreate" element={<ProductCreate />} />
+          <Route path="/DiscountEdit" element={<DiscountEdit />} />
+          <Route path="/DiscountUpdate" element={<DiscountUpdate />} />
+          <Route path="/Forum" element={<Forum />} />
 
     </Routes>
     <Footer/>

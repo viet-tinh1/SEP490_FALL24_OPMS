@@ -2,7 +2,7 @@ import { Button, Label, TextInput, Alert, Spinner } from "flowbite-react";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-export default function VerifyOtp() {
+export default function VerifyOTP() {
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -26,7 +26,8 @@ export default function VerifyOtp() {
 
     try {
       // Call the OTP verification API
-      const response = await fetch("https://localhost:7098/api/SendMailAPI/verify-otp", {        method: "POST",
+      const response = await fetch("https://localhost:7098/api/UserAPI/verify-otp", {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -52,7 +53,7 @@ export default function VerifyOtp() {
       if (data.message === "OTP is valid and has not expired.") {
         setSuccessMessage("Xác minh OTP thành công!  Đang chuyển hướng...");
         setTimeout(() => {
-          navigate("/reset-password", { state: { email } }); // Điều hướng đến trang đổi mật khẩu
+          navigate("/change-password", { state: { email } }); // Điều hướng đến trang đổi mật khẩu
          // navigate("/sign-in");
         }, 2000);
       } else {
