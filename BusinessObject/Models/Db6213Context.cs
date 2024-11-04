@@ -21,6 +21,7 @@ public partial class Db6213Context : DbContext
     public virtual DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
 
     public virtual DbSet<Category> Categories { get; set; }
+    public virtual DbSet<Comment> Comments { get; set; }
 
     public virtual DbSet<Fplant> Fplants { get; set; }
 
@@ -31,6 +32,9 @@ public partial class Db6213Context : DbContext
     public virtual DbSet<OrderDetail> OrderDetails { get; set; }
 
     public virtual DbSet<Payment> Payments { get; set; }
+
+    public virtual DbSet<Post> Posts { get; set; }
+    public virtual DbSet<ReplyComment> ReplyComments { get; set; }
 
     public virtual DbSet<Plant> Plants { get; set; }
 
@@ -123,6 +127,34 @@ public partial class Db6213Context : DbContext
             entity.Property(e => e.CategoryName).HasMaxLength(100);
         });
 
+        modelBuilder.Entity<Comment>(entity =>
+        {
+            entity.HasKey(e => e.CommentId).HasName("PK__Comments__E79576877C64DB3D");
+
+            entity.Property(e => e.CommentId).HasColumnName("comment_id");
+            entity.Property(e => e.CommentTime)
+                .HasColumnType("datetime")
+                .HasColumnName("comment_time");
+            entity.Property(e => e.CommentsContent)
+                .HasMaxLength(255)
+                .HasColumnName("comments_content");
+            entity.Property(e => e.LikeComment).HasColumnName("like_comment");
+            entity.Property(e => e.PostId).HasColumnName("post_id");
+            entity.Property(e => e.UpdatedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.UserId).HasColumnName("UserID");
+
+            entity.HasOne(d => d.Post).WithMany(p => p.Comments)
+                .HasForeignKey(d => d.PostId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Comments__post_i__2645B050");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Comments)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Comments__UserID__2739D489");
+        });
         modelBuilder.Entity<Fplant>(entity =>
         {
             entity.HasKey(e => e.FplantId).HasName("PK__FPlants__09421B22963E7690");
@@ -239,7 +271,7 @@ public partial class Db6213Context : DbContext
             entity.Property(e => e.PlantId).HasColumnName("PlantID");
             entity.Property(e => e.CategoryId).HasColumnName("CategoryID");
             entity.Property(e => e.CreateDate).HasColumnType("datetime");
-            entity.Property(e => e.Description).HasMaxLength(255);
+            entity.Property(e => e.Description).HasColumnType("nvarchar(max)");
             entity.Property(e => e.Discount)
                 .HasColumnType("decimal(5, 2)")
                 .HasColumnName("discount");
@@ -282,6 +314,53 @@ public partial class Db6213Context : DbContext
                 .HasConstraintName("FK__Reviews__UserID__59FA5E80");
         });
 
+        modelBuilder.Entity<ReplyComment>(entity =>
+        {
+            entity.HasKey(e => e.ReplyCommentId).HasName("PK__ReplyCom__D67290473B855866");
+
+            entity.ToTable("ReplyComment");
+
+            entity.Property(e => e.ReplyCommentId).HasColumnName("reply_comment_id");
+            entity.Property(e => e.CommentId).HasColumnName("comment_id");
+            entity.Property(e => e.CreateAt)
+                .HasColumnType("datetime")
+                .HasColumnName("create_at");
+            entity.Property(e => e.ReplyCommentContent)
+                .HasMaxLength(255)
+                .HasColumnName("Reply_comment_content");
+            entity.Property(e => e.UserId).HasColumnName("UserID");
+
+            entity.HasOne(d => d.Comment).WithMany(p => p.ReplyComments)
+                .HasForeignKey(d => d.CommentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__ReplyComm__comme__2A164134");
+
+            entity.HasOne(d => d.User).WithMany(p => p.ReplyComments)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__ReplyComm__UserI__2B0A656D");
+        });
+        modelBuilder.Entity<Post>(entity =>
+        {
+            entity.HasKey(e => e.PostId).HasName("PK__Posts__3ED7876638BD9BE8");
+
+            entity.Property(e => e.PostId).HasColumnName("post_id");
+            entity.Property(e => e.Createdate)
+                .HasColumnType("datetime")
+                .HasColumnName("createdate");
+            entity.Property(e => e.LikePost).HasColumnName("like_post");
+            entity.Property(e => e.PostContent).HasColumnName("post_content");
+            entity.Property(e => e.PostImage).HasColumnName("post_image");
+            entity.Property(e => e.UpdatedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.UserId).HasColumnName("UserID");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Posts)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Posts__UserID__236943A5");
+        });
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.UserId).HasName("PK__Users__1788CCAC5408B395");
