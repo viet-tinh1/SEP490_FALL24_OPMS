@@ -177,6 +177,48 @@ namespace Web_API_OPMS.Controllers
 
             return Ok(cart); // Return 200 with the cart data
         }
+        // Áp dụng mã giảm giá cho Cart
+        [HttpPost("applyDiscount")]
+        public async Task<IActionResult> ApplyDiscount([FromQuery] int cartId, [FromQuery] decimal discountPercent)
+        {
+            if (discountPercent < 0 || discountPercent > 100)
+            {
+                return BadRequest("Discount percentage must be between 0 and 100.");
+            }
 
+            try
+            {
+                // Lấy thông tin giỏ hàng và bao gồm cả dữ liệu của cây (Plant)
+                var cartItem = await _context.ShoppingCartItems
+                    .Include(c => c.Plant) // Giả sử có thuộc tính điều hướng tới Plant
+                    .FirstOrDefaultAsync(c => c.ShoppingCartItemId == cartId);
+
+                if (cartItem == null)
+                {
+                    return NotFound("Không tìm thấy giỏ hàng.");
+                }
+
+                // Tính tổng gốc dựa trên số lượng và giá của cây
+                decimal originalTotal = cartItem.Quantity * cartItem.Plant.Price;
+
+                // Tính số tiền giảm giá và tổng giá sau khi áp dụng giảm giá
+                decimal discountAmount = originalTotal * (discountPercent / 100);
+                decimal discountedTotal = originalTotal - discountAmount;
+
+                // Không lưu discountedTotal vào cơ sở dữ liệu
+                // Chỉ trả về các giá trị đã tính toán
+                return Ok(new
+                {
+                    CartId = cartItem.ShoppingCartItemId,
+                    OriginalTotal = originalTotal,
+                    DiscountPercent = discountPercent,
+                    DiscountedTotal = discountedTotal
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Lỗi máy chủ nội bộ: " + ex.Message);
+            }
+        }
     }
 }
