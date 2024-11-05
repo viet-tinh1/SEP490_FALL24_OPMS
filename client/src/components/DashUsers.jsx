@@ -1,10 +1,10 @@
 import { Modal, Table, Button } from "flowbite-react";
 import { useState, useEffect } from "react";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
-import { TbLock, TbLockOpen } from "react-icons/tb"; 
+import { TbLock, TbLockOpen } from "react-icons/tb";
 import { TextInput } from "flowbite-react";
 import { AiOutlineSearch } from "react-icons/ai";
-import ReactPaginate from "react-paginate"; 
+import ReactPaginate from "react-paginate";
 import { Spinner } from "flowbite-react";
 
 export default function DashUsers() {
@@ -15,7 +15,7 @@ export default function DashUsers() {
   const [roleId, setRoleId] = useState(1);
   const [loading, setLoading] = useState(true); // Handle loading state
   const [error, setError] = useState(null); // Handle error state
-  const usersPerPage = 5; 
+  const usersPerPage = 5;
   const [activeButton, setActiveButton] = useState(1);
 
   // Fetch users from API
@@ -37,19 +37,19 @@ export default function DashUsers() {
     }
   }; // Empty dependency array to fetch only once on component mount
 
-// useEffect gọi API lần đầu với roleId = 1
+  // useEffect gọi API lần đầu với roleId = 1
   useEffect(() => {
     fetchUsersByRole(roleId);
   }, [roleId]); // Thay đổi khi roleId thay đổi
 
-// Hàm xử lý khi người dùng nhấn vào nút để thay đổi roleId
+  // Hàm xử lý khi người dùng nhấn vào nút để thay đổi roleId
   const handleRoleChange = (newRoleId) => {
-  setActiveButton(newRoleId);
-  setRoleId(newRoleId);
-  setCurrentPage(0); // Cập nhật roleId mới
+    setActiveButton(newRoleId);
+    setRoleId(newRoleId);
+    setCurrentPage(0); // Cập nhật roleId mới
   };
   const getRoleName = (roleId) => {
-    switch(roleId) {
+    switch (roleId) {
       case 1:
         return "Admin";
       case 2:
@@ -62,17 +62,35 @@ export default function DashUsers() {
   };
 
   const handleToggle = (user) => {
-    setSelectedUser(user.userId);
+    setSelectedUser(user);
     setShowModal(true);
   };
+  const handleConfirmBlock = async () => {
+    try {
+      // Gọi API để cập nhật trạng thái người dùng
+      const response = await fetch(`https://localhost:7098/api/UserAPI/updateStatus?userId=${selectedUser.userId}`, {
+        method: 'POST',
+      });
 
-  const handleConfirmBlock = () => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.userId === selectedUser.userId ? { ...user, blocked: !user.blocked } : user
-      )
-    );
-    setShowModal(false);
+      // Kiểm tra xem phản hồi từ API có thành công hay không
+      if (!response.ok) {
+        const errorDetails = await response.text();
+        console.error("Có lỗi xảy ra từ server:", errorDetails);
+        throw new Error("Không thể cập nhật trạng thái");
+      }
+
+      // Cập nhật trạng thái người dùng trong state
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.userId === selectedUser.userId ? { ...user, status: selectedUser.status === 0 ? 1 : 0 } : user
+        )
+      );
+
+      console.log("Trạng thái người dùng đã được cập nhật thành công.");
+      setShowModal(false); // Đóng modal sau khi thực hiện thành công
+    } catch (error) {
+      console.error("Có lỗi xảy ra khi cập nhật trạng thái:", error);
+    }
   };
 
   const handleCancel = () => {
@@ -83,7 +101,7 @@ export default function DashUsers() {
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
   };
-  
+
   const usersToDisplay = users.slice(
     currentPage * usersPerPage,
     (currentPage + 1) * usersPerPage
@@ -104,68 +122,65 @@ export default function DashUsers() {
 
   return (
     <main className="overflow-x-auto md:mx-auto p-4">
-       <div className="shadow-md rounded-lg bg-white dark:bg-gray-800 mb-6 p-6 lg:p-2">
+      <div className="shadow-md rounded-lg bg-white dark:bg-gray-800 mb-6 p-6 lg:p-2">
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-900 mb-4">
             Tất cả người dùng
           </h1>
           <div className="flex flex-wrap gap-4 items-center mb-6">
-          <form className="flex-grow max-w-xs w-full md:w-1/2">
+            <form className="flex-grow max-w-xs w-full md:w-1/2">
               <TextInput
                 type="text"
                 placeholder="Tìm kiếm  ..."
                 rightIcon={AiOutlineSearch}
-                className="w-full"/>
+                className="w-full" />
 
-            </form>           
+            </form>
             <Button className="flex items-center ml-auto space-x-2 sm:space-x-3">Thêm người dùng</Button>
 
           </div>
-            <br></br>
-            <div className="sm:flex space-x-4">
-              <Button 
-              id="1" 
+          <br></br>
+          <div className="sm:flex space-x-4">
+            <Button
+              id="1"
               onClick={() => handleRoleChange(1)}
-              className={`${
-                activeButton === 1
-                  ? "bg-green-600 text-white border-green-700"
-                  : "bg-gray-200 text-gray-700 border-gray-300"
-              } py-1 px-3 text-sm font-semibold rounded-lg shadow`}
-              >
-                Quản trị viên
-              </Button>
-              <Button 
-              id="2" 
-              onClick={() => handleRoleChange(2)}
-              className={`${
-                activeButton === 2
-                  ? "bg-green-600 text-white border-green-700"
-                  : "bg-gray-200 text-gray-700 border-gray-300"
-              } py-1 px-3 text-sm font-semibold rounded-lg shadow`}
-              >
-                Người dùng
-              </Button>
-              <Button 
-              id="3" 
-              onClick={() => handleRoleChange(3)}
-              className={`${
-               activeButton === 3
+              className={`${activeButton === 1
                 ? "bg-green-600 text-white border-green-700"
                 : "bg-gray-200 text-gray-700 border-gray-300"
-              } py-1 px-3 text-sm font-semibold rounded-lg shadow`}
-              >
-                Người bán
-              </Button>
-            </div>
-          </div>       
+                } py-1 px-3 text-sm font-semibold rounded-lg shadow`}
+            >
+              Quản trị viên
+            </Button>
+            <Button
+              id="2"
+              onClick={() => handleRoleChange(2)}
+              className={`${activeButton === 2
+                ? "bg-green-600 text-white border-green-700"
+                : "bg-gray-200 text-gray-700 border-gray-300"
+                } py-1 px-3 text-sm font-semibold rounded-lg shadow`}
+            >
+              Người dùng
+            </Button>
+            <Button
+              id="3"
+              onClick={() => handleRoleChange(3)}
+              className={`${activeButton === 3
+                ? "bg-green-600 text-white border-green-700"
+                : "bg-gray-200 text-gray-700 border-gray-300"
+                } py-1 px-3 text-sm font-semibold rounded-lg shadow`}
+            >
+              Người bán
+            </Button>
+          </div>
+        </div>
       </div>
 
       <div className="overflow-x-auto shadow-md rounded-lg">
-      <Table hoverable className="w-full">
+        <Table hoverable className="w-full">
           <Table.Head>
-          <Table.HeadCell className="whitespace-nowrap">
-          Ngày tạo
-          </Table.HeadCell>
+            <Table.HeadCell className="whitespace-nowrap">
+              Ngày tạo
+            </Table.HeadCell>
             <Table.HeadCell>Ảnh</Table.HeadCell>
             <Table.HeadCell>Tên</Table.HeadCell>
             <Table.HeadCell>Email</Table.HeadCell>
@@ -179,68 +194,72 @@ export default function DashUsers() {
               let imageSrc;
 
               try {
-            // Giải mã Base64
-            const decodedData = atob(user.userImage);
+                // Giải mã Base64
+                const decodedData = atob(user.userImage);
 
-            // Kiểm tra xem chuỗi đã giải mã có phải là URL không
-            if (decodedData.startsWith("http://") || decodedData.startsWith("https://")) {
-            // Nếu là URL, dùng trực tiếp
-            imageSrc = decodedData;
-            } else {
-              // Nếu không phải URL, giả định đây là dữ liệu hình ảnh
-            imageSrc = `data:image/jpeg;base64,${user.userImage}`;
-            }
+                // Kiểm tra xem chuỗi đã giải mã có phải là URL không
+                if (decodedData.startsWith("http://") || decodedData.startsWith("https://")) {
+                  // Nếu là URL, dùng trực tiếp
+                  imageSrc = decodedData;
+                } else {
+                  // Nếu không phải URL, giả định đây là dữ liệu hình ảnh
+                  imageSrc = `data:image/jpeg;base64,${user.userImage}`;
+                }
               } catch (error) {
-              console.error("Error decoding Base64:", error);
-              imageSrc = ""; // Đặt giá trị mặc định nếu giải mã thất bại
+                console.error("Error decoding Base64:", error);
+                imageSrc = ""; // Đặt giá trị mặc định nếu giải mã thất bại
               }
 
-              return(
-              <Table.Row
-                className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
-                key={user.userId}
-              >
-                <Table.Cell className="py-4"> {new Date(user.createdDate).toLocaleDateString('en-CA')}</Table.Cell>
-                <Table.Cell className="py-4 flex items-center">
-                  <img
-                    src={imageSrc}
-                    alt={user.username}
-                    className="h-10 w-10 object-cover bg-gray-500 rounded-full"
-                  />
-                </Table.Cell>
-                <Table.Cell>{user.username}</Table.Cell>
-                <Table.Cell >{user.email}</Table.Cell>
-                <Table.Cell className="text-center">{user.phoneNumber}</Table.Cell>
-                <Table.Cell className="text-center">{getRoleName(user.roles)}</Table.Cell>
-                <Table.Cell >{user.address}</Table.Cell>
-                <Table.Cell  className="text-center">
-                <label className="inline-flex items-center mb-5 cursor-pointer">
-                    {/* Conditionally render lock or lock-open icon and the label */}
-                    <span className="text-2xl  hover:underline cursor-pointer">
-                      {user.blocked ? (
-                         <TbLock
-                         className="inline-block mr-2 text-red-500"
-                         onClick={() => handleToggle(user)}
-                       />
-                     ) : (
-                       <TbLockOpen
-                         className="inline-block mr-2 text-green-500"
-                         onClick={() => handleToggle(user)} />
-                      )}
-                   </span>
-                   <input
-                      type="checkbox"
-                      className="sr-only peer"  
-                      checked={user.blocked}
-                      onChange={() => handleToggle(user)} // Pass the specific user
+              return (
+                <Table.Row
+                  className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
+                  key={user.userId}
+                >
+                  <Table.Cell className="py-4"> {new Date(user.createdDate).toLocaleDateString('en-CA')}</Table.Cell>
+                  <Table.Cell className="py-4 flex items-center">
+                    <img
+                      src={imageSrc}
+                      alt={user.username}
+                      className="h-10 w-10 object-cover bg-gray-500 rounded-full"
                     />
-                    <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                    <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300"></span>
-                  </label>
-                </Table.Cell>
-              </Table.Row>
-              
-              )}
+                  </Table.Cell>
+                  <Table.Cell>{user.username}</Table.Cell>
+                  <Table.Cell >{user.email}</Table.Cell>
+                  <Table.Cell className="text-center">{user.phoneNumber}</Table.Cell>
+                  <Table.Cell className="text-center">{getRoleName(user.roles)}</Table.Cell>
+                  <Table.Cell >{user.address}</Table.Cell>
+                  <Table.Cell className="text-center">
+                    {user.roles === 2 || user.roles === 3 ? ( // Kiểm tra role
+                      <label className="inline-flex items-center mb-5 cursor-pointer">
+                        {/* Conditionally render lock or lock-open icon and the label */}
+                        <span className="text-2xl hover:underline cursor-pointer">
+                          {user.status === 0 ? (
+                            <TbLock
+                              className="inline-block mr-2 text-red-500"
+                              onClick={() => handleToggle(user)}
+                            />
+                          ) : (
+                            <TbLockOpen
+                              className="inline-block mr-2 text-green-500"
+                              onClick={() => handleToggle(user)}
+                            />
+                          )}
+                        </span>
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
+                          checked={user.status === 0} // Lock if status is 0
+                          onChange={() => handleToggle(user)} // Pass the specific user
+                        />
+                        <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                        <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300"></span>
+                      </label>
+                    ) : null}
+                  </Table.Cell>
+                </Table.Row>
+
+              )
+            }
             )}
           </Table.Body>
         </Table>
@@ -248,8 +267,8 @@ export default function DashUsers() {
         {/* Pagination Component */}
         <div className="mt-6 flex justify-center">
           <ReactPaginate
-           previousLabel={"← Sau"}
-           nextLabel={"Trước →"}
+            previousLabel={"← Sau"}
+            nextLabel={"Trước →"}
             pageCount={pageCount}
             onPageChange={handlePageClick}
             containerClassName={"flex flex-wrap justify-center space-x-2 md:space-x-4"}
@@ -261,23 +280,23 @@ export default function DashUsers() {
 
         {/* Modal for Block/Unblock */}
         <Modal show={showModal} onClose={handleCancel}>
-        <Modal.Header>
-          {selectedUser?.blocked ? "Unblock User" : "Block User"}
-        </Modal.Header>
-        <Modal.Body>
-          <div className="text-center">
-          <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
-            <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
-              Bán có muốn {selectedUser?.blocked ? "Mở khóa" : "Khóa"}{" "}
-              {selectedUser?.username}?
-            </h3>
-            <div className="flex justify-center gap-4">
-              <Button color="failure" onClick={handleConfirmBlock}>
-                Có
-              </Button>
-              <Button color="gray" onClick={handleCancel}>
-                Không
-              </Button>
+          <Modal.Header>
+            {selectedUser && selectedUser.status === 0 ? "Mở khóa người dùng" : "Khóa người dùng"}
+          </Modal.Header>
+          <Modal.Body>
+            <div className="text-center">
+              <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
+              <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
+                Bạn có muốn {selectedUser && selectedUser.status === 0 ? "mở khóa" : "khóa"}{" "}
+                {selectedUser && selectedUser.username}?
+              </h3>
+              <div className="flex justify-center gap-4">
+                <Button color="failure" onClick={handleConfirmBlock}>
+                  Có
+                </Button>
+                <Button color="gray" onClick={handleCancel}>
+                  Không
+                </Button>
               </div>
             </div>
           </Modal.Body>
