@@ -85,6 +85,19 @@ export default function DashProfile() {
         setLimitPasswordError("Mật khẩu mới phải từ 7 chữ trở lên.");
         return;
       }
+      
+      const validatePassword = (password) => {
+        const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}$/;
+        return passwordRegex.test(password);
+      };
+  
+      if (!validatePassword(newPassword)) {
+        setLimitPasswordError("Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.");
+        return;
+      }
+
+    
+
       if (newPassword !== confirmPassword) {
         setConfirmPasswordError("Mật khẩu xác nhận phải giống với mật khẩu mới.");
         return;
