@@ -307,7 +307,33 @@ namespace Web_API_OPMS.Controllers
 
             return Ok(users);
         }
-       private string GenerateOtp()
+        [HttpPost("updateStatus")]
+        public IActionResult UpdateStatus(int userId)
+        {
+            try
+            {
+                // Find the existing user by their ID
+                var existingUser = UserRepository.GetUserById(userId);
+                if (existingUser == null)
+                {
+                    return NotFound($"User with ID {userId} not found.");
+                }
+
+                // Toggle the user's status
+                existingUser.Status = existingUser.Status == 0 ? 1 : 0;
+
+                // Save changes to the repository
+                UserRepository.UpdateUser(existingUser);
+
+                // Return success message with the new status
+                return Ok($"User '{existingUser.Username}' status has been set to {(existingUser.Status == 1 ? "verified" : "unverified")}.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+        private string GenerateOtp()
         {
             Random random = new Random();
             return random.Next(100000, 999999).ToString();
