@@ -97,6 +97,7 @@ export default function DashProfile() {
       }
 
     
+
       if (newPassword !== confirmPassword) {
         setConfirmPasswordError("Mật khẩu xác nhận phải giống với mật khẩu mới.");
         return;
@@ -144,7 +145,7 @@ export default function DashProfile() {
   const getRoleDescription = (role) => {
     switch (role) {
       case 1:
-        return 'Admin';  // Vai trò Admin
+        return 'Quản lí';  // Vai trò Admin
       case 2:
         return 'Người dùng';   // Vai trò Người dùng
       case 3:

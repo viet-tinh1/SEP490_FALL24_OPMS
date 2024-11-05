@@ -52,8 +52,8 @@ export default function VerifyOtp() {
       if (data.message === "OTP is valid and has not expired.") {
         setSuccessMessage("Xác minh OTP thành công!  Đang chuyển hướng...");
         setTimeout(() => {
-          navigate("/reset-password", { state: { email } }); // Điều hướng đến trang đổi mật khẩu
-         // navigate("/sign-in");
+          ///navigate("/reset-password", { state: { email } }); // Điều hướng đến trang đổi mật khẩu
+          navigate("/sign-in");
         }, 2000);
       } else {
         setError("Không tồn tại OTP. Vui lòng thử lại.");
