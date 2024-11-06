@@ -40,7 +40,7 @@ namespace Web_API_OPMS.Controllers
             return Ok(post);
         }
         [HttpGet("getPostByUserId")]
-        public ActionResult<IEnumerable<Review>> GetPostByUserId(int userId)
+        public ActionResult<IEnumerable<Post>> GetPostByUserId(int userId)
         {
             var post = _postRepository.GetPostByUserId(userId);
 
@@ -52,7 +52,7 @@ namespace Web_API_OPMS.Controllers
             return Ok(post);
         }
         [HttpPost("createPost")]
-        public async Task<IActionResult> CreateReviewAsync([FromBody] PostDTO postDTO)
+        public async Task<IActionResult> CreatePostAsync([FromBody] PostDTO postDTO)
         {
             if (postDTO == null)
             {
@@ -98,11 +98,11 @@ namespace Web_API_OPMS.Controllers
         }
 
         [HttpPost("updatePost")]
-        public async Task<IActionResult> UpdateReviewAsync([FromBody] PostDTOU postDTOU)
+        public async Task<IActionResult> UpdatePostAsync([FromBody] PostDTOU postDTOU)
         {
             if (postDTOU == null)
             {
-                return BadRequest("Invalid review data");
+                return BadRequest("Invalid Post data");
             }
 
             try
@@ -114,10 +114,10 @@ namespace Web_API_OPMS.Controllers
                 var existingPost = _postRepository.GetPostById(postDTOU.PostId);
                 if (existingPost == null)
                 {
-                    return NotFound($"Review with ID {postDTOU.PostId} not found.");
+                    return NotFound($"Post with ID {postDTOU.PostId} not found.");
                 }
 
-                // Cập nhật các thuộc tính của review
+                // Cập nhật các thuộc tính của Post
                 existingPost.UserId = postDTOU.UserId;
                 existingPost.PostId = postDTOU.PostId;
                 existingPost.PostContent = postDTOU.PostContent;
@@ -136,14 +136,14 @@ namespace Web_API_OPMS.Controllers
 
                 _postRepository.UpdatePost(existingPost);
 
-                return Ok(new { message = "Review updated successfully", updatedPost = existingPost });
+                return Ok(new { message = "Post updated successfully", updatedPost = existingPost });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-        // Xóa Review
+        // Xóa Post
         [HttpDelete("deletePost")]
         public IActionResult DeletePost(int id)
         {
@@ -152,7 +152,7 @@ namespace Web_API_OPMS.Controllers
                 var post = _postRepository.GetPostById(id);
                 if (post == null)
                 {
-                    return NotFound($"Review with ID {id} not found.");
+                    return NotFound($"Post with ID {id} not found.");
                 }
 
                 _postRepository.DeletePost(id);
@@ -172,7 +172,7 @@ namespace Web_API_OPMS.Controllers
                 var post = _postRepository.GetPostById(id);
                 if (post == null)
                 {
-                    return NotFound($"Review with ID {id} not found.");
+                    return NotFound($"Post with ID {id} not found.");
                 }
                 post.LikePost += 1;
                 _postRepository.UpdatePost(post);
