@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState   } from "react";
 import { Modal, Button } from "flowbite-react";
 import { FaImage, FaThumbsUp, FaComment } from "react-icons/fa";
 import { FiMoreHorizontal } from "react-icons/fi";
@@ -6,7 +6,11 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { Dropdown } from "flowbite-react";
 
+
+
 export default function Forum() {
+  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
+  const userId = localStorage.getItem("userId");
   const [isOpen, setIsOpen] = useState(false);
   const [content, setContent] = useState("");
   const [posts, setPosts] = useState([
@@ -73,6 +77,38 @@ export default function Forum() {
       ],
     },
   ]);
+  const [formData, setFormData] = useState({
+    postId: 0,
+    userId: 0,
+    postContent: "",
+    postImage: "",
+    createdate: "",
+  });
+
+  const createPost = async () => {
+    const payload = {
+      postId: formData.postId,
+      userId: userId,
+      postContent: formData.postContent,
+      postImage: formData.postImage
+    };
+    try {
+     
+      const response = await fetch("https://localhost:7098/api/PostAPI/createPost",{
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      
+      console.log("Post created successfully:", response.data);
+      closeModal(); // Close modal after successful post creation
+    } catch (error) {
+      console.error("Error creating post:", error);
+    }
+  };
+
 
   const openModal = () => setIsOpen(true);
   const closeModal = () => {
@@ -81,8 +117,12 @@ export default function Forum() {
   };
 
   const handleContentChange = (value) => {
-    setContent(value);
+    setFormData((prevData) => ({
+      ...prevData,
+      postContent: value, // Update postContent in formData directly
+    }));
   };
+  
 
   const toolbarOptions = [
     [{ header: "1" }, { header: "2" }, { font: [] }],
@@ -100,16 +140,29 @@ export default function Forum() {
 
   const [uploadedImage, setUploadedImage] = useState(null);
 
-  const handleImageUpload = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setUploadedImage(reader.result);
-      };
-      reader.readAsDataURL(file);
+      const base64 = await convertToBase64(file);
+      setFormData((prevData) => ({
+        ...prevData,
+        postImage: base64, // Store the Base64 string for the image
+      }));
+      setImagePreviewUrl(URL.createObjectURL(file)); // Set the preview URL
     }
   };
+
+
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result.split(",")[1]); // Only the Base64 string part
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  
 
   const handleDeleteImage = () => {
     setUploadedImage(null);
@@ -160,7 +213,7 @@ export default function Forum() {
           <Modal.Body>
             <div className="space-y-4 max-h-[500px] overflow-y-auto">
               <ReactQuill
-                value={content}
+                value={formData.postContent}
                 onChange={handleContentChange}
                 modules={modules}
                 placeholder="Nhân ơi, bạn đang nghĩ gì thế?"
@@ -171,7 +224,7 @@ export default function Forum() {
             <input
               type="file"
               accept="image/*"
-              onChange={handleImageUpload}
+              onChange={handleImageChange}
               className="mt-4 mb-2 block"
             />
 
@@ -193,8 +246,8 @@ export default function Forum() {
           </Modal.Body>
           <Modal.Footer>
             <Button
-              onClick={closeModal}
-              disabled={!content.trim()}
+              onClick={createPost}
+              disabled={!formData.postContent.trim()}
               className="w-full"
             >
               Đăng
