@@ -1,4 +1,4 @@
-import { useState   } from "react";
+import { useState, useEffect   } from "react";
 import { Modal, Button } from "flowbite-react";
 import { FaImage, FaThumbsUp, FaComment } from "react-icons/fa";
 import { FiMoreHorizontal } from "react-icons/fi";
@@ -9,81 +9,108 @@ import { Dropdown } from "flowbite-react";
 
 
 export default function Forum() {
+  const username = localStorage.getItem("username"); // Lấy tên từ localStorage
   const [imagePreviewUrl, setImagePreviewUrl] = useState("");
   const userId = localStorage.getItem("userId");
   const [isOpen, setIsOpen] = useState(false);
   const [content, setContent] = useState("");
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      username: "Nguyễn Ngọc Nhân",
-      profileImage:
-        "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/464957439_3783099075334445_1801193416209890520_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=zuxQ_dDEyV8Q7kNvgHzsiWf&_nc_zt=23&_nc_ht=scontent.fdad4-1.fna&_nc_gid=AlQ5isUXxbJy3xi8RRYNWdz&oh=00_AYAz3GLlyvmMu4uot4gE5ZcLgSLkkk5brnGoDOewKIFtxg&oe=672A3853",
-      postContent:
-        "Kể tên một char mà thời newbie các ông từng mong ước. Tôi trước: Qiqi:))",
-      postImage:
-        "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/464957439_3783099075334445_1801193416209890520_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=zuxQ_dDEyV8Q7kNvgHzsiWf&_nc_zt=23&_nc_ht=scontent.fdad4-1.fna&_nc_gid=AlQ5isUXxbJy3xi8RRYNWdz&oh=00_AYAz3GLlyvmMu4uot4gE5ZcLgSLkkk5brnGoDOewKIFtxg&oe=672A3853",
-      time: "12 giờ",
-      comments: [
-        {
-          id: 1,
-          username: "Bảo My",
-          content: "Mình cũng thích Qiqi!",
-          time: "1 giờ trước",
-        },
-        {
-          id: 2,
-          username: "Trần Hữu",
-          content: "Cảm ơn vì chia sẻ nhé!",
-          time: "30 phút trước",
-        },
-        {
-          id: 3,
-          username: "Minh Quang",
-          content: "Qiqi đáng yêu mà!",
-          time: "15 phút trước",
-        },
-      ],
-    },
-    {
-      id: 2,
-      username: "Hà Anh Tuấn",
-      profileImage:
-        "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/464957439_3783099075334445_1801193416209890520_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=zuxQ_dDEyV8Q7kNvgHzsiWf&_nc_zt=23&_nc_ht=scontent.fdad4-1.fna&_nc_gid=AlQ5isUXxbJy3xi8RRYNWdz&oh=00_AYAz3GLlyvmMu4uot4gE5ZcLgSLkkk5brnGoDOewKIFtxg&oe=672A3853",
-      postContent:
-        "Có một lần Momoca phát hiện ra bạn trai (cũ) của mình đang xem A::V. Tuy nhiên cô nàng không t:ứ:c g:i:ận, trái lại còn vào xem ké và cảm thấy bất ngờ vì nữ chính trong phim quá dễ thương. Nữ diễn viên được nhắc đến ở đây là Mia Nanasawa và kể từ đó Mia cũng đã trở thành một trong những nữ diễn viên yêu thích của em (ngoài ra còn có Yu Shinoda",
-      postImage:
-        "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/465268702_1098707525313891_1711980144806636327_n.jpg?stp=dst-jpg_s640x640&_nc_cat=102&ccb=1-7&_nc_sid=127cfc&_nc_ohc=x7oSHiayf6QQ7kNvgGvY4qo&_nc_zt=23&_nc_ht=scontent.fdad4-1.fna&_nc_gid=ARF7ycbIFrd31xJ0tBylhV2&oh=00_AYBiwjnNjipHyOQZRuakzRy5_a9PjLsZTDJtONWNem_DdQ&oe=672A53A5",
-      time: "5 giờ",
-      comments: [
-        {
-          id: 1,
-          username: "Linh Lan",
-          content: "Nhiệm vụ gì thế, thú vị thật!",
-          time: "2 giờ trước",
-        },
-        {
-          id: 2,
-          username: "Ngọc Anh",
-          content: "Chúc mừng nhé!",
-          time: "1 giờ trước",
-        },
-        {
-          id: 3,
-          username: "Văn Khoa",
-          content: "Tuyệt vời quá!",
-          time: "10 phút trước",
-        },
-      ],
-    },
-  ]);
+  const [posts, setPosts] = useState(() => {
+    const savedPosts = localStorage.getItem("posts");
+    return savedPosts
+      ? JSON.parse(savedPosts)
+      : [
+          {
+            id: 1,
+            username: "Nguyễn Ngọc Nhân",
+            profileImage:
+              "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/464957439_3783099075334445_1801193416209890520_n.jpg",
+            postContent:
+              "Kể tên một char mà thời newbie các ông từng mong ước. Tôi trước: Qiqi:))",
+            postImage:
+              "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/464957439_3783099075334445_1801193416209890520_n.jpg",
+            time: "12 giờ",
+            comments: [
+              {
+                id: 1,
+                username: "Bảo My",
+                content: "Mình cũng thích Qiqi!",
+                time: "1 giờ trước",
+              },
+              {
+                id: 2,
+                username: "Trần Hữu",
+                content: "Cảm ơn vì chia sẻ nhé!",
+                time: "30 phút trước",
+              },
+              {
+                id: 3,
+                username: "Minh Quang",
+                content: "Qiqi đáng yêu mà!",
+                time: "15 phút trước",
+              },
+            ],
+          },
+          {
+            id: 2,
+            username: "Hà Anh Tuấn",
+            profileImage:
+              "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/464957439_3783099075334445_1801193416209890520_n.jpg",
+            postContent:
+              "Có một lần Momoca phát hiện ra bạn trai (cũ) của mình đang xem A::V. Tuy nhiên cô nàng không t:ứ:c g:i:ận...",
+            postImage:
+              "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/465268702_1098707525313891_1711980144806636327_n.jpg",
+            time: "5 giờ",
+            comments: [
+              {
+                id: 1,
+                username: "Linh Lan",
+                content: "Nhiệm vụ gì thế, thú vị thật!",
+                time: "2 giờ trước",
+              },
+              {
+                id: 2,
+                username: "Ngọc Anh",
+                content: "Chúc mừng nhé!",
+                time: "1 giờ trước",
+              },
+              {
+                id: 3,
+                username: "Văn Khoa",
+                content: "Tuyệt vời quá!",
+                time: "10 phút trước",
+              },
+            ],
+          },
+        ];
+  });
+
+  // Mỗi khi `posts` thay đổi, lưu nó vào LocalStorage
+  useEffect(() => {
+    localStorage.setItem("posts", JSON.stringify(posts));
+  }, [posts]);
   const [formData, setFormData] = useState({
     postId: 0,
     userId: 0,
     postContent: "",
     postImage: "",
     createdate: "",
+    username: username,
   });
+
+  
+
+  const formatTime = (date) => {
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+  
+    if (seconds < 60) return "Vừa xong";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} phút trước`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} giờ trước`;
+    const days = Math.floor(hours / 24);
+    return `${days} ngày trước`;
+  };
+  
 
   const createPost = async () => {
     const payload = {
@@ -103,6 +130,14 @@ export default function Forum() {
       });
       
       console.log("Post created successfully:", response.data);
+      const newPost = {
+        ...response.data,
+        username: username,                // Đảm bảo tên người dùng
+        postContent: formData.postContent, // Đảm bảo có nội dung bài viết
+        postImage: formData.postImage,     // Đảm bảo có hình ảnh bài viết
+        createdAt: new Date().toISOString(),                 // Thời gian có thể tùy chỉnh nếu cần
+      };
+      setPosts([newPost, ...posts]); // Thêm bài mới vào đầu danh sách
       closeModal(); // Close modal after successful post creation
     } catch (error) {
       console.error("Error creating post:", error);
@@ -267,7 +302,7 @@ export default function Forum() {
               />
               <div className="ml-3 flex-grow">
                 <div className="font-semibold">{post.username}</div>
-                <div className="text-sm text-gray-500">{post.time} ·</div>
+                <div className="text-sm text-gray-500">{formatTime(post.createdAt)}</div>
               </div>
               <Dropdown
                 arrowIcon={false}
@@ -283,9 +318,8 @@ export default function Forum() {
               </Dropdown>
             </div>
 
-            <div className="mb-4">
-              <p>{post.postContent}</p>
-            </div>
+            <div className="mb-4" dangerouslySetInnerHTML={{ __html: post.postContent }} />
+
 
             <div className="rounded-lg overflow-hidden mb-4">
               <img src={post.postImage} alt="Post Content" className="w-full" />
