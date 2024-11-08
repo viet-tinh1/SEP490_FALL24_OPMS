@@ -292,7 +292,23 @@ export default function Forum() {
       </div>
 
       <div className="space-y-4 max-w-full lg:max-w-lg mx-auto">
-        {posts.map((post) => (
+  {posts.map((post) => {
+    let imageSrc;
+
+    // Kiểm tra xem postImage có tồn tại và là URL hay là dữ liệu Base64
+    if (post.postImage) {
+      if (post.postImage.startsWith("http://") || post.postImage.startsWith("https://")) {
+        // Nếu là URL, dùng trực tiếp
+        imageSrc = post.postImage;
+      } else {
+        // Nếu là chuỗi Base64, thêm tiền tố `data:image/jpeg;base64,`
+        imageSrc = `data:image/jpeg;base64,${post.postImage}`;
+      }
+    } else {
+      imageSrc = ""; // Nếu không có `postImage`, đặt giá trị mặc định
+    }
+
+    return (
           <div key={post.id} className="bg-white shadow-md rounded-lg p-4">
             <div className="flex items-center mb-4">
               <img
@@ -322,7 +338,7 @@ export default function Forum() {
 
 
             <div className="rounded-lg overflow-hidden mb-4">
-              <img src={post.postImage} alt="Post Content" className="w-full" />
+              <img src={imageSrc} alt="Post Content" className="w-full" />
             </div>
 
             <div className="flex justify-around border-t border-b border-gray-200 py-2 text-gray-600">
@@ -405,7 +421,8 @@ export default function Forum() {
               )}
             </div>
           </div>
-        ))}
+        )} 
+        )}
       </div>
     </main>
   );
