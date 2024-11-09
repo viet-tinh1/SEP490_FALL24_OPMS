@@ -210,6 +210,11 @@ export default function ProductDetail() {
     }
   };
   const addToCart = async (productId, quantity) => {
+    if(quantity <= 0
+    ){
+      alert("Số lượng phải lớn hơn 0")
+      return;
+    }
     try {
       const response = await fetch('https://localhost:7098/api/ShoppingCartAPI/createShoppingCart', {
         method: "POST",

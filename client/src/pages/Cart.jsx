@@ -1,7 +1,7 @@
 import { Checkbox } from "flowbite-react";
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { Spinner } from "flowbite-react";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Cart() {
   const [cartItems, setCartItems] = useState([]);
@@ -10,24 +10,29 @@ export default function Cart() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [notification, setNotification] = useState(null);
-  const [voucherCode, setVoucherCode] = useState(""); // State để lưu trữ mã voucher
+  const [voucherCode, setVoucherCode] = useState("");
+  const [voucherCodes, setVoucherCodes] = useState("");  // State để lưu trữ mã voucher
   const [voucherDiscount, setVoucherDiscount] = useState(0); // State lưu trữ mức giảm giá từ voucher
   const [voucherApplied, setVoucherApplied] = useState(false); // State để theo dõi xem voucher đã được áp dụng hay chưa
-  const [voucherError, setVoucherError] = useState(""); // State lưu trữ lỗi nếu voucher không hợp lệ
+  const [voucherError, setVoucherError] = useState("");
+  const [voucherErrors, setVoucherErrors] = useState({}); // State lưu trữ lỗi nếu voucher không hợp lệ
+  const [productDiscounts, setProductDiscounts] = useState({}); // Lưu trữ giảm giá cho từng sản phẩm
+  const [VoucherItem, setVoucherItem] = useState({});
+  const navigate = useNavigate();
   const savings = 0; // Fixed savings
   const storePickup = 0; // Fixed store pickup fee
   const taxRate = 0; // Tax rate of 10%
 
+
   useEffect(() => {
     const fetchCartData = async () => {
-    const userId = localStorage.getItem("userId");
+      const userId = localStorage.getItem("userId");
 
       if (!userId || userId === "undefined") {
-      console.error("User is not logged in or userId is invalid.");
-      setError("Người dùng chưa đăng nhập hoặc không hợp lệ.");
-      setLoading(false);
-      return;
-   }
+        navigate("/sign-in");
+        setLoading(false);
+        return;
+      }
 
       try {
         const response = await fetch(
@@ -43,7 +48,7 @@ export default function Cart() {
         
         if (!response.ok) {
           const data = await response.json();
-        
+
           if (response.status === 400 && data.message === "No carts found for the given user.") {
             setNotification("Bạn chưa thêm sản phẩm nào vào giỏ hàng.");
           } else if (response.status === 401) {
@@ -99,11 +104,12 @@ export default function Cart() {
 
     fetchCartData();
   }, []);
-// Function to reset or clear voucher
+  // Function to reset or clear voucher
 
   // Hàm áp dụng mã voucher
-  const applyVoucher = async (e) => {
+  const applyVoucher = async (e, itemId) => {
     e.preventDefault();
+    const voucherCode = voucherCodes[itemId];
     if (voucherApplied) {
       return;
     }
@@ -123,49 +129,131 @@ export default function Cart() {
       }
 
       const voucherData = await response.json();
+      const cartItem = cartItems.find((item) => item.shoppingCartItemId === itemId);
 
-      // Nếu voucher hợp lệ, áp dụng mức giảm giá
-      if (voucherData && voucherData.voucherPercent) {
+      // Kiểm tra nếu sản phẩm có checkbox được chọn
+      if (!selectedItems.includes(itemId)) {
+        setVoucherErrors((prevErrors) => ({
+          ...prevErrors,
+          [itemId]: "Vui lòng chọn sản phẩm để áp dụng mã giảm giá",
+        }));
+        return;
+      }
+
+      // Nếu mã giảm giá hợp lệ, tiến hành gọi API để lấy chi tiết giỏ hàng và áp dụng giảm giá
+      if (voucherData && voucherData.voucherPercent && cartItem.plantDetails.userId === voucherData.userId) {
+        const cartResponse = await fetch(
+          `https://localhost:7098/api/ShoppingCartAPI/getShoppingCartById?id=${cartItem.shoppingCartItemId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!cartResponse.ok) {
+          throw new Error("Không lấy được dữ liệu giỏ hàng để áp dụng giảm giá");
+        }
+
+        const cartData = await cartResponse.json();
+        setVoucherItem(cartData);
+
+        const discountResponse = await fetch(
+          `https://localhost:7098/api/ShoppingCartAPI/applyDiscount?cartId=${cartItem.shoppingCartItemId}&discountPercent=${voucherData.voucherPercent}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!discountResponse.ok) {
+          throw new Error("Không áp dụng được giảm giá cho giỏ hàng");
+        }
+
         setAppliedVoucherCode(voucherCode);
-        setVoucherDiscount(voucherData.voucherPercent); // Áp dụng mức giảm giá
-        setVoucherApplied(true); // Đánh dấu voucher đã được áp dụng
-        setVoucherError(""); // Xóa lỗi nếu có
+        setVoucherDiscount(voucherData.voucherPercent);
+        setVoucherApplied(true);
+        setProductDiscounts((prevDiscounts) => ({
+          ...prevDiscounts,
+          [itemId]: voucherData.voucherPercent,
+        }));
+        setVoucherErrors((prevErrors) => ({
+          ...prevErrors,
+          [itemId]: "",
+        }));
       } else {
-        throw new Error("Voucher not valid");
+        throw new Error("Mã giảm giá không chính xác");
       }
     } catch (error) {
-      setVoucherError("Mã giảm giá không chính xác");
-      setVoucherDiscount(0); // Không áp dụng giảm giá nếu mã không hợp lệ
-      setVoucherApplied(false); // Không áp dụng voucher
+      setVoucherErrors((prevErrors) => ({
+        ...prevErrors,
+        [itemId]: "Mã giảm giá không chính xác",
+      }));
+      setVoucherDiscount(0);
+      setVoucherApplied(false);
     }
   };
+
   const resetVoucher = () => {
     setAppliedVoucherCode(""); // Clear applied voucher
     setVoucherDiscount(0); // Reset discount
-    setVoucherApplied(false); // Reset voucher applied state
-    setVoucherError(""); // Clear any errors
+    setVoucherApplied(false); // Reset voucher applied state to allow re-entry
+    setVoucherErrors((prevErrors) => {
+      const newErrors = { ...prevErrors };
+      Object.keys(newErrors).forEach((key) => {
+        newErrors[key] = ""; // Clear each error for each item
+      });
+      return newErrors;
+    });
   };
-  
+
   // Input field change handler (this will remove applied voucher if the field is empty)
-  const handleVoucherInputChange = (e) => {
+  const handleVoucherInputChange = (e, itemId) => {
     const inputValue = e.target.value;
-    setVoucherCode(inputValue);
+    setVoucherCodes((prevCodes) => ({
+      ...prevCodes,
+      [itemId]: inputValue,
+    }));
   
-    // If the input is cleared, reset the voucher
+    // Nếu xóa mã giảm giá, đặt lại mức giảm giá và cho phép nhập lại mã mới
     if (!inputValue) {
-      resetVoucher();
+      setProductDiscounts((prevDiscounts) => ({
+        ...prevDiscounts,
+        [itemId]: 0, // Reset discount to 0 if voucher code is cleared
+      }));
+      setVoucherApplied(false); // Allow re-application of voucher
     }
   };
-
   // Tính tổng tiền sau khi áp dụng voucher
-  const calculateSelectedTotalWithVoucher = () => {
-    const totalOriginal = calculateSelectedTotalOriginalPrice();
-    const discount = totalOriginal * (voucherDiscount / 100);
-    const totalWithDiscount = totalOriginal - discount;
-    const tax = totalWithDiscount * taxRate;
-    return (totalWithDiscount + tax - storePickup).toFixed(3);
-  };
+  // const calculateSelectedTotalWithVoucher = () => {
+  //   const totalOriginal = calculateSelectedTotalOriginalPrice();
+  //   const discount = totalOriginal * (voucherDiscount / 100);
+  //   const totalWithDiscount = totalOriginal - discount;
+  //   const tax = totalWithDiscount * taxRate;
+  //   return (totalWithDiscount + tax - storePickup).toFixed(3);
+  // };
 
+  
+  // Tính tổng tiền sau khi áp dụng giảm giá của sản phẩm và voucher (nếu có)
+  const calculateSelectedTotalWithVouchers = () => {
+    return cartItems.reduce((total, item) => {
+      if (selectedItems.includes(item.shoppingCartItemId)) {
+        // Giá gốc của sản phẩm có giảm giá riêng
+        const discountedProductPrice = item.plantDetails?.price * (1 - (item.plantDetails?.discount / 100 || 0));
+        const originalPrice = discountedProductPrice * (item.quantity || 1);
+
+        // Mức giảm giá từ voucher (nếu có)
+        const voucherDiscount = productDiscounts[item.shoppingCartItemId] || 0;
+        const finalPrice = originalPrice * (1 - voucherDiscount / 100);
+
+        return total + finalPrice;
+      }
+      return total;
+    }, 0).toFixed(3);
+  };
 
 
   if (loading) {
@@ -286,118 +374,169 @@ export default function Cart() {
                   {notification || "Your cart is currently empty."}
                 </div>
               ) : (
-                cartItems.map((item) => (
-                  <div
-                    key={item.shoppingCartItemId}
-                    className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:p-6"
-                  >
-                    <div className="space-y-4 md:flex md:items-center md:justify-between md:gap-6 md:space-y-0">
-                      <input
-                        type="checkbox"
-                        className="form-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded"
-                        checked={selectedItems.includes(item.shoppingCartItemId)}
-                        onChange={() => handleCheckboxChange(item.shoppingCartItemId)}
-                      />
-                      <a href="#" className="shrink-0 md:order-1">
-                        <img
-                          className="h-20 w-20 dark:hidden"
-                          src={item.plantDetails?.imageUrl}
-                          alt={item.plantDetails?.name || item.plantId}
-                        />
-                      </a>
+                cartItems.map((item) => {
+                  let imageSrc;
 
-                      <div className="flex items-center justify-between md:order-3 md:justify-end">
-                        <div className="flex items-center">
-                          <button
-                            type="button"
-                            onClick={() => decrement(item.shoppingCartItemId)}
-                            className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700"
-                          >
-                            <svg
-                              className="h-2.5 w-2.5 text-gray-900 dark:text-white"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 18 2"
+                  try {
+                    // Giải mã Base64
+                    const decodedData = atob(item.plantDetails?.imageUrl);
+
+                    // Kiểm tra xem chuỗi đã giải mã có phải là URL không
+                    if (decodedData.startsWith("http://") || decodedData.startsWith("https://")) {
+                      // Nếu là URL, dùng trực tiếp
+                      imageSrc = decodedData;
+                    } else {
+                      // Nếu không phải URL, giả định đây là dữ liệu hình ảnh
+                      imageSrc = `data:image/jpeg;base64,${item.plantDetails?.imageUrl}`;
+                    }
+                  } catch (error) {
+                    console.error("Error decoding Base64:", error);
+                    imageSrc = ""; // Đặt giá trị mặc định nếu giải mã thất bại
+                  }
+                  const discountedProductPrice = item.plantDetails?.price * (1 - (item.plantDetails?.discount / 100 || 0));
+                  const originalPrice = discountedProductPrice * (item.quantity || 1);
+                  const itemVoucherDiscount = productDiscounts[item.shoppingCartItemId] || 0;
+                  const finalPrice = originalPrice * (1 - itemVoucherDiscount / 100);
+                  return (
+                    <div
+                      key={item.shoppingCartItemId}
+                      className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:p-6"
+                    >
+                      <div className="space-y-4 md:flex md:items-center md:justify-between md:gap-6 md:space-y-0">
+                        <input
+                          type="checkbox"
+                          className="form-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                          checked={selectedItems.includes(item.shoppingCartItemId)}
+                          onChange={() => handleCheckboxChange(item.shoppingCartItemId)}
+                        />
+                        <a href="#" className="shrink-0 md:order-1">
+                          <img
+                            className="h-20 w-20 dark:hidden"
+                            src={imageSrc}
+                            alt={item.plantDetails?.name || item.plantId}
+                          />
+                        </a>
+
+                        <div className="flex items-center justify-between md:order-3 md:justify-end">
+                          <div className="flex items-center">
+                            <button
+                              type="button"
+                              onClick={() => decrement(item.shoppingCartItemId)}
+                              className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700"
                             >
-                              <path
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M1 1h16"
-                              />
-                            </svg>
-                          </button>
+                              <svg
+                                className="h-2.5 w-2.5 text-gray-900 dark:text-white"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 18 2"
+                              >
+                                <path
+                                  stroke="currentColor"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M1 1h16"
+                                />
+                              </svg>
+                            </button>
+                            <input
+                              type="text"
+                              className="w-16 min-w-[50px] shrink-0 border-0 bg-transparent text-center text-sm font-medium text-gray-900 focus:outline-none focus:ring-0 dark:text-white"
+                              value={item.quantity}
+                              onChange={(e) => handleQuantityChange(item.shoppingCartItemId, e.target.value)}
+                              onBlur={() => handleBlur(item.shoppingCartItemId, item.quantity)}
+                              readonly
+                            />
+                            <button
+                              type="button"
+                              onClick={() => increment(item.shoppingCartItemId)}
+                              className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700"
+                            >
+                              <svg
+                                className="h-2.5 w-2.5 text-gray-900 dark:text-white"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 18 18"
+                              >
+                                <path
+                                  stroke="currentColor"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M9 1v16M1 9h16"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                          <div className="text-end md:order-4 md:w-32">
+                            <p className="text-base font-bold text-gray-900 dark:text-white">
+                             ${finalPrice.toFixed(3)}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="w-full min-w-0 flex-1 space-y-4 md:order-2 md:max-w-md">
+                          <a
+                            href="#"
+                            className="text-base font-medium text-gray-900 hover:underline dark:text-white"
+                          >
+                            {item.plantDetails?.plantName || item.plantId}
+                          </a>
+                          <div className="flex items-center gap-4">
+                            <button
+                              type="button"
+                              className="inline-flex items-center text-sm font-medium text-red-600 hover:underline dark:text-red-500"
+                            >
+                              <svg
+                                className="me-1.5 h-5 w-5"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  stroke="currentColor"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M6 18 17.94 6M18 18 6.06 6"
+                                />
+                              </svg>
+                              Xóa
+                            </button>
+                          </div>
+
+                        </div>
+
+                      </div>
+
+                      <form className="space-y-4" onSubmit={(e) => applyVoucher(e, item.shoppingCartItemId)}>
+                        <div>
+                          <label htmlFor={`voucher-${item.shoppingCartItemId}`} className="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
+                            Bạn Có mã giảm giá ?
+                          </label>
                           <input
                             type="text"
-                            className="w-16 min-w-[50px] shrink-0 border-0 bg-transparent text-center text-sm font-medium text-gray-900 focus:outline-none focus:ring-0 dark:text-white"
-                            value={item.quantity}
-                            onChange={(e) => handleQuantityChange(item.shoppingCartItemId, e.target.value)}
-                            onBlur={() => handleBlur(item.shoppingCartItemId, item.quantity)}
+                            id={`voucher-${item.shoppingCartItemId}`}
+                            value={voucherCodes[item.shoppingCartItemId] || ""}
+                            onChange={(e) => handleVoucherInputChange(e, item.shoppingCartItemId)}
+                            className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
+                            placeholder="Nhập mã giảm giá"
+                          //  required
                           />
-                          <button
-                            type="button"
-                            onClick={() => increment(item.shoppingCartItemId)}
-                            className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700"
-                          >
-                            <svg
-                              className="h-2.5 w-2.5 text-gray-900 dark:text-white"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 18 18"
-                            >
-                              <path
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M9 1v16M1 9h16"
-                              />
-                            </svg>
-                          </button>
+                          {voucherErrors[item.shoppingCartItemId] && (
+                            <p className="text-red-500">{voucherErrors[item.shoppingCartItemId]}</p>
+                          )}
                         </div>
-                        <div className="text-end md:order-4 md:w-32">
-                          <p className="text-base font-bold text-gray-900 dark:text-white">
-                            ${(
-                              (item.plantDetails?.price - item.plantDetails?.price * (item.plantDetails?.discount / 100 || 0)) * item.quantity
-                            ).toFixed(3)}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="w-full min-w-0 flex-1 space-y-4 md:order-2 md:max-w-md">
-                        <a
-                          href="#"
-                          className="text-base font-medium text-gray-900 hover:underline dark:text-white"
+                        <button
+                          type="submit"
+                          className="flex w-full items-center justify-center rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white"
                         >
-                          {item.plantDetails?.plantName || item.plantId}
-                        </a>
-                        <div className="flex items-center gap-4">
-                          <button
-                            type="button"
-                            className="inline-flex items-center text-sm font-medium text-red-600 hover:underline dark:text-red-500"
-                          >
-                            <svg
-                              className="me-1.5 h-5 w-5"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M6 18 17.94 6M18 18 6.06 6"
-                              />
-                            </svg>
-                            Xóa
-                          </button>
-                        </div>
-                      </div>
+                          Áp dụng mã giảm giá
+                        </button>                       
+                      </form>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
@@ -427,61 +566,27 @@ export default function Cart() {
 
                     </dd>
                   </dl>
-                  {/*
-                  <dl className="flex items-center justify-between gap-4">
-                    <dt className="text-base font-normal text-gray-500 dark:text-gray-400">
-                      Trả trước 
-                    </dt>
-                    <dd className="text-base font-medium text-gray-900 dark:text-white">
-                      ${storePickup.toFixed(2)}
-                    </dd>
-                  </dl>
 
-                </div>
-                
-                <dl className="flex items-center justify-between gap-4">
-                  <dt className="text-base font-bold text-gray-900 dark:text-white">
-                    Tổng Thành tiền:
-
-
-                  <dl className="flex items-center justify-between gap-4">
-                    <dt className="text-base font-normal text-gray-500 dark:text-gray-400">
-                      Thuế
-                    </dt>
-                    <dd className="text-base font-medium text-gray-900 dark:text-white">
-                      ${(calculateSelectedTotalOriginalPrice() * taxRate).toFixed(2)}
-                    </dd>
-                  </dl>*/}
                   <dl className="flex items-center justify-between gap-4 border-t border-gray-200 pt-2 dark:border-gray-700">
-                  <dt className="text-base font-bold text-gray-900 dark:text-white">
-                    Số lượng sản phẩm:
-                  </dt>
-                  <dd className="text-base font-bold text-gray-900 dark:text-white">
-                  {selectedItems.length || 0}
-                  </dd>
+                    <dt className="text-base font-bold text-gray-900 dark:text-white">
+                      Số lượng sản phẩm:
+                    </dt>
+                    <dd className="text-base font-bold text-gray-900 dark:text-white">
+                      {selectedItems.length || 0}
+                    </dd>
                   </dl>
-                  {/* Hiển thị giá trị của voucher nếu đã được áp dụng */}
-                  {voucherApplied && (
-                    <dl className="flex items-center justify-between gap-4">
-                      <dt className="text-base font-normal text-gray-500 dark:text-gray-400">
-                        Mã giảm giá đã áp dụng:
-                      </dt>
-                      <dd className="text-base font-medium text-gray-900 dark:text-white">
-                        Mã {voucherCode} - giảm giá {voucherDiscount}% 
-                      </dd>
-                    </dl>
-                  )}
+                 
+                  
                 </div>
                 <dl className="flex items-center justify-between gap-4 border-t border-gray-200 pt-2 dark:border-gray-700">
                   <dt className="text-base font-bold text-gray-900 dark:text-white">
-                    Tổng cộng sau khi áp dụng mã giảm giá 
-
+                    Tổng cộng sau khi áp dụng mã giảm giá
                   </dt>
                   <dd className="text-base font-bold text-gray-900 dark:text-white">
-                    ${calculateSelectedTotalWithVoucher()}
+                    ${calculateSelectedTotalWithVouchers()}
                   </dd>
                 </dl>
-              
+
               </div>
 
               <Link
@@ -521,7 +626,7 @@ export default function Cart() {
               </div>
             </div>
 
-            <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
+            {/* <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
               <form className="space-y-4" onSubmit={applyVoucher}>
                 <div>
                   <label
@@ -533,7 +638,7 @@ export default function Cart() {
                   <input
                     type="text"
                     id="voucher"
-                    value={voucherCode}
+                    value={voucherCodes}
                     onChange={handleVoucherInputChange}
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
                     placeholder="Nhập mã voucher"
@@ -548,7 +653,7 @@ export default function Cart() {
                   Áp dụng Mã
                 </button>
               </form>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
