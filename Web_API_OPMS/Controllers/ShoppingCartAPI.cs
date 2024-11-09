@@ -69,8 +69,6 @@ namespace Web_API_OPMS.Controllers
                 return BadRequest("Invalid Cart data");
             }
 
-            // Nếu UserId không được nhập hoặc bằng 0, gán giá trị mặc định là 1
-            var userId = c.UserId.HasValue && c.UserId.Value != 0 ? c.UserId.Value : 1;
 
             try
             {
@@ -100,7 +98,7 @@ namespace Web_API_OPMS.Controllers
                 ShoppingCart shoppingCart = new ShoppingCart()
                 {
                     ShoppingCartItemId = cart.ShoppingCartItemId,
-                    UserId = userId // Gán giá trị UserId đã kiểm tra
+                    UserId = c.UserId // Gán giá trị UserId đã kiểm tra
                 };
                 ShoppingCartRepository.CreateCartUser(shoppingCart);
 
