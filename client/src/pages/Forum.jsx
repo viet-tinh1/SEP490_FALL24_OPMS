@@ -197,8 +197,6 @@ export default function Forum() {
     });
   };
 
-  
-
   const handleDeleteImage = () => {
     setUploadedImage(null);
   };
