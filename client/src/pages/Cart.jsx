@@ -40,6 +40,7 @@ export default function Cart() {
           }
         );
 
+        
         if (!response.ok) {
           const data = await response.json();
         

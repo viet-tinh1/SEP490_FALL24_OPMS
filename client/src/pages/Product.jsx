@@ -406,6 +406,7 @@ export default function Product() {
                   imageSrc = ""; // Đặt giá trị mặc định nếu giải mã thất bại
                 }
                 
+                
                 return(
                   <div
                   key={product.plantId}

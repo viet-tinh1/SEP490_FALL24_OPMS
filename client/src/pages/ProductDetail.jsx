@@ -28,6 +28,7 @@ export default function ProductDetail() {
   // Fetch product data when the component mounts
   useEffect(() => {
     
+    
     const fetchProductData = async () => {
       try {
         // lấy data plants theo plantid

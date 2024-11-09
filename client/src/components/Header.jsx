@@ -20,6 +20,7 @@ export default function Header() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const INACTIVITY_LIMIT = 30 * 60 * 1000;
 
+  
   const resetInactivityTimeout = () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
