@@ -404,15 +404,37 @@ const searchPlants = async (name, selectedCategoryIds = [], minPrice = '', maxPr
                 {notification || "Không có sản phẩm nào có sẵn."}
               </div>
             ) : (
-              productsToDisplay.map((product) => (
-                <div
+              productsToDisplay.map((product) => {
+                let imageSrc;
+
+                try {
+                  // Giải mã Base64
+                  const decodedData = atob(product.imageUrl);
+              
+                  // Kiểm tra xem chuỗi đã giải mã có phải là URL không
+                  if (decodedData.startsWith("http://") || decodedData.startsWith("https://")) {
+                    // Nếu là URL, dùng trực tiếp
+                    imageSrc = decodedData;
+                  } else {
+                    // Nếu không phải URL, giả định đây là dữ liệu hình ảnh
+                    imageSrc = `data:image/jpeg;base64,${product.imageUrl}`;
+                  }
+                } catch (error) {
+                  console.error("Error decoding Base64:", error);
+                  imageSrc = ""; // Đặt giá trị mặc định nếu giải mã thất bại
+                }
+                
+                
+                return(
+                  <div
+
                   key={product.plantId}
                   className="bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto"
                 >
                   <Link to={`/productdetail/${product.plantId}`}>
                     <div className="relative p-2.5 overflow-hidden rounded-xl bg-clip-border">
                       <img
-                        src={product.imageUrl}
+                        src={imageSrc}
                         alt={product.plantName}
                         className="w-[175px] h-[200px] object-cover rounded-md hover:scale-105 transition-scale duration-300 mx-auto"
                       />
@@ -475,8 +497,10 @@ const searchPlants = async (name, selectedCategoryIds = [], minPrice = '', maxPr
                     </button>
                   </div>
                 </div>
-              ))
-            )}          
+              
+            );
+          })
+        )}          
           
           <div className="w-full flex justify-center mt-4">
               <ReactPaginate

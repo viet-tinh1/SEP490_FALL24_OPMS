@@ -6,7 +6,7 @@ import { Spinner } from "flowbite-react";
 export default function DashProfile() {
   // Khởi tạo state `user`, `error` và `loading`
   const [user, setUserData] = useState({});
-  const [role, setURoles] = useState(null); 
+  const [role, setURoles] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -85,18 +85,18 @@ export default function DashProfile() {
         setLimitPasswordError("Mật khẩu mới phải từ 7 chữ trở lên.");
         return;
       }
-      
+
       const validatePassword = (password) => {
         const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}$/;
         return passwordRegex.test(password);
       };
-  
+
       if (!validatePassword(newPassword)) {
         setLimitPasswordError("Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.");
         return;
       }
 
-    
+
 
       if (newPassword !== confirmPassword) {
         setConfirmPasswordError("Mật khẩu xác nhận phải giống với mật khẩu mới.");
@@ -112,7 +112,7 @@ export default function DashProfile() {
           currentPassword,
           newPassword,
           id: user.userId  // Gửi ID người dùng
-        })  
+        })
       });
 
       if (!response.ok) {
@@ -237,22 +237,22 @@ export default function DashProfile() {
             </div>
 
             {/* Register to become seller */}{
-              (user.roles !== 3 && user.roles !== 1)&&(
+              (user.roles !== 3 && user.roles !== 1) && (
                 <div className="bg-white shadow-lg shadow-gray-200 rounded-2xl p-4 mb-6">
-              <div className="text-sm font-medium">
-                *Đăng ký thành người bán cây
-              </div>
-              <a
-                href="/dashboard?tab=DashRegisterSeller"
-                className="inline-flex items-center py-2 px-3 text-sm font-medium text-center text-white bg-gradient-to-br from-pink-500 to-purple-500 rounded-lg shadow-md shadow-gray-300 hover:scale-[1.02] transition-transform"
-              >
-                <MdOutlineSell className="mr-2 -ml-1 w-4 h-4" />
-                Đăng Ký Người Bán
-              </a>
-            </div>
+                  <div className="text-sm font-medium">
+                    *Đăng ký thành người bán cây
+                  </div>
+                  <a
+                    href="/dashboard?tab=DashRegisterSeller"
+                    className="inline-flex items-center py-2 px-3 text-sm font-medium text-center text-white bg-gradient-to-br from-pink-500 to-purple-500 rounded-lg shadow-md shadow-gray-300 hover:scale-[1.02] transition-transform"
+                  >
+                    <MdOutlineSell className="mr-2 -ml-1 w-4 h-4" />
+                    Đăng Ký Người Bán
+                  </a>
+                </div>
               )
             }
-            
+
           </div>
 
           {/* General Information Form */}
@@ -277,7 +277,7 @@ export default function DashProfile() {
                   <div className="col-span-6 sm:col-span-3">
                     <label className="block mb-2 text-sm font-medium text-gray-900">
                       Tên Của Bạn
-                      
+
                     </label>
                     <input
                       type="text"
@@ -292,14 +292,52 @@ export default function DashProfile() {
                     <label className="block mb-2 text-sm font-medium text-gray-900">
                       Email
                     </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={user.email || ''}  // Email
-                      onChange={handleChange}
-                      className="shadow-lg-sm border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-2 focus:ring-pink-100 focus:border-pink-300 block w-full p-2.5"
-                      required
-                    />
+                    <div className="flex items-center">
+                      <input
+                        type="email"
+                        name="email"
+                        value={user.email || ''}
+                        onChange={handleChange}
+                        className="shadow-lg-sm border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-2 focus:ring-pink-100 focus:border-pink-300 block w-full p-2.5"
+                        required
+                      />
+                      {user.isVerifyEmail === 1 && (
+                        <span className="ml-2 text-green-600">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth="2"
+                            stroke="currentColor"
+                            className="w-6 h-6"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        </span>
+                      )}
+                      {user.isVerifyEmail === 0 && (
+                        <span className="ml-2 text-red-600">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth="2"
+                            stroke="currentColor"
+                            className="w-6 h-6"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="col-span-6 sm:col-span-3">
@@ -374,7 +412,7 @@ export default function DashProfile() {
                       placeholder="••••••••"
                       required
                     />
-                     {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
+                    {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
                   </div>
 
 
@@ -407,7 +445,7 @@ export default function DashProfile() {
                       placeholder="••••••••"
                       required
                     />
-                  {confirmPasswordError && <p className="text-red-500 text-sm mt-1">{confirmPasswordError}</p>}
+                    {confirmPasswordError && <p className="text-red-500 text-sm mt-1">{confirmPasswordError}</p>}
                   </div>
 
                   <div className="col-span-6">

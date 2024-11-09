@@ -197,8 +197,6 @@ export default function Forum() {
     });
   };
 
-  
-
   const handleDeleteImage = () => {
     setUploadedImage(null);
   };
@@ -290,6 +288,7 @@ export default function Forum() {
           </Modal.Footer>
         </Modal>
       </div>
+
 
       <div className="space-y-4 max-w-full lg:max-w-lg mx-auto">
   {posts.map((post) => {
