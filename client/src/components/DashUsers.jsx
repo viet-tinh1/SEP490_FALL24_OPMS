@@ -6,6 +6,8 @@ import { TextInput } from "flowbite-react";
 import { AiOutlineSearch } from "react-icons/ai";
 import ReactPaginate from "react-paginate";
 import { Spinner } from "flowbite-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { MdEdit } from "react-icons/md";
 
 export default function DashUsers() {
   const [users, setUsers] = useState([]); // Initially empty, populated by the API
@@ -15,7 +17,7 @@ export default function DashUsers() {
   const [roleId, setRoleId] = useState(1);
   const [loading, setLoading] = useState(true); // Handle loading state
   const [error, setError] = useState(null); // Handle error state
-  const usersPerPage = 5;
+  const usersPerPage = 4;
   const [activeButton, setActiveButton] = useState(1);
 
   // Fetch users from API
@@ -127,18 +129,19 @@ export default function DashUsers() {
           <h1 className="text-2xl font-semibold text-gray-900 mb-4">
             Tất cả người dùng
           </h1>
-          <div className="flex flex-wrap gap-4 items-center mb-6">
+          <div className="flex flex-wrap gap-4 justify-between mt-4">
             <form className="flex-grow max-w-xs w-full md:w-1/2">
               <TextInput
                 type="text"
                 placeholder="Tìm kiếm  ..."
                 rightIcon={AiOutlineSearch}
                 className="w-full" />
-
             </form>
-            <Button className="flex items-center ml-auto space-x-2 sm:space-x-3">Thêm người dùng</Button>
-
+            <Link to="/UserCreate">
+              <Button className="flex items-center ml-auto space-x-2 sm:space-x-3">Thêm người dùng</Button>
+            </Link>
           </div>
+
           <br></br>
           <div className="sm:flex space-x-4">
             <Button
@@ -229,9 +232,20 @@ export default function DashUsers() {
                   <Table.Cell className="text-center">{getRoleName(user.roles)}</Table.Cell>
                   <Table.Cell >{user.address}</Table.Cell>
                   <Table.Cell className="text-center">
+
                     {user.roles === 2 || user.roles === 3 ? ( // Kiểm tra role
                       <label className="inline-flex items-center mb-5 cursor-pointer">
                         {/* Conditionally render lock or lock-open icon and the label */}
+                        <Link
+                          to="/UserEdit"
+                          state={{ userId: user.userId }} // Truyền userId của người dùng hiện tại
+                        >
+                          <MdEdit
+                            className="cursor-pointer text-green-600"
+                            size={20}
+                          />
+                        </Link>
+
                         <span className="text-2xl hover:underline cursor-pointer">
                           {user.status === 0 ? (
                             <TbLock
@@ -245,16 +259,18 @@ export default function DashUsers() {
                             />
                           )}
                         </span>
+
                         <input
                           type="checkbox"
                           className="sr-only peer"
                           checked={user.status === 0} // Lock if status is 0
                           onChange={() => handleToggle(user)} // Pass the specific user
                         />
-                        <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                        {/* <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div> */}
                         <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300"></span>
                       </label>
                     ) : null}
+
                   </Table.Cell>
                 </Table.Row>
 
@@ -263,45 +279,45 @@ export default function DashUsers() {
             )}
           </Table.Body>
         </Table>
-
-        {/* Pagination Component */}
-        <div className="mt-6 flex justify-center">
-          <ReactPaginate
-            previousLabel={"← Sau"}
-            nextLabel={"Trước →"}
-            pageCount={pageCount}
-            onPageChange={handlePageClick}
-            containerClassName={"flex flex-wrap justify-center space-x-2 md:space-x-4"}
-            pageLinkClassName={"py-2 px-3 border rounded text-sm"}
-            activeClassName={"bg-blue-600 text-white"}
-            disabledClassName={"opacity-50 cursor-not-allowed"}
-          />
-        </div>
-
-        {/* Modal for Block/Unblock */}
-        <Modal show={showModal} onClose={handleCancel}>
-          <Modal.Header>
-            {selectedUser && selectedUser.status === 0 ? "Mở khóa người dùng" : "Khóa người dùng"}
-          </Modal.Header>
-          <Modal.Body>
-            <div className="text-center">
-              <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
-              <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
-                Bạn có muốn {selectedUser && selectedUser.status === 0 ? "mở khóa" : "khóa"}{" "}
-                {selectedUser && selectedUser.username}?
-              </h3>
-              <div className="flex justify-center gap-4">
-                <Button color="failure" onClick={handleConfirmBlock}>
-                  Có
-                </Button>
-                <Button color="gray" onClick={handleCancel}>
-                  Không
-                </Button>
-              </div>
-            </div>
-          </Modal.Body>
-        </Modal>
       </div>
+      {/* Pagination Component */}
+      <div className="mt-6 flex justify-center">
+        <ReactPaginate
+          previousLabel={"← Sau"}
+          nextLabel={"Trước →"}
+          pageCount={pageCount}
+          onPageChange={handlePageClick}
+          containerClassName={"flex flex-wrap justify-center space-x-2 md:space-x-4"}
+          pageLinkClassName={"py-2 px-3 border rounded text-sm"}
+          activeClassName={"bg-blue-600 text-white"}
+          disabledClassName={"opacity-50 cursor-not-allowed"}
+        />
+      </div>
+
+      {/* Modal for Block/Unblock */}
+      <Modal show={showModal} onClose={handleCancel}>
+        <Modal.Header>
+          {selectedUser && selectedUser.status === 0 ? "Mở khóa người dùng" : "Khóa người dùng"}
+        </Modal.Header>
+        <Modal.Body>
+          <div className="text-center">
+            <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
+            <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
+              Bạn có muốn {selectedUser && selectedUser.status === 0 ? "mở khóa" : "khóa"}{" "}
+              {selectedUser && selectedUser.username}?
+            </h3>
+            <div className="flex justify-center gap-4">
+              <Button color="failure" onClick={handleConfirmBlock}>
+                Có
+              </Button>
+              <Button color="gray" onClick={handleCancel}>
+                Không
+              </Button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
+
     </main>
   );
 }
