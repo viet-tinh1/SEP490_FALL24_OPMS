@@ -23,7 +23,7 @@ export default function Product() {
   const [notification, setNotification] = useState(null);
   const [name, setName] = useState("");
   const [isPriceDropdownOpen, setIsPriceDropdownOpen] = useState(false);
-
+  
   const userIds = localStorage.getItem("userId");
   const [sortOption, setSortOption] = useState("");
   const [userId, setUserId] = useState(null);
@@ -73,12 +73,25 @@ export default function Product() {
       setName(nameParam); // Store the search name in state
       searchPlants(nameParam); // Call the search function with the name parameter
     }
+    
   }, [location.search]);
   
+    // Sửa logic xóa tìm kiếm
+const handleSearchChange = (e) => {
+  const value = e.target.value;
+  setName(value); // Cập nhật state với tên tìm kiếm mới
 
-
-  useEffect(() => {
+  if (value.trim() === "") {
+      // Khi ô tìm kiếm rỗng, gọi lại danh sách sản phẩm ban đầu
+      fetchProductsAndCategories(); // Gọi lại hàm fetch dữ liệu sản phẩm từ API
+  } else {
+      // Gọi hàm tìm kiếm khi có nội dung trong ô tìm kiếm
+      searchPlants(value, selectedCategories, minPrice, maxPrice, sortOption);
+  }
+};
+  //useEffect(() => {
     const fetchProductsAndCategories = async () => {
+    setLoading(true); // Bắt đầu loading
       try {
         // lấy sản phẩm 
         const productResponse = await fetch(
@@ -95,10 +108,10 @@ export default function Product() {
           setProducts([]);
           setLoading(false);
           return;
-        }
+       }
         setProducts(productsData);
         //lấy category
-        const categoryResponse = await fetch(
+       const categoryResponse = await fetch(
           "https://localhost:7098/api/CategoryAPI/getCategory"
         );
         if (!categoryResponse.ok) {
@@ -110,12 +123,36 @@ export default function Product() {
         setLoading(false);
       } catch (err) {
         setError(err.message);
-        setLoading(false);
+      } finally{
+         setLoading(false);
       }
     };
-
-    fetchProductsAndCategories();
-  }, []);
+      // Search function 
+const searchPlants = async (name, selectedCategoryIds = [], minPrice = '', maxPrice = '', sortOptionId = null) => {
+  try {
+      // Tạo query tìm kiếm
+      const query = [];
+      if (name) query.push(`name=${encodeURIComponent(name)}`);
+      if (selectedCategoryIds.length) 
+          query.push(selectedCategoryIds.map(id => `categoryId=${id}`).join("&"));
+      if (minPrice) query.push(`minPrice=${minPrice}`);
+      if (maxPrice) query.push(`maxPrice=${maxPrice}`);
+      if (sortOptionId) query.push(`sortOption=${sortOptionId}`);
+      
+      const finalQuery = query.length ? `?${query.join("&")}` : "";
+      const productResponse = await fetch(`https://localhost:7098/api/PlantAPI/searchPlants${finalQuery}`);
+      const productsData = await productResponse.json();
+      if (!productResponse.ok) throw new Error(productsData.message || "Không thể lấy cây trồng đã được lọc");
+      setProducts(productsData);
+  } catch (err) {
+      setError(err.message);
+  }
+};
+    useEffect(() => {
+    if (name === "") {
+    fetchProductsAndCategories(); // Khi tên tìm kiếm rỗng, tải lại sản phẩm ban đầu
+    }
+  }, [name]);
 
   // handel chọn phương thức tìm kiếm 
   const handleSortClick = async (label, id) => {
@@ -136,29 +173,6 @@ export default function Product() {
     }
   };
   
-
-  // Search function 
-  const searchPlants = async (name, selectedCategoryIds = [], minPrice = '', maxPrice = '', sortOptionId = null) => {
-    try {
-      const query = [];
-      if (name) query.push(`name=${encodeURIComponent(name)}`);
-      if (selectedCategoryIds.length) {
-        query.push(selectedCategoryIds.map(id => `categoryId=${id}`).join("&"));
-      }
-      if (minPrice) query.push(`minPrice=${minPrice}`);
-      if (maxPrice) query.push(`maxPrice=${maxPrice}`);
-      if (sortOptionId) query.push(`sortOption=${sortOptionId}`);
-      
-      const finalQuery = query.length ? `?${query.join("&")}` : "";
-      const productResponse = await fetch(`https://localhost:7098/api/PlantAPI/searchPlants${finalQuery}`);
-      const productsData = await productResponse.json();
-      if (!productResponse.ok) throw new Error(productsData.message || "Không thể lấy cây trồng đã được lọc");
-      setProducts(productsData);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
   // handle lấy category
   const handleCheckboxChange = (e, categoryId) => {
     let updatedCategories = [...selectedCategories];
@@ -172,6 +186,7 @@ export default function Product() {
     setSelectedCategories(updatedCategories);
     
   };
+  
   
   // mở dropdown tự động
   const openDropdown = () => {
@@ -246,6 +261,8 @@ export default function Product() {
       alert("Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.");
     }
   };
+
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -313,6 +330,7 @@ export default function Product() {
         </div>
 
         <div className=" flex-wrap gap-4">
+
           {/* sắp xếp theo */}
           <div className="bg-white shadow-lg shadow-gray-200  dark:bg-gray-900 antialiased p-2 flex items-center gap-5 w-full md:max-w-[580px] ">
             <span className="text-gray-500">Sắp xếp theo</span>
@@ -406,8 +424,10 @@ export default function Product() {
                   imageSrc = ""; // Đặt giá trị mặc định nếu giải mã thất bại
                 }
                 
+                
                 return(
                   <div
+
                   key={product.plantId}
                   className="bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto"
                 >
@@ -415,7 +435,7 @@ export default function Product() {
                     <div className="relative p-2.5 overflow-hidden rounded-xl bg-clip-border">
                       <img
                         src={imageSrc}
-                        alt={imageSrc}
+                        alt={product.plantName}
                         className="w-[175px] h-[200px] object-cover rounded-md hover:scale-105 transition-scale duration-300 mx-auto"
                       />
                     </div>
@@ -477,9 +497,10 @@ export default function Product() {
                     </button>
                   </div>
                 </div>
-                );
-              })
-            )}          
+              
+            );
+          })
+        )}          
           
           <div className="w-full flex justify-center mt-4">
               <ReactPaginate
@@ -517,4 +538,5 @@ export default function Product() {
       </div>
     </main>
   );
+  
 }

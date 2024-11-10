@@ -45,6 +45,7 @@ export default function Cart() {
           }
         );
 
+        
         if (!response.ok) {
           const data = await response.json();
 
@@ -444,6 +445,7 @@ export default function Cart() {
                               value={item.quantity}
                               onChange={(e) => handleQuantityChange(item.shoppingCartItemId, e.target.value)}
                               onBlur={() => handleBlur(item.shoppingCartItemId, item.quantity)}
+                              readonly
                             />
                             <button
                               type="button"

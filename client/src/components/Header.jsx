@@ -18,7 +18,8 @@ export default function Header() {
   const navigate = useNavigate();
   const timeoutRef = useRef(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const INACTIVITY_LIMIT = 30 * 60 * 1000;
+
+  const INACTIVITY_LIMIT = 1 * 60 * 1000;
 
   const resetInactivityTimeout = () => {
     if (timeoutRef.current) {
@@ -72,6 +73,7 @@ export default function Header() {
       }
     };
   }, []);
+
   useEffect(() => {
     const handleSignOutAcrossTabs = (event) => {
       if (event.key === "signOut") {
@@ -83,29 +85,23 @@ export default function Header() {
         navigate("/");
       }
     };
-
     window.addEventListener("storage", handleSignOutAcrossTabs);
-
     return () => {
       window.removeEventListener("storage", handleSignOutAcrossTabs);
     };
   }, []);
-
   const handleSignOut = () => {
-    // Xóa tất cả các mục trong localStorage
+     // Xóa tất cả các mục trong localStorage
     localStorage.clear();
-
     // Phát sự kiện đăng xuất
     localStorage.setItem("signOut", Date.now());
-
     // Đặt lại trạng thái
     setUserId(null);
     setURoles(null);
     setEmail(null);
     setUserName(null);
-    navigate("/"); 
+    navigate("/");
   };
-
   const openConfirmationDialog = () => {
     setShowConfirmation(true);
   };
@@ -114,6 +110,13 @@ export default function Header() {
   };
   const handleSearch = async (e) => {
     e.preventDefault();
+    if (!searchQuery.trim()) {
+      // If searchQuery is empty, navigate to the products page without a query
+      window.location.replace("/product");
+      setSearchResults([]);  // Clear search results
+      setSearchQuery('');    // Clear search query
+      return;
+    }
     try {
       const response = await fetch(
         `https://localhost:7098/api/PlantAPI/searchPlants?name=${searchQuery}&categoryId=0`
@@ -125,9 +128,12 @@ export default function Header() {
   
       const productsData = await response.json();
       setSearchResults(productsData); // Store search results in state
-  
+      
       // Navigate to "/product" with the search query as a URL parameter
       navigate(`/product?search=${encodeURIComponent(searchQuery)}`, { state: { results: productsData } });
+      // Clear search query and results after navigation
+    setSearchQuery('');
+    setSearchResults([]);
     } catch (error) {
       console.error("Error fetching search results:", error);
     }
@@ -195,11 +201,10 @@ export default function Header() {
               </span>
             </Dropdown.Header>
             <Link to={"/dashboard?tab=profile "}>
-              <Dropdown.Item>Profile</Dropdown.Item>
+              <Dropdown.Item>Hồ sơ</Dropdown.Item>
             </Link>
             <Dropdown.Divider />
             <Dropdown.Item onClick={openConfirmationDialog}>Đăng Xuất</Dropdown.Item>
-            
           </Dropdown>
         ) : (
           <Link to="/sign-in">
@@ -217,6 +222,7 @@ export default function Header() {
           onCancel={closeConfirmationDialog}
           />
         )}
+
         <Navbar.Toggle />
       </div>
       <Navbar.Collapse>
@@ -234,7 +240,7 @@ export default function Header() {
             <Link to="/dashboard">Dashboard</Link>
           </Navbar.Link>
         )}
-         <Navbar.Link active={path === "/Forum"} as={"div"}>
+        <Navbar.Link active={path === "/Forum"} as={"div"}>
           <Link to="/Forum">Diễn đàn</Link>
         </Navbar.Link>
         <Navbar.Link active={path === "/cart"} as={"div"}>
