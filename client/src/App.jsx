@@ -19,6 +19,8 @@ import ForgotPassword from './pages/ForgotPassword'
 import ChangePassword from './pages/ChangePassword'
 import VerifyOTP from './pages/VerifyOTP'
 import Forum from "./pages/Forum";
+import UserCreate from"./pages/UserCreate";
+import UserEdit from "./pages/UserEdit";
 
 import ProductSeller from './pages/ProductSeller'
 
@@ -47,7 +49,8 @@ export default function App() {
           <Route path="/DiscountEdit" element={<DiscountEdit />} />
           <Route path="/DiscountUpdate" element={<DiscountUpdate />} />
           <Route path="/Forum" element={<Forum />} />
-
+          <Route path="/UserCreate" element={<UserCreate/>}/>
+          <Route path="/UserEdit" element={<UserEdit/>}/>
     </Routes>
     <Footer/>
    </BrowserRouter>
