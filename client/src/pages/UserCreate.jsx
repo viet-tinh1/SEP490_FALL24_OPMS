@@ -110,7 +110,7 @@ export default function UserCreate() {
 
     const data = { ...formData, userImage: null }; // Đảm bảo userImage luôn là null trong payload
     console.log("Payload being sent to backend:", data);
-    console.log(shopName);
+   
     try {
       const response = await fetch("https://localhost:7098/api/UserAPI/createUser", {
         method: "POST",

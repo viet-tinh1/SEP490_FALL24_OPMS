@@ -19,7 +19,7 @@ export default function Header() {
   const timeoutRef = useRef(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
-  const INACTIVITY_LIMIT = 1 * 60 * 1000;
+  const INACTIVITY_LIMIT = 1440 * 60 * 1000;
 
   const resetInactivityTimeout = () => {
     if (timeoutRef.current) {
