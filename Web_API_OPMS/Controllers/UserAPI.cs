@@ -71,10 +71,14 @@ namespace Web_API_OPMS.Controllers
                     Password = hashedPassword,
                     Email = u.Email,
                     Roles = u.Roles,
-                    Status = u.Status,              
-                    // Kiểm tra nếu CreatedDate không được đặt từ trước thì sẽ gán ngày hiện tại theo giờ Việt Nam
+                    Status = u.Status,
+                    PhoneNumber = u.PhoneNumber, // Thêm PhoneNumber từ UserDTO
+                    ShopName = u.ShopName,
+                    Address = u.Address,         // Thêm Address từ UserDTO
                     CreatedDate = currentVietnamTime
                 };
+
+                // Xử lý UserImage nếu có
                 if (!string.IsNullOrEmpty(u.UserImage))
                 {
                     if (Uri.IsWellFormedUriString(u.UserImage, UriKind.Absolute)) // Kiểm tra nếu là URL
@@ -86,7 +90,11 @@ namespace Web_API_OPMS.Controllers
                         user.UserImage = Convert.FromBase64String(u.UserImage);
                     }
                 }
-                UserRepository.CreateUser(user);
+
+                // Lưu đối tượng User vào cơ sở dữ liệu
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
                 return CreatedAtAction(nameof(getUserById), new { id = user.UserId }, user);
             }
             catch (Exception ex)
@@ -94,7 +102,8 @@ namespace Web_API_OPMS.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
-        
+
+
         [HttpPost("sendOtpToEmail")]
         public async Task<IActionResult> SendOtpToEmail([FromBody] MailDto mail)
         {
