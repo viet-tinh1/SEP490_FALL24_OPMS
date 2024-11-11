@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FaCloudArrowUp } from 'react-icons/fa6';
 import { MdOutlineSell } from 'react-icons/md';
 import { Spinner } from "flowbite-react";
+import { useRef } from "react";
 
 export default function DashProfile() {
   // Khởi tạo state `user`, `error` và `loading`
@@ -15,6 +16,7 @@ export default function DashProfile() {
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [LimitPasswordError, setLimitPasswordError] = useState('');
+  const fileInputRef = useRef(null);
 
   // Hàm lấy dữ liệu người dùng từ API
   useEffect(() => {
@@ -55,21 +57,38 @@ export default function DashProfile() {
   // Hàm xử lý khi submit form cho thông tin người dùng
   const handleUserSubmit = async (event) => {
     event.preventDefault();
+  
+    const formData = new FormData();
+    formData.append("UserId", user.userId);
+    formData.append("Username", user.username);
+    formData.append("Password", user.password || "");
+    formData.append("Email", user.email);
+    formData.append("PhoneNumber", user.phoneNumber);
+    formData.append("Roles", user.roles);
+    formData.append("FullName", user.fullName);
+    formData.append("Address", user.address);
+    formData.append("UserImage", user.userImage || "");  // You can update this if you have a file
+    formData.append("Status", user.status);
+    formData.append("ShopName", user.shopName || "");
+    
+    // Assuming you have a file input and you want to upload an image
+    if (user.uploadedImage) {
+      formData.append("uploadedImage", user.uploadedImage);
+    }
+  
     try {
       const response = await fetch('https://localhost:7098/api/UserAPI/updateUser', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(user)  // Gửi dữ liệu người dùng
+        body: formData
       });
+  
       if (!response.ok) {
         throw new Error('Failed to update user');
       }
-
+  
       alert("User information updated successfully!");
     } catch (error) {
-      console.error("Lỗi khi cập nhật user:", error);
+      console.error("Error updating user:", error);
     }
   };
 
@@ -154,6 +173,45 @@ export default function DashProfile() {
         return 'Unknown Role'; // Nếu không có vai trò nào phù hợp
     }
   };
+  // đổi avatar
+  const handleButtonClick = () => {
+    fileInputRef.current.click();
+  };
+  // hàm api 
+  const handleFileChange = async (event) => {
+    const userId = localStorage.getItem("userId");
+    const file = event.target.files[0];
+    if (!file || !userId) {
+      alert("User ID is missing or no file selected.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("newImage", file);
+
+    try {
+      const response = await fetch(`https://localhost:7098/api/UserAPI/updateUserImage?userId=${userId}`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert("Image updated successfully!");
+        console.log("Updated image URL:", data.imageUrl);
+        setUserData((prevUser) => ({
+          ...prevUser,
+          userImage: data.imageUrl, // Assuming `data.imageUrl` is the new image URL
+        }));
+      } else {
+        const errorData = await response.json();
+        alert("Image update failed: " + errorData.message);
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      alert("Error uploading image");
+    }
+  };
 
   if (loading) {
     return (
@@ -178,14 +236,7 @@ export default function DashProfile() {
     }
   };
 
-  const getImageSrc = () => {
-    if (user.userImage && isValidUrl(user.userImage)) {
-      return user.userImage;
-    } else if (user.userImage) {
-      return `data:image/jpeg;base64,${user.userImage}`;
-    }
-    return ""; // Trả về chuỗi rỗng nếu không có ảnh
-  };
+ 
 
   return (
     <div className="flex overflow-hidden bg-white pt-16 w-full">
@@ -206,8 +257,8 @@ export default function DashProfile() {
               <div className="items-center sm:flex xl:block 2xl:flex sm:space-x-4 xl:space-x-0 2xl:space-x-4">
                 <img
                   className="mb-4 w-28 h-28 rounded-lg sm:mb-0 xl:mb-4 2xl:mb-0 shadow-lg shadow-gray-300"
-                  src={getImageSrc(user.userImage)} // Hình ảnh người dùng
-                  alt={getImageSrc(user.userImage)}
+                  src={user.userImage} // Hình ảnh người dùng
+                  alt={user.userImage}
                 />
                 <div>
                   <h3 className="mb-1 text-2xl font-bold text-gray-900">
@@ -225,13 +276,21 @@ export default function DashProfile() {
                   <div className="mb-4 text-base font-normal text-gray-500">
                     Role: {getRoleDescription(user.roles)}  {/* Hiển thị mô tả vai trò */}
                   </div>
-                  <a
-                    href="#"
+                  {/* Automatically trigger file input onChange */}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    style={{ display: "none" }}
+                  />
+                  <button
+                    onClick={() => fileInputRef.current.click()}
                     className="inline-flex items-center py-2 px-3 text-sm font-medium text-center text-white bg-gradient-to-br from-pink-500 to-purple-500 rounded-lg shadow-md shadow-gray-300 hover:scale-[1.02] transition-transform"
                   >
                     <FaCloudArrowUp className="mr-2 -ml-1 w-4 h-4" />
                     Change picture
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>
