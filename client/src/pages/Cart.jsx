@@ -375,24 +375,7 @@ export default function Cart() {
                 </div>
               ) : (
                 cartItems.map((item) => {
-                  let imageSrc;
-
-                  try {
-                    // Giải mã Base64
-                    const decodedData = atob(item.plantDetails?.imageUrl);
-
-                    // Kiểm tra xem chuỗi đã giải mã có phải là URL không
-                    if (decodedData.startsWith("http://") || decodedData.startsWith("https://")) {
-                      // Nếu là URL, dùng trực tiếp
-                      imageSrc = decodedData;
-                    } else {
-                      // Nếu không phải URL, giả định đây là dữ liệu hình ảnh
-                      imageSrc = `data:image/jpeg;base64,${item.plantDetails?.imageUrl}`;
-                    }
-                  } catch (error) {
-                    console.error("Error decoding Base64:", error);
-                    imageSrc = ""; // Đặt giá trị mặc định nếu giải mã thất bại
-                  }
+                  
                   const discountedProductPrice = item.plantDetails?.price * (1 - (item.plantDetails?.discount / 100 || 0));
                   const originalPrice = discountedProductPrice * (item.quantity || 1);
                   const itemVoucherDiscount = productDiscounts[item.shoppingCartItemId] || 0;
@@ -412,7 +395,7 @@ export default function Cart() {
                         <a href="#" className="shrink-0 md:order-1">
                           <img
                             className="h-20 w-20 dark:hidden"
-                            src={imageSrc}
+                            src={item.plantDetails?.imageUrl}
                             alt={item.plantDetails?.name || item.plantId}
                           />
                         </a>
@@ -445,7 +428,7 @@ export default function Cart() {
                               value={item.quantity}
                               onChange={(e) => handleQuantityChange(item.shoppingCartItemId, e.target.value)}
                               onBlur={() => handleBlur(item.shoppingCartItemId, item.quantity)}
-                              readonly
+                              readOnly
                             />
                             <button
                               type="button"

@@ -77,25 +77,7 @@ export default function PlantItem() {
   return (
     <div className="flex flex-wrap justify-center  gap-9 p-5">
       {/*Card1*/}
-      {products.map((product) => {
-        let imageSrc;
-
-        try {
-          // Giải mã Base64
-          const decodedData = atob(product.imageUrl);
-      
-          // Kiểm tra xem chuỗi đã giải mã có phải là URL không
-          if (decodedData.startsWith("http://") || decodedData.startsWith("https://")) {
-            // Nếu là URL, dùng trực tiếp
-            imageSrc = decodedData;
-          } else {
-            // Nếu không phải URL, giả định đây là dữ liệu hình ảnh
-            imageSrc = `data:image/jpeg;base64,${product.imageUrl}`;
-          }
-        } catch (error) {
-          console.error("Error decoding Base64:", error);
-          imageSrc = ""; // Đặt giá trị mặc định nếu giải mã thất bại
-        }
+      {products.map((product) => {      
         return(
         <div
           key={product.id}
@@ -104,7 +86,7 @@ export default function PlantItem() {
           <Link>
             <div className="relative p-2.5overflow-hidden rounded-xl bg-clip-border">
               <img
-                src={imageSrc}
+                src={product.imageUrl}
                 alt={product.name}
                 className="w-[175px] h-[200px] object-cover rounded-md hover:scale-105 transition-scale duration-300 mx-auto"
               />

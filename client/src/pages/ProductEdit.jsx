@@ -28,27 +28,16 @@ export default function ProductEdit() {
     }));
   };
 
-  const convertToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result.split(",")[1]); // Only the Base64 part
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
-  const handleImageChange = async (e) => {
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const base64 = await convertToBase64(file);
       setFormData((prevData) => ({
         ...prevData,
-        imageUrl: base64, // Store Base64 for API submission
+        image: file, // Store the file for form submission
       }));
-      setImagePreviewUrl(URL.createObjectURL(file)); // Set preview URL
+      setImagePreviewUrl(URL.createObjectURL(file)); // Set the preview URL
     }
   };
-
   const handleDescriptionChange = (value) => {
     setFormData((prevData) => ({
       ...prevData,
@@ -58,26 +47,31 @@ export default function ProductEdit() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const payload = {
-      plantId: plantId,
-      categoryId: formData.category,
-      plantName: formData.name,
-      description: formData.description,
-      price: parseFloat(formData.price),
-      stock: parseInt(formData.stock),
-      discount: parseFloat(formData.discount),
-      imageUrl: formData.imageUrl,
-      userId: formData.userId,
-    };
+    console.log("FormData before sending:", formData);
+    const formDataToSend = new FormData();
+    formDataToSend.append("plantId", plantId);
+    formDataToSend.append("userId", formData.userId);
+    formDataToSend.append("plantName", formData.plantName || "");
+    formDataToSend.append("categoryId", formData.categoryId || "");
+    formDataToSend.append("description", formData.description || "");
+    formDataToSend.append("price", parseFloat(formData.price));
+    formDataToSend.append("stock", parseInt(formData.stock));
+    formDataToSend.append("status", formData.status || 1); // Set default status if not provided
+    formDataToSend.append("discount", parseFloat(formData.discount) || 0);
+    
+    // Check if an image is provided in Base64 or file format
+    if (formData.imageFile) {
+      // If there's a file uploaded, append it
+      formDataToSend.append("uploadedImage", formData.imageFile);
+    } else if (formData.imageUrl) {
+      // Otherwise, use the Base64 image if provided
+      formDataToSend.append("imageUrl", formData.imageUrl);
+    }
 
     try {
       const response = await fetch("https://localhost:7098/api/PlantAPI/updatePlant", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+        method: "POST",       
+        body: formDataToSend,
       });
 
       if (!response.ok) {
@@ -104,8 +98,8 @@ export default function ProductEdit() {
 
         setFormData({
           imageUrl: data.imageUrl || "",
-          category: data.categoryId || "",
-          name: data.plantName || "",
+          categoryId: data.categoryId || "",
+          plantName: data.plantName || "",
           description: data.description || "",
           price: data.price || "",
           stock: data.stock || "",
@@ -113,7 +107,7 @@ export default function ProductEdit() {
           userId: data.userId || "",
         });
 
-        setImagePreviewUrl(`data:image/jpeg;base64,${data.imageUrl}`);
+        setImagePreviewUrl(data.imageUrl);
       } catch (error) {
         setError(error.message);
       } finally {
@@ -180,7 +174,7 @@ export default function ProductEdit() {
               </label>
               <select
                 name="category"
-                value={formData.category}
+                value={formData.categoryId}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               >
@@ -199,7 +193,7 @@ export default function ProductEdit() {
               <input
                 type="text"
                 name="name"
-                value={formData.name}
+                value={formData.plantName}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
