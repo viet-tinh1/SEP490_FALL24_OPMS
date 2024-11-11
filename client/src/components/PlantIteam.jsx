@@ -80,7 +80,7 @@ export default function PlantItem() {
       {products.map((product) => {      
         return(
         <div
-          key={product.id}
+          key={product.plantId}
           className="bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto"
         >
           <Link>
