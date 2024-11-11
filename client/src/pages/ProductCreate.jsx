@@ -19,6 +19,8 @@ export default function ProductCreate() {
     userId: 0,
     discount: "",
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [categories, setCategories] = useState([]);
   const [imagePreviewUrl, setImagePreviewUrl] = useState("");
   const navigate = useNavigate();
@@ -30,18 +32,16 @@ export default function ProductCreate() {
     }));
   };
   const userId = localStorage.getItem("userId");
-  const handleImageChange = async (e) => {
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const base64 = await convertToBase64(file);
       setFormData((prevData) => ({
         ...prevData,
-        imageUrl: base64, // Store the Base64 string for the image
+        image: file, // Store the file for form submission
       }));
       setImagePreviewUrl(URL.createObjectURL(file)); // Set the preview URL
     }
   };
-
 
   const handleDescriptionChange = (value) => {
     // Kiểm tra độ dài của giá trị nhập vào
@@ -86,41 +86,41 @@ export default function ProductCreate() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Create JSON payload
-    const payload = {
-      plantId: formData.plantId,
-      plantName: formData.plantName,
-      categoryId: formData.categoryId,
-      description: formData.description,
-      price: parseFloat(formData.price),
-      imageUrl: formData.imageUrl, // Base64 image string
-      stock: parseInt(formData.stock),
-      status: 1,
-      isVerified: parseInt(formData.isVerified),
-      userId: userId,
-      discount: parseFloat(formData.discount),
-    };
-
+  
+    if (!validateForm()) {
+      return;
+    }
+  
+    const formDataToSend = new FormData();
+    formDataToSend.append("userId", formData.userId);
+    formDataToSend.append("username", formData.username);
+    formDataToSend.append("password", formData.password);
+    formDataToSend.append("email", formData.email);
+    formDataToSend.append("phoneNumber", formData.phoneNumber);
+    formDataToSend.append("roles", formData.roles);
+    formDataToSend.append("fullName", formData.fullName);
+    formDataToSend.append("address", formData.address);
+    formDataToSend.append("status", formData.status);
+    formDataToSend.append("shopName", formData.shopName);
+    
+    // Append the image if available
+    if (formData.uploadedImage) {
+      formDataToSend.append("uploadedImage", formData.uploadedImage);
+    }
+  
     try {
-      const response = await fetch("https://localhost:7098/api/PlantAPI/createPlant", {
+      const response = await fetch("https://localhost:7098/api/UserAPI/createUser", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+        body: formDataToSend,
       });
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log("Product created successfully:", result);
-        // Show success message
-        alert("Product added successfully!");
-
-        // Redirect to the product page
-        navigate("/dashboard?tab=product");
+  
+      if (!response.ok) {
+        // Try to read as text instead of JSON to capture plain text error message
+        const errorText = await response.text();
+        console.error("Failed to create user:", errorText);
+        alert("Error: " + errorText);
       } else {
-        console.error("Failed to create product");
+        setShowPopup(true);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -128,14 +128,7 @@ export default function ProductCreate() {
   };
 
   // Helper function to convert image file to Base64 string
-  const convertToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result.split(",")[1]); // Only the Base64 string part
-      reader.onerror = (error) => reject(error);
-    });
-  };
+  
 
   return (
     <div className="max-w-7xl mx-auto p-6 sm:p-8 rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">

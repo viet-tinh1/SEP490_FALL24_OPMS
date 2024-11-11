@@ -63,6 +63,7 @@ export default function DashVerifyProduct() {
     setActiveButton(buttonName);
   };
   const handleRoleChange = async (buttonId) => {
+    setCurrentPage(0);
     setActiveButton(buttonId);
     if (role === '1') {
       setLoading(true);
@@ -285,6 +286,7 @@ export default function DashVerifyProduct() {
         nextLabel={"Trước →"}
       pageCount={pageCount}
       onPageChange={handlePageClick}
+      forcePage={currentPage}
       containerClassName={
         "flex flex-wrap justify-center space-x-2 md:space-x-4"
       }

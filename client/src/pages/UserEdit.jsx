@@ -139,24 +139,27 @@ export default function UserEdit() {
       return;
     }
 
-    const updatedData = {
-      userId: userId,
-      username: formData.username,
-      password: formData.password, // Gửi mật khẩu để cập nhật
-      email: formData.email,
-      phoneNumber: formData.phoneNumber,
-      roles: parseInt(formData.roles, 10),
-      address: formData.address,
-      shopName: formData.roles === "3" ? formData.shopName : null, // Chỉ thêm shopName nếu là người bán
-    };
+    const formDataToSend = new FormData();
+    formDataToSend.append("userId", userId);
+    formDataToSend.append("username", formData.username);
+    formDataToSend.append("password", formData.password);
+    formDataToSend.append("email", formData.email);
+    formDataToSend.append("phoneNumber", formData.phoneNumber);
+    formDataToSend.append("roles", formData.roles);
+    formDataToSend.append("address", formData.address);
+    formDataToSend.append("shopName", formData.roles === "3" ? formData.shopName : "");
+    formDataToSend.append("status", 1); // Default status
+    
+    // Append the uploaded image if available
+    if (formData.uploadedImage) {
+      formDataToSend.append("uploadedImage", formData.uploadedImage);
+    }
 
     try {
       const response = await fetch("https://localhost:7098/api/UserAPI/updateUser", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedData),
+        
+        body: formDataToSend,
       });
 
       if (response.ok) {

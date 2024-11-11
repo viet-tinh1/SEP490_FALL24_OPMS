@@ -1,12 +1,12 @@
 import { Sidebar } from "flowbite-react";
 import { TbShoppingBagSearch } from "react-icons/tb";
-import { Link, useNavigate, useLocation  } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { PiShoppingCartLight } from "react-icons/pi";
 import ReactPaginate from "react-paginate";
 import { useState, useEffect, useRef } from "react";
 import { Spinner } from "flowbite-react";
 import { FaThList } from "react-icons/fa";
-import { IoArrowBackCircle, IoArrowForwardCircle,IoChevronDown } from "react-icons/io5";
+import { IoArrowBackCircle, IoArrowForwardCircle, IoChevronDown } from "react-icons/io5";
 
 
 export default function Product() {
@@ -23,7 +23,7 @@ export default function Product() {
   const [notification, setNotification] = useState(null);
   const [name, setName] = useState("");
   const [isPriceDropdownOpen, setIsPriceDropdownOpen] = useState(false);
-  
+
   const userIds = localStorage.getItem("userId");
   const [sortOption, setSortOption] = useState("");
   const [userId, setUserId] = useState(null);
@@ -73,84 +73,84 @@ export default function Product() {
       setName(nameParam); // Store the search name in state
       searchPlants(nameParam); // Call the search function with the name parameter
     }
-    
-  }, [location.search]);
-  
-    // Sửa logic xóa tìm kiếm
-const handleSearchChange = (e) => {
-  const value = e.target.value;
-  setName(value); // Cập nhật state với tên tìm kiếm mới
 
-  if (value.trim() === "") {
+  }, [location.search]);
+
+  // Sửa logic xóa tìm kiếm
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setName(value); // Cập nhật state với tên tìm kiếm mới
+
+    if (value.trim() === "") {
       // Khi ô tìm kiếm rỗng, gọi lại danh sách sản phẩm ban đầu
       fetchProductsAndCategories(); // Gọi lại hàm fetch dữ liệu sản phẩm từ API
-  } else {
+    } else {
       // Gọi hàm tìm kiếm khi có nội dung trong ô tìm kiếm
       searchPlants(value, selectedCategories, minPrice, maxPrice, sortOption);
-  }
-};
+    }
+  };
   //useEffect(() => {
-    const fetchProductsAndCategories = async () => {
+  const fetchProductsAndCategories = async () => {
     setLoading(true); // Bắt đầu loading
-      try {
-        // lấy sản phẩm 
-        const productResponse = await fetch(
-          "https://localhost:7098/api/PlantAPI/getVerifiedPlants"
-        );
-        const productsData = await productResponse.json();
+    try {
+      // lấy sản phẩm 
+      const productResponse = await fetch(
+        "https://localhost:7098/api/PlantAPI/getVerifiedPlants"
+      );
+      const productsData = await productResponse.json();
 
-        if (!productResponse.ok) {
-          throw new Error("Không thể lấy dữ liệu ");
-        }
-
-        if (productsData.message === "No plants available currently.") {
-          setNotification("Hiện tại không có cây trồng nào có sẵn.");
-          setProducts([]);
-          setLoading(false);
-          return;
-       }
-        setProducts(productsData);
-        //lấy category
-       const categoryResponse = await fetch(
-          "https://localhost:7098/api/CategoryAPI/getCategory"
-        );
-        if (!categoryResponse.ok) {
-          throw new Error("Failed to fetch categories");
-        }
-        const categoryData = await categoryResponse.json();
-        setCategories(categoryData);
-
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-      } finally{
-         setLoading(false);
+      if (!productResponse.ok) {
+        throw new Error("Không thể lấy dữ liệu ");
       }
-    };
-      // Search function 
-const searchPlants = async (name, selectedCategoryIds = [], minPrice = '', maxPrice = '', sortOptionId = null) => {
-  try {
+
+      if (productsData.message === "No plants available currently.") {
+        setNotification("Hiện tại không có cây trồng nào có sẵn.");
+        setProducts([]);
+        setLoading(false);
+        return;
+      }
+      setProducts(productsData);
+      //lấy category
+      const categoryResponse = await fetch(
+        "https://localhost:7098/api/CategoryAPI/getCategory"
+      );
+      if (!categoryResponse.ok) {
+        throw new Error("Failed to fetch categories");
+      }
+      const categoryData = await categoryResponse.json();
+      setCategories(categoryData);
+
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  // Search function 
+  const searchPlants = async (name, selectedCategoryIds = [], minPrice = '', maxPrice = '', sortOptionId = null) => {
+    try {
       // Tạo query tìm kiếm
       const query = [];
       if (name) query.push(`name=${encodeURIComponent(name)}`);
-      if (selectedCategoryIds.length) 
-          query.push(selectedCategoryIds.map(id => `categoryId=${id}`).join("&"));
+      if (selectedCategoryIds.length)
+        query.push(selectedCategoryIds.map(id => `categoryId=${id}`).join("&"));
       if (minPrice) query.push(`minPrice=${minPrice}`);
       if (maxPrice) query.push(`maxPrice=${maxPrice}`);
       if (sortOptionId) query.push(`sortOption=${sortOptionId}`);
-      
+
       const finalQuery = query.length ? `?${query.join("&")}` : "";
       const productResponse = await fetch(`https://localhost:7098/api/PlantAPI/searchPlants${finalQuery}`);
       const productsData = await productResponse.json();
       if (!productResponse.ok) throw new Error(productsData.message || "Không thể lấy cây trồng đã được lọc");
       setProducts(productsData);
-  } catch (err) {
+    } catch (err) {
       setError(err.message);
-  }
-};
-    useEffect(() => {
+    }
+  };
+  useEffect(() => {
     if (name === "") {
-    fetchProductsAndCategories(); // Khi tên tìm kiếm rỗng, tải lại sản phẩm ban đầu
+      fetchProductsAndCategories(); // Khi tên tìm kiếm rỗng, tải lại sản phẩm ban đầu
     }
   }, [name]);
 
@@ -162,7 +162,7 @@ const searchPlants = async (name, selectedCategoryIds = [], minPrice = '', maxPr
         const response = await fetch("https://localhost:7098/api/PlantAPI/most-purchased?limit=7");
         const data = await response.json();
         if (!response.ok) throw new Error("Unable to fetch best-selling products");
-  
+
         setProducts(data); // Update the product list directly
       } catch (err) {
         setError(err.message);
@@ -172,7 +172,7 @@ const searchPlants = async (name, selectedCategoryIds = [], minPrice = '', maxPr
       await searchPlants(name, selectedCategories, minPrice, maxPrice, id); // Trigger search with sort option
     }
   };
-  
+
   // handle lấy category
   const handleCheckboxChange = (e, categoryId) => {
     let updatedCategories = [...selectedCategories];
@@ -184,10 +184,10 @@ const searchPlants = async (name, selectedCategoryIds = [], minPrice = '', maxPr
     }
 
     setSelectedCategories(updatedCategories);
-    
+
   };
-  
-  
+
+
   // mở dropdown tự động
   const openDropdown = () => {
     // Cancel any pending close timeout if it exists
@@ -203,9 +203,9 @@ const searchPlants = async (name, selectedCategoryIds = [], minPrice = '', maxPr
       setIsPriceDropdownOpen(false);
     }, 200); // Adjust the delay as needed
   };
-  
 
-  
+
+
   // Automatically search when price or categories change
   useEffect(() => {
     if (sortOption !== "most-purchased" && !priceError) {
@@ -238,7 +238,7 @@ const searchPlants = async (name, selectedCategoryIds = [], minPrice = '', maxPr
   // thêm sản phẩm vào giỏ hàng 
   const addToCart = async (productId, quantity) => {
     try {
-        const response = await fetch('https://localhost:7098/api/ShoppingCartAPI/createShoppingCart', {
+      const response = await fetch('https://localhost:7098/api/ShoppingCartAPI/createShoppingCart', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -246,7 +246,7 @@ const searchPlants = async (name, selectedCategoryIds = [], minPrice = '', maxPr
         body: JSON.stringify({
           plantId: productId,
           quantity: quantity,
-          userId : userIds,
+          userId: userIds,
         }),
       });
 
@@ -282,49 +282,50 @@ const searchPlants = async (name, selectedCategoryIds = [], minPrice = '', maxPr
           <Sidebar className="w-full md:w-56">
             <Sidebar.Items>
               <Sidebar.ItemGroup>
-              <Sidebar.Item as="div">
+                <Sidebar.Item as="div">
                   <div className="flex items-center text-gray-900 dark:text-white">
                     <FaThList className="mr-2 text-sm" />
                     <p className="text-lg font-medium">Danh Mục</p>
                   </div>
                 </Sidebar.Item>
-                
-                <ul className="ml-6 mt-2 space-y-2">                
+
+                <ul className="ml-6 mt-2 space-y-2">
                   {categories
-                  .slice(0, showAll ? categories.length : 3)
-                  .map((category) => (
-                    <li
-                      key={category.categoryId}
-                      className="flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          className="form-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded"
-                          value={category.categoryId}
-                          checked={selectedCategories.includes(
-                            category.categoryId
-                          )}
-                          onChange={(e) =>
-                            handleCheckboxChange(e, category.categoryId)
-                          }
-                        />
-                        <span>{category.categoryName}</span>
-                      </div>
-                    </li>
-                  ))}
+                    .slice(0, showAll ? categories.length : 100)
+                    .map((category) => (
+                      <li
+                        key={category.categoryId}
+                        className="flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            className="form-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                            value={category.categoryId}
+                            checked={selectedCategories.includes(
+                              category.categoryId
+                            )}
+                            onChange={(e) =>
+                              handleCheckboxChange(e, category.categoryId)
+                            }
+                          />
+                          <span>{category.categoryName}</span>
+                        </div>
+                      </li>
+                    ))}
                 </ul>
-                {/* "Xem thêm" button */}
-                <div className="ml-6 mt-2">
-                  <button
-                    onClick={toggleShowAll}
-                    className="text-cyan-700 hover:underline focus:outline-none"
-                  >
-                    {showAll ? "Thu gọn" : "Xem thêm"}
-                  </button>
-                </div>
+                {categories.length > 100 && (
+                  <div className="ml-6 mt-2">
+                    <button
+                      onClick={toggleShowAll}
+                      className="text-cyan-700 hover:underline focus:outline-none"
+                    >
+                      {showAll ? "Thu gọn" : "Xem thêm"}
+                    </button>
+                  </div>
+                )}
               </Sidebar.ItemGroup>
-              
+
             </Sidebar.Items>
           </Sidebar>
         </div>
@@ -335,67 +336,63 @@ const searchPlants = async (name, selectedCategoryIds = [], minPrice = '', maxPr
           <div className="bg-white shadow-lg shadow-gray-200  dark:bg-gray-900 antialiased p-2 flex items-center gap-5 w-full md:max-w-[580px] ">
             <span className="text-gray-500">Sắp xếp theo</span>
             <button
-            onClick={() => handleSortClick(5)}
-              className={`px-4 py-2 rounded-md font-medium ${
-                sortOption === 5
+              onClick={() => handleSortClick(5)}
+              className={`px-4 py-2 rounded-md font-medium ${sortOption === 5
                   ? "bg-red-500 text-white"
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-              
+                }`}
+
             >
               Tất Cả
             </button>
-            <button 
-              onClick={() => handleSortClick("Mới Nhất", 1)} 
-              className={`px-4 py-2 rounded-md font-medium ${
-              sortOption === 1 ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>
+            <button
+              onClick={() => handleSortClick("Mới Nhất", 1)}
+              className={`px-4 py-2 rounded-md font-medium ${sortOption === 1 ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>
               Mới Nhất
             </button>
-            <button 
-            onClick={() => handleSortClick("Bán Chạy", 2)} 
-              className={`px-4 py-2 rounded-md font-medium ${
-              sortOption === "most-purchased" ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>
+            <button
+              onClick={() => handleSortClick("Bán Chạy", 2)}
+              className={`px-4 py-2 rounded-md font-medium ${sortOption === "most-purchased" ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>
               Bán Chạy
             </button>
             <div
               className="relative"
               onMouseEnter={openDropdown} // Keeps dropdown open if hovering over it
               onMouseLeave={closeDropdown} // Closes dropdown if leaving dropdown area
-             >
+            >
               <button
-              className={`px-4 py-2 flex items-center rounded-md font-medium ${
-                sortOption === 3 || sortOption === 4 ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-               }`}
-               >
-                 Giá
-              <IoChevronDown className="ml-1" />
+                className={`px-4 py-2 flex items-center rounded-md font-medium ${sortOption === 3 || sortOption === 4 ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+              >
+                Giá
+                <IoChevronDown className="ml-1" />
               </button>
 
-             {isPriceDropdownOpen && (
-              <div className="absolute top-full mt-1 min-w-[150px] bg-white shadow-md border rounded-md z-10"
-              onMouseEnter={openDropdown} // Keeps dropdown open if hovering over it
-              onMouseLeave={closeDropdown} // Closes dropdown if leaving dropdown area
-               >
-                <button
-                  onClick={() => {
-                    handleSortClick("Giá: Thấp đến Cao", 3);             
-                    setIsPriceDropdownOpen(false); // Close dropdown after selection
-                  }}
-                  className="block w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
-                 >
-                  Thấp đến Cao
-                </button>
-                <button
-                  onClick={() => {
-                    handleSortClick("Giá: Cao đến Thấp", 4);
-                    setIsPriceDropdownOpen(false); // Close dropdown after selection
-                  }}
-                  className="block w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
-                 >
-                  Cao đến Thấp
-                </button>
-             </div>
-             )}
+              {isPriceDropdownOpen && (
+                <div className="absolute top-full mt-1 min-w-[150px] bg-white shadow-md border rounded-md z-10"
+                  onMouseEnter={openDropdown} // Keeps dropdown open if hovering over it
+                  onMouseLeave={closeDropdown} // Closes dropdown if leaving dropdown area
+                >
+                  <button
+                    onClick={() => {
+                      handleSortClick("Giá: Thấp đến Cao", 3);
+                      setIsPriceDropdownOpen(false); // Close dropdown after selection
+                    }}
+                    className="block w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
+                  >
+                    Thấp đến Cao
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleSortClick("Giá: Cao đến Thấp", 4);
+                      setIsPriceDropdownOpen(false); // Close dropdown after selection
+                    }}
+                    className="block w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
+                  >
+                    Cao đến Thấp
+                  </button>
+                </div>
+              )}
             </div>
           </div>
           <div className="flex flex-wrap justify-center gap-3 p-4">
@@ -405,104 +402,84 @@ const searchPlants = async (name, selectedCategoryIds = [], minPrice = '', maxPr
               </div>
             ) : (
               productsToDisplay.map((product) => {
-                let imageSrc;
-
-                try {
-                  // Giải mã Base64
-                  const decodedData = atob(product.imageUrl);
-              
-                  // Kiểm tra xem chuỗi đã giải mã có phải là URL không
-                  if (decodedData.startsWith("http://") || decodedData.startsWith("https://")) {
-                    // Nếu là URL, dùng trực tiếp
-                    imageSrc = decodedData;
-                  } else {
-                    // Nếu không phải URL, giả định đây là dữ liệu hình ảnh
-                    imageSrc = `data:image/jpeg;base64,${product.imageUrl}`;
-                  }
-                } catch (error) {
-                  console.error("Error decoding Base64:", error);
-                  imageSrc = ""; // Đặt giá trị mặc định nếu giải mã thất bại
-                }
-                
-                
-                return(
+                return (
                   <div
 
-                  key={product.plantId}
-                  className="bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto"
-                >
-                  <Link to={`/productdetail/${product.plantId}`}>
-                    <div className="relative p-2.5 overflow-hidden rounded-xl bg-clip-border">
-                      <img
-                        src={imageSrc}
-                        alt={product.plantName}
-                        className="w-[175px] h-[200px] object-cover rounded-md hover:scale-105 transition-scale duration-300 mx-auto"
-                      />
-                    </div>
-
-                    <div className="p-2 flex flex-col gap-2 w-full">
-                      <div className="flex items-center gap-1">
-                        <p className="text-sm font-medium text-gray-600 line-clamp-2 w-full">
-                          {product.plantName}
-                        </p>
+                    key={product.plantId}
+                    className="bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto"
+                  >
+                    <Link to={`/productdetail/${product.plantId}`}>
+                      <div className="relative p-2.5 overflow-hidden rounded-xl bg-clip-border">
+                        <img
+                          src={product.imageUrl}
+                          alt={product.plantName}
+                          className="w-[175px] h-[200px] object-cover rounded-md hover:scale-105 transition-scale duration-300 mx-auto"
+                        />
                       </div>
-                    </div>
-                    <div className="p-2 flex flex-col gap-2 w-full">
-                      <div className="flex items-center gap-1">
-                        <p className="text-sm text-gray-600 line-clamp-2 w-full">
-                          {getCategoryName(product.categoryId)}
-                        </p>
-                      </div>
-                    </div>
 
-                   {/*} <div className="rounded bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800 dark:bg-red-200 dark:text-red-800">
+                      <div className="p-2 flex flex-col gap-2 w-full">
+                        <div className="flex items-center gap-1">
+                          <p className="text-sm font-medium text-gray-600 line-clamp-2 w-full">
+                            {product.plantName}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="p-2 flex flex-col gap-2 w-full">
+                        <div className="flex items-center gap-1">
+                          <p className="text-sm text-gray-600 line-clamp-2 w-full">
+                            {getCategoryName(product.categoryId)}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/*} <div className="rounded bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800 dark:bg-red-200 dark:text-red-800">
                       {product.isVerfied === 1 ? "Đã verify" : "Chưa verify"}
                     </div>*/}
 
-                    <div className="p-2 flex items-center">
-                      <svg
-                        className="h-4 w-4 text-yellow-300"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                      <span className="ml-2 rounded bg-cyan-100 px-2 py-0.5 text-xs font-semibold text-cyan-800 dark:bg-cyan-200 dark:text-cyan-800">
-                        {product.rating || "4.5"}
-                      </span>
-                    </div>
-                  </Link>
-                  <div className="p-2 flex items-center justify-between">
-                    <div className="truncate flex items-baseline text-red-600">
-                      <span className="text-xs font-medium mr-px space-y-14">
-                        ₫
-                      </span>
-                      <span className="font-medium text-xl truncate">
-                        {(
-                          product.price -
-                          product.price * (product.discount / 100 || 0)
-                        ).toFixed(3)}
-                      </span>
-                    </div>
-                    <div className="rounded bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800 dark:bg-red-200 dark:text-red-800">
-                      {product.discount ? `${product.discount}%` : "0%"}
-                    </div>
+                      <div className="p-2 flex items-center">
+                        <svg
+                          className="h-4 w-4 text-yellow-300"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        <span className="ml-2 rounded bg-cyan-100 px-2 py-0.5 text-xs font-semibold text-cyan-800 dark:bg-cyan-200 dark:text-cyan-800">
+                          {product.rating || "4.5"}
+                        </span>
+                      </div>
+                    </Link>
+                    <div className="p-2 flex items-center justify-between">
+                      <div className="truncate flex items-baseline text-red-600">
+                        <span className="text-xs font-medium mr-px space-y-14">
+                          ₫
+                        </span>
+                        <span className="font-medium text-xl truncate">
+                          {(
+                            product.price -
+                            product.price * (product.discount / 100 || 0)
+                          ).toFixed(3)}
+                        </span>
+                      </div>
+                      <div className="rounded bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800 dark:bg-red-200 dark:text-red-800">
+                        {product.discount ? `${product.discount}%` : "0%"}
+                      </div>
 
-                    <button
-                    onClick={() => addToCart(product.plantId, 1)} // Chỉ thêm 1 sản phẩm
-                    className="rounded-lg bg-cyan-700 px-4 py-2 text-center text-sm font-medium text-white hover:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"
-                    >
-                      <PiShoppingCartLight />
-                    </button>
+                      <button
+                        onClick={() => addToCart(product.plantId, 1)} // Chỉ thêm 1 sản phẩm
+                        className="rounded-lg bg-cyan-700 px-4 py-2 text-center text-sm font-medium text-white hover:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"
+                      >
+                        <PiShoppingCartLight />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              
-            );
-          })
-        )}          
-          
-          <div className="w-full flex justify-center mt-4">
+
+                );
+              })
+            )}
+
+            <div className="w-full flex justify-center mt-4">
               <ReactPaginate
                 previousLabel={<IoArrowBackCircle />} // Arrow for previous page
                 nextLabel={<IoArrowForwardCircle />} // Arrow for next page
@@ -532,11 +509,11 @@ const searchPlants = async (name, selectedCategoryIds = [], minPrice = '', maxPr
                 disabledClassName={"opacity-50 cursor-not-allowed"} // Disabled button styling
               />
             </div>
-            </div>
+          </div>
         </div>
-        
+
       </div>
     </main>
   );
-  
+
 }

@@ -158,25 +158,6 @@ useEffect(() => {
           </Table.Head>
           <Table.Body className="divide-y">
             {plantsToDisplay.map((plant) => {
-
-            let imageSrc;
-
-                try {
-                  // Giải mã Base64
-                  const decodedData = atob(plant.imageUrl);
-              
-                  // Kiểm tra xem chuỗi đã giải mã có phải là URL không
-                  if (decodedData.startsWith("http://") || decodedData.startsWith("https://")) {
-                    // Nếu là URL, dùng trực tiếp
-                    imageSrc = decodedData;
-                  } else {
-                    // Nếu không phải URL, giả định đây là dữ liệu hình ảnh
-                    imageSrc = `data:image/jpeg;base64,${plant.imageUrl}`;
-                  }
-                } catch (error) {
-                  console.error("Error decoding Base64:", error);
-                  imageSrc = ""; // Đặt giá trị mặc định nếu giải mã thất bại
-                }
               return (
               <Table.Row
                 className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
@@ -185,7 +166,7 @@ useEffect(() => {
                 
                 <Table.Cell className="py-4 flex items-center">
                   <img
-                    src={imageSrc || "https://via.placeholder.com/40"}
+                    src={plant.imageUrl || "https://via.placeholder.com/40"}
                     alt={plant.name}
                     className="h-10 w-10 object-cover bg-gray-500 rounded-full"
                   />

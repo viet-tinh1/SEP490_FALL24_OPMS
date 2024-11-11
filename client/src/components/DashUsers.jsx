@@ -287,6 +287,7 @@ export default function DashUsers() {
           nextLabel={"Trước →"}
           pageCount={pageCount}
           onPageChange={handlePageClick}
+          forcePage={currentPage}
           containerClassName={"flex flex-wrap justify-center space-x-2 md:space-x-4"}
           pageLinkClassName={"py-2 px-3 border rounded text-sm"}
           activeClassName={"bg-blue-600 text-white"}
