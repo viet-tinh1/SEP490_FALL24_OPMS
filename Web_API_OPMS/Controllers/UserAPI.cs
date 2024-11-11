@@ -86,6 +86,7 @@ namespace Web_API_OPMS.Controllers
 
                 // Handle image upload or URL
                 if (uploadedImage != null)
+
                 {
                     string imageUrl = await UploadImageToImgbb(uploadedImage);
                     if (string.IsNullOrEmpty(imageUrl))
@@ -96,6 +97,7 @@ namespace Web_API_OPMS.Controllers
                 }
 
                 UserRepository.CreateUser(user);
+
                 return CreatedAtAction(nameof(getUserById), new { id = user.UserId }, user);
             }
             catch (Exception ex)
@@ -103,6 +105,7 @@ namespace Web_API_OPMS.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
+
 
         [HttpPost("sendOtpToEmail")]
         public async Task<IActionResult> SendOtpToEmail([FromBody] MailDto mail)
