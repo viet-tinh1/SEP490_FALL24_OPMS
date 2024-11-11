@@ -1,8 +1,12 @@
 ﻿using BusinessObject.Models;
 using DataAccess.DAO;
 using DataAccess.DTO;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Drive.v3;
+using Google.Apis.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Repositories.Implements;
 using Repositories.Interface;
@@ -14,9 +18,11 @@ namespace Web_API_OPMS.Controllers
     public class PostAPI : ControllerBase
     {
         private readonly IPostRepository _postRepository;
-        public PostAPI(IPostRepository postRepository)
+        private readonly IConfiguration _configuration;
+        public PostAPI(IPostRepository postRepository, IConfiguration configuration)
         {
             _postRepository = postRepository;
+            _configuration = configuration;
         }
         //lấy danh sach post
         [HttpGet("getPost")]
@@ -52,40 +58,40 @@ namespace Web_API_OPMS.Controllers
             return Ok(post);
         }
         [HttpPost("createPost")]
-        public async Task<IActionResult> CreatePostAsync([FromBody] PostDTO postDTO)
+        public async Task<IActionResult> CreatePostAsync([FromForm] PostDTO postDTO, IFormFile uploadedImage)
         {
-            if (postDTO == null)
+            if (postDTO == null || uploadedImage == null || uploadedImage.Length == 0)
             {
-                return BadRequest("Invalid post data");
+                return BadRequest("Invalid post data or image.");
             }
 
             try
             {
-                // Lấy giờ hiện tại theo giờ Việt Nam (GMT+7)
+                // Get the current time in Vietnam timezone
                 TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
                 DateTime utcNow = DateTime.UtcNow;
                 DateTime currentVietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
 
+                // Create the Post object
                 Post post = new Post()
                 {
                     PostId = postDTO.PostId,
-                    UserId = postDTO.UserId,          
+                    UserId = postDTO.UserId,
                     PostContent = postDTO.PostContent,
-                    LikePost =  0,
+                    LikePost = 0,
                     Createdate = currentVietnamTime,
                     UpdatedAt = currentVietnamTime,
                 };
-                if (!string.IsNullOrEmpty(postDTO.PostImage))
+
+                // Upload the image to imgbb
+                string imageUrl = await UploadImageToImgbb(uploadedImage);
+                if (string.IsNullOrEmpty(imageUrl))
                 {
-                    if (Uri.IsWellFormedUriString(postDTO.PostImage, UriKind.Absolute)) // Kiểm tra nếu là URL
-                    {
-                        post.PostImage = await GetImageBytesFromUrl(postDTO.PostImage);
-                    }
-                    else // Nếu là chuỗi Base64
-                    {
-                        post.PostImage = Convert.FromBase64String(postDTO.PostImage);
-                    }
+                    return BadRequest("Image upload failed.");
                 }
+
+                // Save the imgbb link in the database
+                post.PostImage = imageUrl;
 
                 _postRepository.CreatePost(post);
 
@@ -96,9 +102,10 @@ namespace Web_API_OPMS.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
+        
 
         [HttpPost("updatePost")]
-        public async Task<IActionResult> UpdatePostAsync([FromBody] PostDTOU postDTOU)
+        public async Task<IActionResult> UpdatePostAsync([FromForm] PostDTOU postDTOU, IFormFile uploadedImage = null)
         {
             if (postDTOU == null)
             {
@@ -107,33 +114,44 @@ namespace Web_API_OPMS.Controllers
 
             try
             {
-                // Lấy giờ hiện tại theo giờ Việt Nam (GMT+7)
+                // Get the current time in Vietnam timezone
                 TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
                 DateTime utcNow = DateTime.UtcNow;
                 DateTime currentVietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+
+                // Retrieve the existing post
                 var existingPost = _postRepository.GetPostById(postDTOU.PostId);
                 if (existingPost == null)
                 {
                     return NotFound($"Post with ID {postDTOU.PostId} not found.");
                 }
 
-                // Cập nhật các thuộc tính của Post
+                // Update the text fields of the post
                 existingPost.UserId = postDTOU.UserId;
-                existingPost.PostId = postDTOU.PostId;
                 existingPost.PostContent = postDTOU.PostContent;
                 existingPost.UpdatedAt = postDTOU.UpdatedAt ?? currentVietnamTime;
-                if (!string.IsNullOrEmpty(postDTOU.PostImage))
+
+                // Handle image upload if a new image is provided
+                if (uploadedImage != null && uploadedImage.Length > 0)
                 {
-                    if (Uri.IsWellFormedUriString(postDTOU.PostImage, UriKind.Absolute)) // Kiểm tra nếu là URL
+                    // Upload the new image to imgbb
+                    string imageUrl = await UploadImageToImgbb(uploadedImage);
+                    if (string.IsNullOrEmpty(imageUrl))
                     {
-                        existingPost.PostImage = await GetImageBytesFromUrl(postDTOU.PostImage);
+                        return BadRequest("Image upload failed.");
                     }
-                    else // Nếu là chuỗi Base64
+
+                    // Optionally: Delete the existing image from imgbb if it has been replaced
+                    if (!string.IsNullOrEmpty(existingPost.PostImage))
                     {
-                        existingPost.PostImage = Convert.FromBase64String(postDTOU.PostImage);
+                        await DeleteImageFromImgbb(existingPost.PostImage);
                     }
+
+                    // Update the PostImage property with the new URL
+                    existingPost.PostImage = imageUrl;
                 }
 
+                // Update the post in the repository
                 _postRepository.UpdatePost(existingPost);
 
                 return Ok(new { message = "Post updated successfully", updatedPost = existingPost });
@@ -143,6 +161,7 @@ namespace Web_API_OPMS.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
         // Xóa Post
         [HttpDelete("deletePost")]
         public IActionResult DeletePost(int id)
@@ -153,6 +172,11 @@ namespace Web_API_OPMS.Controllers
                 if (post == null)
                 {
                     return NotFound($"Post with ID {id} not found.");
+                }
+
+                if (!string.IsNullOrEmpty(post.PostImage))
+                {
+                     DeleteImageFromImgbb(post.PostImage);
                 }
 
                 _postRepository.DeletePost(id);
@@ -184,13 +208,89 @@ namespace Web_API_OPMS.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-        private async Task<byte[]> GetImageBytesFromUrl(string imageUrl)
+
+        private async Task<string> UploadImageToImgbb(IFormFile image)
         {
-            using (HttpClient client = new HttpClient())
+            try
             {
-                return await client.GetByteArrayAsync(imageUrl);
+                using (var httpClient = new HttpClient())
+                {
+                    // Convert IFormFile to byte array
+                    byte[] imageBytes;
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await image.CopyToAsync(memoryStream);
+                        imageBytes = memoryStream.ToArray();
+                    }
+
+                    // Prepare the content for the request
+                    var formData = new MultipartFormDataContent();
+                    formData.Add(new ByteArrayContent(imageBytes), "image", image.FileName);
+
+                    // Get imgbb API key from appsettings
+                    string imgbbApiKey = _configuration["Imgbb:ApiKey"];
+                    string imgbbApiUrl = $"https://api.imgbb.com/1/upload?key={imgbbApiKey}";
+
+                    // Send the request to imgbb
+                    HttpResponseMessage response = await httpClient.PostAsync(imgbbApiUrl, formData);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseContent = await response.Content.ReadAsStringAsync();
+                        dynamic jsonResponse = Newtonsoft.Json.JsonConvert.DeserializeObject(responseContent);
+                        return jsonResponse?.data?.url;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+            catch
+            {
+                return null;
             }
         }
+
+        private async Task DeleteImageFromImgbb(string imageUrl)
+        {
+            try
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    // Extract the image delete hash from the imageUrl if available
+                    string deleteHash = GetImgbbDeleteHash(imageUrl);
+                    if (string.IsNullOrEmpty(deleteHash)) return;
+
+                    // Get imgbb API key from appsettings
+                    string imgbbApiKey = _configuration["Imgbb:ApiKey"];
+                    string imgbbDeleteUrl = $"https://api.imgbb.com/1/image/{deleteHash}?key={imgbbApiKey}";
+
+                    // Send DELETE request to imgbb
+                    await httpClient.DeleteAsync(imgbbDeleteUrl);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to delete image from imgbb: {ex.Message}");
+            }
+        }
+
+        // Helper method to extract the file ID from the Google Drive URL
+        private string GetImgbbDeleteHash(string imageUrl)
+        {
+            try
+            {
+                var uri = new Uri(imageUrl);
+                var query = uri.Query;
+                var queryDictionary = System.Web.HttpUtility.ParseQueryString(query);
+                return queryDictionary["delete"];
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
 
     }
 }

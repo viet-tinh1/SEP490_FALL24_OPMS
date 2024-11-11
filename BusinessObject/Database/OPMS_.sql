@@ -19,6 +19,7 @@
     | 2024-11-02   | TinhNV          | Chỉnh data bảng User (add cột IsVerifyEmail, chỉnh cột UserImage từ kiểu nvarchar sang varbinary             |
     | 2024-11-02   | TinhNV          | Chỉnh data bảng Plants (chỉnh cột ImageURL từ kiểu nvarchar sang varbinary, Description sang NVARCHAR(MAX)   |
     | 2024-11-03   | TinhNV          | Update database FORUM ( add Table Posts, Comments, LikeReview, RepyReview, LikePost, ReplyComment            |
+    | 2024-11-03   | TinhNV          | Update database                                                                                              |
     -------------------------------------------------------------------------------------------------------------------------------------------------
      
     Notes:
@@ -47,7 +48,7 @@ CREATE TABLE Users (
     FullName                                    NVARCHAR(100) NULL,
     Address                                     NVARCHAR(255) NULL,
     CreatedDate                                 DATETIME NULL,
-    UserImage                                   VARBINARY(MAX) NULL,
+    UserImage                                   NVARCHAR(MAX) NULL,
     Status                                      INT NULL,
     shop_name                                   NVARCHAR(100) NULL,
     IsVerifyEmail                               INT NOT NULL DEFAULT 0
@@ -59,7 +60,7 @@ CREATE TABLE Plants (
     CategoryID                                  INT NOT NULL,
     PlantName                                   NVARCHAR(100),
     Description                                 NVARCHAR(MAX),
-    ImageURL                                    VARBINARY(255),
+    ImageURL                                    NVARCHAR(MAX),
     CreateDate                                  DATETIME,
     Price                                       DECIMAL(10, 2),
     Discount                                    DECIMAL(5, 2),
@@ -181,7 +182,7 @@ CREATE TABLE Posts (
     post_id                                     INT IDENTITY(1,1) PRIMARY KEY,
     UserID                                      INT NOT NULL,
     post_content                                NVARCHAR(MAX) NOT NULL,
-    post_image                                  VARBINARY(MAX),
+    post_image                                  NVARCHAR(MAX),
     like_post                                   INT NULL,
     createdate                                  DATETIME,
     updated_at                                  DATETIME,

@@ -5,10 +5,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Net.payOS;
 using Repositories.Implements;
 using Repositories.Interface;
 using Repositories.Service;
 using System.Text;
+using Web_API_OPMS.Controllers;
 
 namespace Web_API_OPMS
 {
@@ -17,6 +19,15 @@ namespace Web_API_OPMS
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+
+            builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+            // PayOS configuration
+            PayOS payOS = new PayOS(builder.Configuration["Environment:PAYOS_CLIENT_ID"] ?? throw new Exception("Cannot find environment"),
+                                    builder.Configuration["Environment:PAYOS_API_KEY"] ?? throw new Exception("Cannot find environment"),
+                                    builder.Configuration["Environment:PAYOS_CHECKSUM_KEY"] ?? throw new Exception("Cannot find environment"));
+
+            builder.Services.AddSingleton(payOS);
 
             // Configure Database Connection
             builder.Services.AddDbContext<Db6213Context>(options =>
@@ -78,6 +89,8 @@ namespace Web_API_OPMS
             // Swagger for API documentation
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            // Register OrderAPI with Dependency Injection
+            builder.Services.AddScoped<OrderAPI>();
             // Đăng ký IReviewRepository với implement là ReviewRepository
             builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
             // Đăng ký IVoucherRepository với implement là VoucherRepository

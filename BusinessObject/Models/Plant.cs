@@ -18,7 +18,7 @@ public partial class Plant
 
     public decimal Price { get; set; }
 
-    public byte[]? ImageUrl { get; set; }
+    public string? ImageUrl { get; set; }
 
     public int? Stock { get; set; }
 

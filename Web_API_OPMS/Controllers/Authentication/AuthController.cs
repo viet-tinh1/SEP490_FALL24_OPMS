@@ -108,7 +108,8 @@ namespace Web_API_OPMS.Controllers.Authentication
                     Email = email,
                     CreatedDate = DateTime.UtcNow,
                     Roles = 2,
-                    Status = 1, 
+                    Status = 1,
+                    IsVerifyEmail = 1, 
                     Password = HashPassword(GenerateRandomPassword(12)) // Generate random password with length 12
                 };
                 _context.Users.Add(user);

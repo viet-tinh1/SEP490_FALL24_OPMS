@@ -11,7 +11,7 @@ public partial class Post
 
     public string PostContent { get; set; } = null!;
 
-    public byte[]? PostImage { get; set; }
+    public string? PostImage { get; set; }
 
     public int? LikePost { get; set; }
 
