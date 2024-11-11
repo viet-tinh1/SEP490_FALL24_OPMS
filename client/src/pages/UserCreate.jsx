@@ -101,23 +101,43 @@ export default function UserCreate() {
     return Object.keys(errors).length === 0;
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prevData) => ({
+        ...prevData,
+        uploadedImage: file,
+      }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
+    const formDataToSend = new FormData();
+    formDataToSend.append("userId", formData.userId);
+    formDataToSend.append("username", formData.username);
+    formDataToSend.append("password", formData.password);
+    formDataToSend.append("email", formData.email);
+    formDataToSend.append("phoneNumber", formData.phoneNumber);
+    formDataToSend.append("roles", formData.roles);
+    formDataToSend.append("fullName", formData.fullName);
+    formDataToSend.append("address", formData.address);
+    formDataToSend.append("status", formData.status);
+    formDataToSend.append("shopName", formData.shopName);
+    
+    // Append the image if available
+    if (formData.uploadedImage) {
+      formDataToSend.append("uploadedImage", formData.uploadedImage);
+    }
 
-    const data = { ...formData, userImage: null }; // Đảm bảo userImage luôn là null trong payload
-    console.log("Payload being sent to backend:", data);
-    console.log(shopName);
     try {
       const response = await fetch("https://localhost:7098/api/UserAPI/createUser", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+        body: formDataToSend,
       });
 
       if (response.ok) {
