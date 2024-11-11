@@ -283,6 +283,49 @@ namespace Web_API_OPMS.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
+        [HttpPost("updateUserImage")]
+        public async Task<IActionResult> UpdateUserImage(int userId, IFormFile newImage)
+        {
+            if (newImage == null || newImage.Length == 0)
+            {
+                return BadRequest("No image file provided.");
+            }
+
+            try
+            {
+                // Find the existing user by their ID
+                var existingUser = UserRepository.GetUserById(userId);
+                if (existingUser == null)
+                {
+                    return NotFound($"User with ID {userId} not found.");
+                }
+
+                // Upload the new image to imgbb
+                string newImageUrl = await UploadImageToImgbb(newImage);
+                if (string.IsNullOrEmpty(newImageUrl))
+                {
+                    return BadRequest("Image upload failed.");
+                }
+
+                // Optionally: Delete the existing image from imgbb if it has been replaced
+                if (!string.IsNullOrEmpty(existingUser.UserImage))
+                {
+                    await DeleteImageFromImgbb(existingUser.UserImage);
+                }
+
+                // Update the UserImage property with the new URL
+                existingUser.UserImage = newImageUrl;
+
+                // Save changes to the repository
+                UserRepository.UpdateUser(existingUser);
+
+                return Ok(new { message = "User image updated successfully", imageUrl = newImageUrl });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
         //Xóa 1 user 
         [HttpGet("deleteUser")]
         public async Task<IActionResult> deleteUser(int UserId)
