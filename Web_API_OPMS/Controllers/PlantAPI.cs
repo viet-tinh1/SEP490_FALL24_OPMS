@@ -1,9 +1,13 @@
 using BusinessObject.Models;
 using DataAccess.DAO;
 using DataAccess.DTO;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Drive.v3;
+using Google.Apis.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Repositories.Implements;
 using Repositories.Interface;
 
@@ -15,11 +19,13 @@ namespace Web_API_OPMS.Controllers
     {
         private UserRepository UserRepository = new UserRepository();
         private PlantRepository plantRepository = new PlantRepository();
+       
         private readonly Db6213Context _context;
-
-        public PlantAPI(Db6213Context context)
+        private readonly IConfiguration _configuration;
+        public PlantAPI(Db6213Context context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
         //Lấy danh sách plant
         [HttpGet("getPlants")]
@@ -60,46 +66,45 @@ namespace Web_API_OPMS.Controllers
         }
         //Tạo 1 plant mới
         [HttpPost("createPlant")]
-        public async Task<IActionResult> CreatePlantAsync([FromBody] PlantDTO p)
+        public async Task<IActionResult> CreatePlantAsync([FromForm] PlantDTO p, IFormFile uploadedImage = null)
         {
-            //using session userId from login api 
-            
-            if (p == null || string.IsNullOrEmpty(p.PlantName))
+            if (p == null || string.IsNullOrEmpty(p.PlantName) || (uploadedImage == null && string.IsNullOrEmpty(p.ImageUrl)))
             {
                 return BadRequest("Invalid plant data");
             }
 
             try
             {
+                // Set Vietnam timezone
                 TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
                 DateTime utcNow = DateTime.UtcNow;
                 DateTime currentVietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+
+                // Create new plant object
                 Plant plant = new Plant()
                 {
                     UserId = p.UserId,
                     PlantName = p.PlantName,
                     CategoryId = p.CategoryId,
                     Description = p.Description,
-                    Price = p.Price,                   
+                    Price = p.Price,
                     Stock = p.Stock,
                     Status = p.Status,
                     IsVerfied = 0,
                     Discount = p.Discount,
                     CreateDate = currentVietnamTime
-
                 };
-                if (!string.IsNullOrEmpty(p.ImageUrl))
+
+                // Handle image upload or URL
+                string imageUrl = await UploadImageToImgbb(uploadedImage);
+                if (string.IsNullOrEmpty(imageUrl))
                 {
-                    if (Uri.IsWellFormedUriString(p.ImageUrl, UriKind.Absolute)) // Kiểm tra nếu là URL
-                    {
-                        plant.ImageUrl = await GetImageBytesFromUrl(p.ImageUrl);
-                    }
-                    else // Nếu là chuỗi Base64
-                    {
-                        plant.ImageUrl = Convert.FromBase64String(p.ImageUrl);
-                    }
+                    return BadRequest("Image upload failed.");
                 }
+
+                plant.ImageUrl = imageUrl;
                 plantRepository.createPlant(plant);
+
                 return CreatedAtAction(nameof(getPlantById), new { id = plant.PlantId }, plant);
             }
             catch (Exception ex)
@@ -107,60 +112,63 @@ namespace Web_API_OPMS.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
-        // Chỉnh sửa plant đã tạo
+
         [HttpPost("updatePlant")]
-        public async Task<IActionResult> UpdatePlantAsync([FromBody] PlantDTOU p)
-        {          
+        public async Task<IActionResult> UpdatePlantAsync([FromForm] PlantDTOU p, IFormFile uploadedImage = null)
+        {
             if (p == null || string.IsNullOrEmpty(p.PlantName))
             {
                 return BadRequest("Invalid plant data");
             }
-            
+
             try
             {
-                // Find the existing plant in the repository
+                // Find the existing plant
                 var existingPlant = plantRepository.getPlantById(p.PlantId);
                 if (existingPlant == null)
                 {
                     return NotFound($"Plant with name {p.PlantName} not found.");
                 }
-                if(p.UserId != existingPlant.UserId)
+                if (p.UserId != existingPlant.UserId)
                 {
-                    return Unauthorized(new { message = "You do not have permission to update " });
+                    return Unauthorized(new { message = "You do not have permission to update this plant." });
                 }
-                // Update the existing plant's properties
+
+                // Update plant properties
                 existingPlant.UserId = p.UserId;
                 existingPlant.PlantName = p.PlantName;
                 existingPlant.CategoryId = p.CategoryId;
                 existingPlant.Description = p.Description;
-                existingPlant.Price = p.Price;               
+                existingPlant.Price = p.Price;
                 existingPlant.Stock = p.Stock;
                 existingPlant.IsVerfied = 0;
-                if (!string.IsNullOrEmpty(p.ImageUrl))
+
+                // Handle image update
+                if (uploadedImage != null && uploadedImage.Length > 0)
                 {
-                    if (Uri.IsWellFormedUriString(p.ImageUrl, UriKind.Absolute)) // Kiểm tra nếu là URL
+                    // Upload the new image to imgbb
+                    string imageUrl = await UploadImageToImgbb(uploadedImage);
+                    if (string.IsNullOrEmpty(imageUrl))
                     {
-                        existingPlant.ImageUrl = await GetImageBytesFromUrl(p.ImageUrl);
+                        return BadRequest("Image upload failed.");
                     }
-                    else // Nếu là chuỗi Base64
+
+                    // Optionally: Delete the existing image from imgbb if it has been replaced
+                    if (!string.IsNullOrEmpty(existingPlant.ImageUrl))
                     {
-                        existingPlant.ImageUrl = Convert.FromBase64String(p.ImageUrl);
+                        await DeleteImageFromImgbb(existingPlant.ImageUrl);
                     }
+
+                    // Update the PostImage property with the new URL
+                    existingPlant.ImageUrl = imageUrl;
                 }
-                if (existingPlant.Stock > 0)
-                {
-                   
-                    existingPlant.Status = 1;
-                }
-                
-                if(existingPlant.Stock <= 0)
-                {
-                    existingPlant.Status = 0;
-                }
-                // Save changes
+
+                // Set status based on stock
+                existingPlant.Status = existingPlant.Stock > 0 ? 1 : 0;
+
                 plantRepository.updatePlant(existingPlant);
 
-                return Ok($"Plant '{existingPlant.PlantName}' has been successfully Update.");
+                return Ok(new { message = $"Plant '{existingPlant.PlantName}' has been successfully updated.", updatedPlant = existingPlant });
             }
             catch (Exception ex)
             {
@@ -248,7 +256,11 @@ namespace Web_API_OPMS.Controllers
             {
                 return Unauthorized(new { message = "You do not have permission to delete " });
             }
-           
+            if (!string.IsNullOrEmpty(deletePlant.ImageUrl))
+            {
+                DeleteImageFromImgbb(deletePlant.ImageUrl);
+            }
+
             plantRepository.deletePlant(plantId);
             return Ok($"Plant '{deletePlant.PlantName}' has been successfully detele.");
         }
@@ -306,5 +318,86 @@ namespace Web_API_OPMS.Controllers
             }
         }
 
+        private async Task DeleteImageFromImgbb(string imageUrl)
+        {
+            try
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    // Extract the image delete hash from the imageUrl if available
+                    string deleteHash = GetImgbbDeleteHash(imageUrl);
+                    if (string.IsNullOrEmpty(deleteHash)) return;
+
+                    // Get imgbb API key from appsettings
+                    string imgbbApiKey = _configuration["Imgbb:ApiKey"];
+                    string imgbbDeleteUrl = $"https://api.imgbb.com/1/image/{deleteHash}?key={imgbbApiKey}";
+
+                    // Send DELETE request to imgbb
+                    await httpClient.DeleteAsync(imgbbDeleteUrl);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to delete image from imgbb: {ex.Message}");
+            }
+        }
+
+        // Helper method to extract the file ID from the Google Drive URL
+        private string GetImgbbDeleteHash(string imageUrl)
+        {
+            try
+            {
+                var uri = new Uri(imageUrl);
+                var query = uri.Query;
+                var queryDictionary = System.Web.HttpUtility.ParseQueryString(query);
+                return queryDictionary["delete"];
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private async Task<string> UploadImageToImgbb(IFormFile image)
+        {
+            try
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    // Convert IFormFile to byte array
+                    byte[] imageBytes;
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await image.CopyToAsync(memoryStream);
+                        imageBytes = memoryStream.ToArray();
+                    }
+
+                    // Prepare the content for the request
+                    var formData = new MultipartFormDataContent();
+                    formData.Add(new ByteArrayContent(imageBytes), "image", image.FileName);
+
+                    // Get imgbb API key from appsettings
+                    string imgbbApiKey = _configuration["Imgbb:ApiKey"];
+                    string imgbbApiUrl = $"https://api.imgbb.com/1/upload?key={imgbbApiKey}";
+
+                    // Send the request to imgbb
+                    HttpResponseMessage response = await httpClient.PostAsync(imgbbApiUrl, formData);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseContent = await response.Content.ReadAsStringAsync();
+                        dynamic jsonResponse = Newtonsoft.Json.JsonConvert.DeserializeObject(responseContent);
+                        return jsonResponse?.data?.url;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }
