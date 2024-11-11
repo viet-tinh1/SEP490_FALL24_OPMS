@@ -14,6 +14,10 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using System.Net.Mail;
 using System;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Drive.v3;
+using Google.Apis.Services;
+using Microsoft.IdentityModel.Tokens;
 
 
 namespace Web_API_OPMS.Controllers
@@ -27,13 +31,14 @@ namespace Web_API_OPMS.Controllers
         private readonly MailService _mailService;
         private static string storedOtp = "";
         private static DateTime otpExpiration;
+        private readonly IConfiguration _configuration;
 
 
-        public UserAPI(Db6213Context context, MailService mailService)
+        public UserAPI(Db6213Context context, MailService mailService, IConfiguration configuration)
         {
             _context = context;
             _mailService = mailService;
-
+            _configuration = configuration;
         }
 
         //Lấy danh sách user
@@ -44,9 +49,9 @@ namespace Web_API_OPMS.Controllers
         }
         //Tạo 1 user mới
         [HttpPost("createUser")]
-        public async Task<IActionResult> CreateUserAsync([FromBody] UserDTO u)
+        public async Task<IActionResult> CreateUserAsync([FromForm] UserDTO u, IFormFile uploadedImage = null)
         {
-            if (u == null || string.IsNullOrEmpty(u.Username))
+            if (u == null || string.IsNullOrEmpty(u.Username) )
             {
                 return BadRequest("Invalid user data");
             }
@@ -54,17 +59,18 @@ namespace Web_API_OPMS.Controllers
             {
                 return BadRequest(new { message = "Username already exists" });
             }
+
             try
             {
-                // Lấy giờ hiện tại theo giờ Việt Nam (GMT+7)
+                // Get current time in Vietnam timezone
                 TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
                 DateTime utcNow = DateTime.UtcNow;
                 DateTime currentVietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
 
-                // Mã hóa password
+                // Hash the password
                 string hashedPassword = HashPassword(u.Password);
 
-                // Tạo đối tượng User mới với thông tin từ u và thời gian Việt Nam
+                // Create the User object
                 User user = new User()
                 {
                     Username = u.Username,
@@ -74,26 +80,23 @@ namespace Web_API_OPMS.Controllers
                     Status = u.Status,
                     PhoneNumber = u.PhoneNumber, // Thêm PhoneNumber từ UserDTO
                     ShopName = u.ShopName,
-                    Address = u.Address,         // Thêm Address từ UserDTO
+                    Address = u.Address,
                     CreatedDate = currentVietnamTime
                 };
 
-                // Xử lý UserImage nếu có
-                if (!string.IsNullOrEmpty(u.UserImage))
+                // Handle image upload or URL
+                if (uploadedImage != null)
+
                 {
-                    if (Uri.IsWellFormedUriString(u.UserImage, UriKind.Absolute)) // Kiểm tra nếu là URL
+                    string imageUrl = await UploadImageToImgbb(uploadedImage);
+                    if (string.IsNullOrEmpty(imageUrl))
                     {
-                        user.UserImage = await GetImageBytesFromUrl(u.UserImage);
+                        return BadRequest("Image upload failed.");
                     }
-                    else // Nếu là chuỗi Base64
-                    {
-                        user.UserImage = Convert.FromBase64String(u.UserImage);
-                    }
+                    user.UserImage = imageUrl;
                 }
 
-                // Lưu đối tượng User vào cơ sở dữ liệu
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
+                UserRepository.CreateUser(user);
 
                 return CreatedAtAction(nameof(getUserById), new { id = user.UserId }, user);
             }
@@ -220,49 +223,63 @@ namespace Web_API_OPMS.Controllers
         }
         // Chỉnh sửa user đã tạo
         [HttpPost("updateUser")]
-        public async Task<IActionResult> UpdateUserAsync([FromBody] UserDTO u)
+        public async Task<IActionResult> UpdateUserAsync([FromForm] UserDTO u, IFormFile uploadedImage = null)
         {
             if (u == null || string.IsNullOrEmpty(u.Username))
             {
-                return BadRequest("Invalid User data");
+                return BadRequest("Invalid user data");
             }
 
             try
             {
-                string hashedPassword = HashPassword(u.Password);
-                // Find the existing plant in the repository
+                // Find the existing user
                 var existingUser = UserRepository.GetUserById(u.UserId);
                 if (existingUser == null)
                 {
-                    return NotFound($"Plant with name {u.Username} not found.");
+                    return NotFound($"User with username {u.Username} not found.");
                 }
 
-                // Update the existing plant's properties
+                // Update user properties
                 existingUser.Username = u.Username;
-                existingUser.Password = hashedPassword;
                 existingUser.Email = u.Email;
                 existingUser.PhoneNumber = u.PhoneNumber;
                 existingUser.Roles = u.Roles;
                 existingUser.FullName = u.FullName;
                 existingUser.Address = u.Address;
-                if (!string.IsNullOrEmpty(u.UserImage))
+
+                // Only hash the password if it’s provided (to avoid re-hashing)
+                if (!string.IsNullOrEmpty(u.Password))
                 {
-                    if (Uri.IsWellFormedUriString(u.UserImage, UriKind.Absolute)) // Kiểm tra nếu là URL
-                    {
-                        existingUser.UserImage = await GetImageBytesFromUrl(u.UserImage);
-                    }
-                    else // Nếu là chuỗi Base64
-                    {
-                        existingUser.UserImage = Convert.FromBase64String(u.UserImage);
-                    }
+                    existingUser.Password = HashPassword(u.Password);
                 }
+
+                // Handle image update
+                if (uploadedImage != null && uploadedImage.Length > 0)
+                {
+                    // Upload the new image to imgbb
+                    string imageUrl = await UploadImageToImgbb(uploadedImage);
+                    if (string.IsNullOrEmpty(imageUrl))
+                    {
+                        return BadRequest("Image upload failed.");
+                    }
+
+                    // Optionally: Delete the existing image from imgbb if it has been replaced
+                    if (!string.IsNullOrEmpty(existingUser.UserImage))
+                    {
+                        await DeleteImageFromImgbb(existingUser.UserImage);
+                    }
+
+                    // Update the UserImage property with the new URL
+                    existingUser.UserImage = imageUrl;
+                }
+
+                // Update other fields
                 existingUser.Status = u.Status;
                 existingUser.ShopName = u.ShopName;
 
-                // Save changes
                 UserRepository.UpdateUser(existingUser);
 
-                return NoContent(); // 204 No Content on successful update
+                return Ok(new { message = "User updated successfully", updatedUser = existingUser });
             }
             catch (Exception ex)
             {
@@ -271,10 +288,29 @@ namespace Web_API_OPMS.Controllers
         }
         //Xóa 1 user 
         [HttpGet("deleteUser")]
-        public IActionResult deleteUser(int UserId)
+        public async Task<IActionResult> deleteUser(int UserId)
         {
-            UserRepository.DeleteUser(UserId);
-            return NoContent();
+            try
+            {
+                var user = UserRepository.GetUserById(UserId);
+                if (user == null)
+                {
+                    return NotFound($"User with ID {UserId} not found.");
+                }
+
+                // Delete user image from imgbb if exists
+                if (!string.IsNullOrEmpty(user.UserImage))
+                {
+                    await DeleteImageFromImgbb(user.UserImage);
+                }
+
+                UserRepository.DeleteUser(UserId);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
         }
         [HttpGet("getUserByIds")]
         public ActionResult<User> getUserByIds(int userId)
@@ -357,11 +393,84 @@ namespace Web_API_OPMS.Controllers
                 return Convert.ToBase64String(hashedBytes);
             }
         }
-        private async Task<byte[]> GetImageBytesFromUrl(string imageUrl)
+        private async Task<string> UploadImageToImgbb(IFormFile image)
         {
-            using (HttpClient client = new HttpClient())
+            try
             {
-                return await client.GetByteArrayAsync(imageUrl);
+                using (var httpClient = new HttpClient())
+                {
+                    // Convert IFormFile to byte array
+                    byte[] imageBytes;
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await image.CopyToAsync(memoryStream);
+                        imageBytes = memoryStream.ToArray();
+                    }
+
+                    // Prepare the content for the request
+                    var formData = new MultipartFormDataContent();
+                    formData.Add(new ByteArrayContent(imageBytes), "image", image.FileName);
+
+                    // Get imgbb API key from appsettings
+                    string imgbbApiKey = _configuration["Imgbb:ApiKey"];
+                    string imgbbApiUrl = $"https://api.imgbb.com/1/upload?key={imgbbApiKey}";
+
+                    // Send the request to imgbb
+                    HttpResponseMessage response = await httpClient.PostAsync(imgbbApiUrl, formData);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseContent = await response.Content.ReadAsStringAsync();
+                        dynamic jsonResponse = Newtonsoft.Json.JsonConvert.DeserializeObject(responseContent);
+                        return jsonResponse?.data?.url;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private async Task DeleteImageFromImgbb(string imageUrl)
+        {
+            try
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    // Extract the image delete hash from the imageUrl if available
+                    string deleteHash = GetImgbbDeleteHash(imageUrl);
+                    if (string.IsNullOrEmpty(deleteHash)) return;
+
+                    // Get imgbb API key from appsettings
+                    string imgbbApiKey = _configuration["Imgbb:ApiKey"];
+                    string imgbbDeleteUrl = $"https://api.imgbb.com/1/image/{deleteHash}?key={imgbbApiKey}";
+
+                    // Send DELETE request to imgbb
+                    await httpClient.DeleteAsync(imgbbDeleteUrl);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to delete image from imgbb: {ex.Message}");
+            }
+        }
+
+        private string GetImgbbDeleteHash(string imageUrl)
+        {
+            try
+            {
+                var uri = new Uri(imageUrl);
+                var query = uri.Query;
+                var queryDictionary = System.Web.HttpUtility.ParseQueryString(query);
+                return queryDictionary["delete"];
+            }
+            catch
+            {
+                return null;
             }
         }
     }

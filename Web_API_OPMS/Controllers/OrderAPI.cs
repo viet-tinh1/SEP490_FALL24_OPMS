@@ -209,11 +209,14 @@ namespace Web_API_OPMS.Controllers
         [HttpGet("getOrderById")]
         public ActionResult<Order> GetOrderById(int id)
         {
-            var order = OrderRepository.GetOrderById(id);
+            var order = _context.Orders
+                         .Include(o => o.ShoppingCartItem)
+                         .ThenInclude(s => s.Plant)
+                         .FirstOrDefault(o => o.OrderId == id);
 
             if (order == null)
             {
-                return NotFound(); // Return 404 if the order isn't found
+                return NotFound();
             }
 
             return Ok(order); // Return 200 with the order data

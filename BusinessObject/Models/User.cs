@@ -25,7 +25,7 @@ public partial class User
 
     public int IsVerifyEmail { get; set; }
 
-    public byte[]? UserImage { get; set; }
+    public string? UserImage { get; set; }
 
     public int? Status { get; set; }
     public string? ShopName { get; set; }

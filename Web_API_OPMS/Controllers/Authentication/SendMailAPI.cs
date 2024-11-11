@@ -1,6 +1,9 @@
-﻿using DataAccess.DTO;
+﻿using BusinessObject.Models;
+using DataAccess.DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Repositories.Implements;
 using Repositories.Service;
 
 namespace Web_API_OPMS.Controllers.Authentication
@@ -11,14 +14,16 @@ namespace Web_API_OPMS.Controllers.Authentication
     {
         private readonly MailService _mailService;
         private readonly IConfiguration _configuration;
+        private readonly Db6213Context _context;
         // Giả sử bạn có một nơi lưu trữ mã OTP và thời gian hết hạn cho người dùng (có thể là DB hoặc bộ nhớ tạm)
         private static string storedOtp = "";
         private static DateTime otpExpiration;
 
-        public SendMailAPI(MailService mailService, IConfiguration configuration)
+        public SendMailAPI(MailService mailService, IConfiguration configuration, Db6213Context context)
         {
             _mailService = mailService;
             _configuration = configuration;
+            _context = context;
         }
 
         [HttpPost("send-email")]
@@ -81,7 +86,23 @@ namespace Web_API_OPMS.Controllers.Authentication
             // Kiểm tra mã OTP có đúng và không hết hạn
             if (verifyRequest.Otp == storedOtp && currentVietnamTime <= otpExpiration)
             {
-                return Ok(new { message = "OTP is valid and has not expired." });
+                var user = _context.Users.FirstOrDefault(u => u.Email == verifyRequest.RecipientEmail);
+
+                if (user != null)
+                {
+                    // Cập nhật trạng thái verify thành 1
+                    user.IsVerifyEmail = 1;
+
+                    // Lưu thay đổi vào cơ sở dữ liệu
+                     _context.Update(user);
+                     _context.SaveChangesAsync();
+
+                    return Ok(new { message = "OTP is valid and has not expired." });
+                }
+                else
+                {
+                    return NotFound(new { message = "User not found with the provided email." });
+                }
             }
             else if (currentVietnamTime > otpExpiration)
             {
