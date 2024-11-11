@@ -218,24 +218,7 @@ export default function DashVerifyProduct() {
       <Table.HeadCell className="w-32 whitespace-nowrap">Hành động</Table.HeadCell>
     </Table.Head>
     <Table.Body className="divide-y">
-      {plantsToDisplay.map((plant) => {
-        let imageSrc;
-
-        try {
-          // Decode Base64
-          const decodedData = atob(plant.imageUrl);
-        
-          // Check if decoded string is a URL
-          if (decodedData.startsWith("http://") || decodedData.startsWith("https://")) {
-            imageSrc = decodedData;
-          } else {
-            imageSrc = `data:image/jpeg;base64,${plant.imageUrl}`;
-          }
-        } catch (error) {
-          console.error("Error decoding Base64:", error);
-          imageSrc = ""; // Default value if decoding fails
-        }
-
+      {plantsToDisplay.map((plant) => {       
         return (
           <Table.Row
             className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
@@ -243,7 +226,7 @@ export default function DashVerifyProduct() {
           >
             <Table.Cell className="p-4 flex items-center justify-center">
               <img
-                src={imageSrc || "https://via.placeholder.com/40"}
+                src={plant.imageUrl || "https://via.placeholder.com/40"}
                 alt={plant.name}
                 className="h-10 w-10 object-cover bg-gray-500 rounded-full"
               />
@@ -284,9 +267,9 @@ export default function DashVerifyProduct() {
     <ReactPaginate
         previousLabel={"← Sau"}
         nextLabel={"Trước →"}
-      pageCount={pageCount}
+        pageCount={pageCount > 0 ? pageCount : 1}
       onPageChange={handlePageClick}
-      forcePage={currentPage}
+      forcePage={pageCount > 0 ? currentPage : 0} 
       containerClassName={
         "flex flex-wrap justify-center space-x-2 md:space-x-4"
       }
