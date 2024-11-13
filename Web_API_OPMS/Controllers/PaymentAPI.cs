@@ -24,24 +24,47 @@ namespace Web_API_OPMS.Controllers
             _orderAPI = orderAPI;
         }
         [HttpPost("create-payment-link")]
-        public async Task<IActionResult> CreatePaymentLink([FromBody] int orderId)
+        public async Task<IActionResult> CreatePaymentLink([FromBody] List<int> orderIds)
         {
             try
             {
-                var orderResult = _orderAPI.GetOrderById(orderId);
-                if (orderResult == null || orderResult.Result is not OkObjectResult okResult || okResult.Value == null)
+                List<ItemData> items = new List<ItemData>();
+                int totalAmount = 0;
+                foreach (var orderId in orderIds)
                 {
-                    return NotFound(new Response(-1, "Order not found", null));
-                }
-                var orderDetails = ((OkObjectResult)orderResult.Result).Value as Order;
-                if (orderDetails?.ShoppingCartItem?.Plant == null)
-                {
-                    return BadRequest(new Response(-1, "Invalid order data", null));
+                    var orderResult = _orderAPI.GetOrderById(orderId);
+                    if (orderResult == null || orderResult.Result is not OkObjectResult okResult || okResult.Value == null)
+                    {
+                        return NotFound(new Response(-1, $"Order with ID {orderId} not found", null));
+                    }
+
+                    var orderDetails = okResult.Value as Order;
+                    if (orderDetails?.ShoppingCartItem?.Plant == null)
+                    {
+                        return BadRequest(new Response(-1, $"Invalid data for order ID {orderId}", null));
+                    }
+
+                    // Add item details for each order
+                    var item = new ItemData(
+                        orderDetails.ShoppingCartItem.Plant.PlantName,
+                        orderDetails.ShoppingCartItem.Quantity,
+                        (int)Math.Round(orderDetails.TotalAmount * 100)
+                    );
+                    items.Add(item);
+
+                    // Accumulate total amount
+                    totalAmount += (int)Math.Round(orderDetails.TotalAmount * 100);
                 }
 
-                var item = new ItemData(orderDetails.ShoppingCartItem.Plant.PlantName, orderDetails.ShoppingCartItem.Quantity, (int)Math.Round(orderDetails.TotalAmount * 100));
-                var items = new List<ItemData> { item };
-                var paymentData = new PaymentData(orderDetails.OrderId, (int)(orderDetails.TotalAmount * 100), "Payment for order", items, "https://localhost:3002/cancel", "https://localhost:3002/success");
+                // Create payment data with the aggregated items and total amount
+                var paymentData = new PaymentData(
+                    orderIds.First(), // Using the first order ID as a reference
+                    totalAmount,
+                    "Payment for orders",
+                    items,
+                    "http://localhost:5173/PaymentFailure",
+                    "http://localhost:5173/PaymentSuccess"
+                );
 
                 var createPayment = await _payOS.createPaymentLink(paymentData);
                 //if (createPayment != null && createPayment.checkoutUrl != null)

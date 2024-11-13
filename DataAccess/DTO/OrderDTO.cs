@@ -11,7 +11,8 @@ namespace DataAccess.DTO
         public int? UserId { get; set; }
 
         public List<int> ShoppingCartItemIds { get; set; } // Danh sách CartId
-              
+        public string? ShippingAddress { get; set; }
+
     }
     public class OrderDTOU
     {
@@ -24,5 +25,6 @@ namespace DataAccess.DTO
 
         public string? Status { get; set; }
         public int UserId { get; set; }
+        public string? ShippingAddress { get; set; }
     }
 }

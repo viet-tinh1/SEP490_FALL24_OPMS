@@ -44,5 +44,6 @@ public partial class User
     public virtual ICollection<Voucher> Vouchers { get; set; } = new List<Voucher>();
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
     public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
+    public virtual ICollection<PostLike> PostLikes { get; set; } = new List<PostLike>();
     public virtual ICollection<ReplyComment> ReplyComments { get; set; } = new List<ReplyComment>();
 }

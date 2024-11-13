@@ -105,6 +105,7 @@ CREATE TABLE Orders (
     TotalAmount                                 DECIMAL(10, 2) NOT NULL,
     Status		                                VARCHAR(50) DEFAULT 'Pending',
     UserId                                      INT NOT NULL,
+    ShippingAddress                             NVARCHAR(Max),
     FOREIGN KEY (ShoppingCartItemId)            REFERENCES Shopping_Cart_Item(ShoppingCartItemId),
     FOREIGN KEY (UserId)                        REFERENCES Users(UserId)
 );
@@ -187,6 +188,14 @@ CREATE TABLE Posts (
     createdate                                  DATETIME,
     updated_at                                  DATETIME,
     FOREIGN KEY (UserID)                        REFERENCES Users(UserID)
+);
+
+CREATE TABLE Post_Like (
+    LikeId INT IDENTITY(1,1) PRIMARY KEY, -- Tự động tăng LikeId
+    post_id INT NOT NULL,                   -- Khóa ngoại trỏ đến bảng Post
+    UserID INT NOT NULL,                   -- Khóa ngoại trỏ đến bảng User
+    FOREIGN KEY (post_id) REFERENCES Posts(post_id),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID)
 );
 
 -------- Bình luận 
