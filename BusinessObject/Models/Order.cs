@@ -17,6 +17,9 @@ public partial class Order
 
     public int? UserId { get; set; }
     public string? ShippingAddress { get; set; }
+    public string? PaymentMethod { get; set; }
+
+    public int? IsSuccess { get; set; }
 
     public virtual ShoppingCartItem ShoppingCartItem { get; set; } = null!;
 
