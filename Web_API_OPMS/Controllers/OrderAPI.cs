@@ -89,7 +89,8 @@ namespace Web_API_OPMS.Controllers
                             OrderDate = currentVietnamTime, // Ngày tạo order
                             TotalAmount = totalAmount,       // Tổng số tiền được tính toán tự động
                             Status = "Pending",              // Đặt trạng thái đơn hàng là "1" (thành công)
-                            UserId = orderDTO.UserId            // Gán UserId từ session
+                            UserId = orderDTO.UserId,            // Gán UserId từ session
+                            ShippingAddress  = orderDTO.ShippingAddress
                         };
 
                         // Lưu đơn hàng mới vào repository
@@ -185,6 +186,7 @@ namespace Web_API_OPMS.Controllers
                 existingOrder.OrderDate = DateTime.Now;
                 existingOrder.TotalAmount = o.TotalAmount;
                 existingOrder.Status = o.Status;
+                existingOrder.ShippingAddress = o.ShippingAddress;
                
 
                 // Save changes

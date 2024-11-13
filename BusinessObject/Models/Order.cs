@@ -16,6 +16,7 @@ public partial class Order
     public string? Status { get; set; }
 
     public int? UserId { get; set; }
+    public string? ShippingAddress { get; set; }
 
     public virtual ShoppingCartItem ShoppingCartItem { get; set; } = null!;
 
