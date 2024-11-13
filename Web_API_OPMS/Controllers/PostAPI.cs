@@ -6,6 +6,7 @@ using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Repositories.Implements;
@@ -19,8 +20,11 @@ namespace Web_API_OPMS.Controllers
     {
         private readonly IPostRepository _postRepository;
         private readonly IConfiguration _configuration;
-        public PostAPI(IPostRepository postRepository, IConfiguration configuration)
+        private readonly Db6213Context _context = new Db6213Context();
+
+        public PostAPI(IPostRepository postRepository, IConfiguration configuration, Db6213Context context)
         {
+            _context = context;
             _postRepository = postRepository;
             _configuration = configuration;
         }
@@ -189,24 +193,32 @@ namespace Web_API_OPMS.Controllers
             }
         }
         [HttpPost("likePost")]
-        public IActionResult LikePost(int id)
+        public IActionResult LikePost(int like, int postId, int userId)
         {
-            try
-            {
-                var post = _postRepository.GetPostById(id);
-                if (post == null)
-                {
-                    return NotFound($"Post with ID {id} not found.");
-                }
-                post.LikePost += 1;
-                _postRepository.UpdatePost(post);
+            // Check if there's already a PostLike record for this post and user
+            var likePost = _context.PostLikes.FirstOrDefault(pl => pl.PostId == postId && pl.UserId == userId);
+            var post = _context.Posts.FirstOrDefault(p => p.PostId == postId);
 
-                return Ok(new { message = "Like post successfully", post });
-            }
-            catch (Exception ex)
+            if (post == null)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return NotFound("Post not found");
             }
+
+            if (likePost == null && like == 1)
+            {
+                // User is liking the post for the first time
+                _context.PostLikes.Add(new PostLike { PostId = postId, UserId = userId });
+                post.LikePost += 1;
+            }
+            else if (likePost != null && like == 0)
+            {
+                // User is unliking the post
+                _context.PostLikes.Remove(likePost);
+                post.LikePost -= 1;
+            }
+
+            _context.SaveChanges();
+            return Ok(post.PostLikes);
         }
 
         private async Task<string> UploadImageToImgbb(IFormFile image)

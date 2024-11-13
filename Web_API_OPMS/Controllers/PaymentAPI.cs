@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using Web_API_OPMS.Controllers;
 using BusinessObject.Models;
 using System.Linq;
+using Repositories.Implements;
 
 namespace Web_API_OPMS.Controllers
 {
@@ -18,6 +19,7 @@ namespace Web_API_OPMS.Controllers
     {
         private readonly PayOS _payOS;
         private readonly OrderAPI _orderAPI;
+        private OrderRepository OrderRepository = new OrderRepository();
         public PaymentAPI(PayOS payOS, OrderAPI orderAPI)
         {
             _payOS = payOS;
@@ -48,12 +50,12 @@ namespace Web_API_OPMS.Controllers
                     var item = new ItemData(
                         orderDetails.ShoppingCartItem.Plant.PlantName,
                         orderDetails.ShoppingCartItem.Quantity,
-                        (int)Math.Round(orderDetails.TotalAmount * 100)
+                        (int)Math.Round(orderDetails.TotalAmount * 1000)
                     );
                     items.Add(item);
 
                     // Accumulate total amount
-                    totalAmount += (int)Math.Round(orderDetails.TotalAmount * 100);
+                    totalAmount += (int)Math.Round(orderDetails.TotalAmount * 1000);
                 }
 
                 // Create payment data with the aggregated items and total amount
@@ -87,13 +89,24 @@ namespace Web_API_OPMS.Controllers
         {
             try
             {
-                var order = _orderAPI.GetOrderById(orderId);
+                var order = OrderRepository.GetOrderById (orderId);
+               // var order = _orderAPI.GetOrderById(orderId);
                 if (order is NotFoundObjectResult)
                 {
                     return Ok(new Response(-1, "Order not found", null));
                 }
 
                 PaymentLinkInformation paymentLinkInformation = await _payOS.getPaymentLinkInformation(orderId);
+
+                // Check if the status in paymentLinkInformation is "PAID"
+                if (paymentLinkInformation?.status == "PAID")
+                {
+                    order.IsSuccess = 1;
+                    OrderRepository.UpdateOrder(order);
+                    return Ok(new Response(1, "Order has been paid", paymentLinkInformation));
+                }
+                order.IsSuccess = 0;
+                OrderRepository.UpdateOrder(order);
                 return Ok(new Response(0, "Order retrieved successfully", paymentLinkInformation));
             }
             catch (Exception exception)

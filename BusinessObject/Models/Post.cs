@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace BusinessObject.Models;
 
@@ -20,6 +21,7 @@ public partial class Post
     public DateTime? UpdatedAt { get; set; }
 
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
+    [JsonIgnore]
     public virtual ICollection<PostLike> PostLikes { get; set; } = new List<PostLike>();
     public virtual User User { get; set; } = null!;
 }
