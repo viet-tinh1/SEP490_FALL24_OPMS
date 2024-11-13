@@ -87,11 +87,13 @@ namespace Web_API_OPMS.Controllers
                             OrderId = randomOrderId,
                             ShoppingCartItemId = cartId,  // Gán CartId từ dữ liệu đầu vào
                             OrderDate = currentVietnamTime, // Ngày tạo order
-                            TotalAmount = totalAmount,       // Tổng số tiền được tính toán tự động
+                            TotalAmount = orderDTO.TotalAmount,       // Tổng số tiền được tính toán tự động
                             Status = "Pending",              // Đặt trạng thái đơn hàng là "1" (thành công)
                             UserId = orderDTO.UserId,            // Gán UserId từ session
-                            ShippingAddress  = orderDTO.ShippingAddress
-                        };
+                            ShippingAddress  = orderDTO.ShippingAddress,
+                            PaymentMethod = orderDTO.PaymentMethod,
+                            IsSuccess = 0
+                        }; 
 
                         // Lưu đơn hàng mới vào repository
                         OrderRepository.CreateOrder(order);
@@ -187,7 +189,9 @@ namespace Web_API_OPMS.Controllers
                 existingOrder.TotalAmount = o.TotalAmount;
                 existingOrder.Status = o.Status;
                 existingOrder.ShippingAddress = o.ShippingAddress;
-               
+                existingOrder.PaymentMethod = o.PaymentMethod;
+                existingOrder.IsSuccess = o.IsSuccess;
+
 
                 // Save changes
                 OrderRepository.UpdateOrder(existingOrder);
@@ -220,6 +224,16 @@ namespace Web_API_OPMS.Controllers
             {
                 return NotFound();
             }
+
+            return Ok(order); // Return 200 with the order data
+        }
+        [HttpGet("getOrderByIds")]
+        public ActionResult<Order> GetOrderByIds(int id)
+        {
+            var order = OrderRepository.GetOrderById(id);
+
+
+
 
             return Ok(order); // Return 200 with the order data
         }

@@ -34,6 +34,7 @@ public partial class Db6213Context : DbContext
     public virtual DbSet<Payment> Payments { get; set; }
 
     public virtual DbSet<Post> Posts { get; set; }
+    public virtual DbSet<PostLike> PostLikes { get; set; }
     public virtual DbSet<ReplyComment> ReplyComments { get; set; }
 
     public virtual DbSet<Plant> Plants { get; set; }
@@ -203,6 +204,7 @@ public partial class Db6213Context : DbContext
                 .ValueGeneratedNever()
                 .HasColumnName("OrderID");
             entity.Property(e => e.OrderDate).HasColumnType("datetime");
+            entity.Property(e => e.PaymentMethod).HasMaxLength(50);
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
                 .IsUnicode(false)
