@@ -1,428 +1,657 @@
-import { useState, useEffect   } from "react";
-import { Modal, Button } from "flowbite-react";
-import { FaImage, FaThumbsUp, FaComment } from "react-icons/fa";
+import { useState, useEffect } from "react";
+import { Modal, Button, Spinner } from "flowbite-react";
+import { FaThumbsUp, FaComment } from "react-icons/fa";
 import { FiMoreHorizontal } from "react-icons/fi";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { Dropdown } from "flowbite-react";
 
+function formatTimeDifference(timestamp) {
+  const now = new Date();
+  const time = new Date(timestamp);
+  const differenceInSeconds = Math.floor((now - time) / 1000);
 
-
-export default function Forum() {
-  const username = localStorage.getItem("username"); // Lấy tên từ localStorage
-  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
-  const userId = localStorage.getItem("userId");
-  const [isOpen, setIsOpen] = useState(false);
-  const [content, setContent] = useState("");
-  const [posts, setPosts] = useState(() => {
-    const savedPosts = localStorage.getItem("posts");
-    return savedPosts
-      ? JSON.parse(savedPosts)
-      : [
-          {
-            id: 1,
-            username: "Nguyễn Ngọc Nhân",
-            profileImage:
-              "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/464957439_3783099075334445_1801193416209890520_n.jpg",
-            postContent:
-              "Kể tên một char mà thời newbie các ông từng mong ước. Tôi trước: Qiqi:))",
-            postImage:
-              "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/464957439_3783099075334445_1801193416209890520_n.jpg",
-            time: "12 giờ",
-            comments: [
-              {
-                id: 1,
-                username: "Bảo My",
-                content: "Mình cũng thích Qiqi!",
-                time: "1 giờ trước",
-              },
-              {
-                id: 2,
-                username: "Trần Hữu",
-                content: "Cảm ơn vì chia sẻ nhé!",
-                time: "30 phút trước",
-              },
-              {
-                id: 3,
-                username: "Minh Quang",
-                content: "Qiqi đáng yêu mà!",
-                time: "15 phút trước",
-              },
-            ],
-          },
-          {
-            id: 2,
-            username: "Hà Anh Tuấn",
-            profileImage:
-              "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/464957439_3783099075334445_1801193416209890520_n.jpg",
-            postContent:
-              "Có một lần Momoca phát hiện ra bạn trai (cũ) của mình đang xem A::V. Tuy nhiên cô nàng không t:ứ:c g:i:ận...",
-            postImage:
-              "https://scontent.fdad4-1.fna.fbcdn.net/v/t39.30808-6/465268702_1098707525313891_1711980144806636327_n.jpg",
-            time: "5 giờ",
-            comments: [
-              {
-                id: 1,
-                username: "Linh Lan",
-                content: "Nhiệm vụ gì thế, thú vị thật!",
-                time: "2 giờ trước",
-              },
-              {
-                id: 2,
-                username: "Ngọc Anh",
-                content: "Chúc mừng nhé!",
-                time: "1 giờ trước",
-              },
-              {
-                id: 3,
-                username: "Văn Khoa",
-                content: "Tuyệt vời quá!",
-                time: "10 phút trước",
-              },
-            ],
-          },
-        ];
-  });
-
-  // Mỗi khi `posts` thay đổi, lưu nó vào LocalStorage
-  useEffect(() => {
-    localStorage.setItem("posts", JSON.stringify(posts));
-  }, [posts]);
-  const [formData, setFormData] = useState({
-    postId: 0,
-    userId: 0,
-    postContent: "",
-    postImage: "",
-    createdate: "",
-    username: username,
-  });
-
-  
-
-  const formatTime = (date) => {
-    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-  
-    if (seconds < 60) return "Vừa xong";
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes} phút trước`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours} giờ trước`;
-    const days = Math.floor(hours / 24);
+  if (differenceInSeconds < 60) {
+    return `${differenceInSeconds} giây trước`;
+  } else if (differenceInSeconds < 3600) {
+    const minutes = Math.floor(differenceInSeconds / 60);
+    return `${minutes} phút trước`;
+  } else if (differenceInSeconds < 86400) {
+    const hours = Math.floor(differenceInSeconds / 3600);
+    return `${hours} giờ trước`;
+  } else if (differenceInSeconds < 2592000) {
+    const days = Math.floor(differenceInSeconds / 86400);
     return `${days} ngày trước`;
-  };
-  
+  } else if (differenceInSeconds < 31104000) {
+    const months = Math.floor(differenceInSeconds / 2592000);
+    return `${months} tháng trước`;
+  } else {
+    const years = Math.floor(differenceInSeconds / 31104000);
+    return `${years} năm trước`;
+  }
+}
 
-  const createPost = async () => {
-    const payload = {
-      postId: formData.postId,
-      userId: userId,
-      postContent: formData.postContent,
-      postImage: formData.postImage
+function CommentSection({ postId, userId, refreshPosts }) {
+  const [comments, setComments] = useState([]);
+  const [visibleComments, setVisibleComments] = useState(3);
+  const [commentContent, setCommentContent] = useState("");
+  const [loadingComments, setLoadingComments] = useState(true);
+  const [ReplyCommentContent, setReplyCommentContent] = useState("");
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [replyingToUsername, setReplyingToUsername] = useState("");
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      setLoadingComments(true);
+      try {
+        const response = await fetch(`https://localhost:7098/api/CommentAPI/getCommentByPostId?postId=${postId}`);
+        if (!response.ok) throw new Error("Failed to fetch comments");
+        const commentsData = await response.json();
+
+        const commentsWithUserImages = await Promise.all(
+          commentsData.map(async (comment) => {
+            try {
+              const userResponse = await fetch(
+                `https://localhost:7098/api/UserAPI/getUserById?userId=${comment.userId}`
+              );
+              if (!userResponse.ok) throw new Error("Failed to fetch user data");
+              const userData = await userResponse.json();
+              return { ...comment, userImage: userData.userImage || "https://via.placeholder.com/40", username: userData.username };
+            } catch (error) {
+              console.error("Error fetching user image for comment:", error);
+              return { ...comment, userImage: "https://via.placeholder.com/40", username: "Unknown" };
+            }
+          })
+        );
+
+        setComments(commentsWithUserImages);
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+      } finally {
+        setLoadingComments(false);
+      }
     };
+    fetchComments();
+  }, [postId]);
+
+  const handleAddComment = async () => {
+    if (!userId) {
+      window.location.href = "/sign-in";
+      return;
+    }
+    if (!commentContent.trim()) return;
+
     try {
-     
-      const response = await fetch("https://localhost:7098/api/PostAPI/createPost",{
+      const response = await fetch("https://localhost:7098/api/CommentAPI/createComment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          postId,
+          userId,
+          commentsContent: commentContent,
+          commentTime: new Date().toISOString(),
+        }),
       });
-      
-      console.log("Post created successfully:", response.data);
-      const newPost = {
-        ...response.data,
-        username: username,                // Đảm bảo tên người dùng
-        postContent: formData.postContent, // Đảm bảo có nội dung bài viết
-        postImage: formData.postImage,     // Đảm bảo có hình ảnh bài viết
-        createdAt: new Date().toISOString(),                 // Thời gian có thể tùy chỉnh nếu cần
-      };
-      setPosts([newPost, ...posts]); // Thêm bài mới vào đầu danh sách
-      closeModal(); // Close modal after successful post creation
+
+      if (response.ok) {
+        setCommentContent("");
+        refreshPosts();
+      } else {
+        console.error("Failed to add comment");
+      }
     } catch (error) {
-      console.error("Error creating post:", error);
+      console.error("Error adding comment:", error);
     }
   };
 
+  const handleReply = (commentId, username) => {
+    setReplyingTo(commentId);
+    setReplyingToUsername(username);
+  };
+
+  const handleAddReply = async () => {
+    if (!userId) {
+      window.location.href = "/sign-in";
+      return;
+    }
+    if (!ReplyCommentContent.trim()) return;
+
+    try {
+      const response = await fetch("https://localhost:7098/api/ReplyCommentAPI/createReplyComment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          commentId: replyingTo,
+          userId,
+          ReplyCommentContent,
+          replyTime: new Date().toISOString(),
+        }),
+      });
+
+      if (response.ok) {
+        setReplyCommentContent("");
+        setReplyingTo(null);
+        setReplyingToUsername("");
+        refreshPosts();
+      } else {
+        console.error("Failed to add reply");
+      }
+    } catch (error) {
+      console.error("Error adding reply:", error);
+    }
+  };
+
+  return (
+    <div className="mt-4">
+      {loadingComments ? (
+        <div className="text-center">
+          <Spinner size="lg" aria-label="Loading comments..." />
+          <p className="text-gray-500">Loading comments...</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {comments.slice(0, visibleComments).map((comment) => (
+            <div key={comment.commentId} className="flex flex-col space-y-2">
+              <div className="flex items-start space-x-4">
+                <img
+                  src={comment.userImage || "https://via.placeholder.com/40"}
+                  alt="Profile"
+                  className="w-12 h-12 rounded-full"
+                  onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/40"; }}
+                />
+                <div className="flex flex-col flex-1">
+                  <div className="bg-gray-100 p-3 rounded-lg">
+                    <span className="font-semibold text-base mr-1">
+                      {comment.username}
+                    </span>
+                    <br />
+                    <span className="text-base">{comment.commentsContent}</span>
+                  </div>
+                  <div className="mt-1 text-sm text-gray-500 flex items-center space-x-4">
+                    <span>{formatTimeDifference(comment.commentTime)}</span>
+                    <button className="flex items-center space-x-1 text-gray-600 hover:text-blue-600" onClick={() => handleReply(comment.commentId, comment.username)}>
+                      <FaComment />
+                      <span>Phản hồi</span>
+                    </button>
+                  </div>
+                  {replyingTo === comment.commentId && (
+                    <div className="flex items-center mt-2">
+                      <input
+                        type="text"
+                        value={ReplyCommentContent}
+                        onChange={(e) => setReplyCommentContent(e.target.value)}
+                        placeholder={`Trả lời bình luận của ${replyingToUsername}`}
+                        className="flex-grow p-3 border rounded-full bg-gray-100"
+                      />
+                      <Button
+                        onClick={handleAddReply}
+                        className="ml-2 text-lg"
+                        disabled={!ReplyCommentContent.trim()}
+                      >
+                        Trả lời
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {comment.replies && comment.replies.map((reply) => (
+                <div key={reply.replyId} className="ml-12 mt-2 flex items-start space-x-4">
+                  <img
+                    src={reply.userImage || "https://via.placeholder.com/40"}
+                    alt="Profile"
+                    className="w-10 h-10 rounded-full"
+                    onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/40"; }}
+                  />
+                  <div className="flex flex-col flex-1">
+                    <div className="bg-gray-100 p-2 rounded-lg">
+                      <span className="font-semibold text-sm mr-1">
+                        {reply.username}
+                      </span>
+                      <br />
+                      <span className="text-sm">{reply.ReplyCommentContent}</span>
+                    </div>
+                    <div className="mt-1 text-xs text-gray-500 flex items-center space-x-4">
+                      <span>{formatTimeDifference(reply.replyTime)}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+          {comments.length > visibleComments && (
+            <button
+              onClick={() => setVisibleComments((prev) => prev + 3)}
+              className="text-blue-600 text-sm underline hover:text-blue-800"
+            >
+              Xem thêm bình luận
+            </button>
+          )}
+        </div>
+      )}
+      <div className="flex items-center mt-4">
+        <input
+          type="text"
+          value={commentContent}
+          onChange={(e) => setCommentContent(e.target.value)}
+          placeholder={`Bình luận dưới tên ${userId ? "của bạn" : "Guest"}`}
+          className="flex-grow p-3 border rounded-full bg-gray-100"
+        />
+        <Button
+          onClick={handleAddComment}
+          className="ml-2 text-lg"
+          disabled={!commentContent.trim()}
+        >
+          Gửi
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export default function Forum() {
+  const userId = parseInt(localStorage.getItem("userId"), 10);
+  const role = localStorage.getItem("role");
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [deletePopup, setDeletePopup] = useState(false);
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState(false);
+  const [content, setContent] = useState("");
+  const [posts, setPosts] = useState([]);
+  const [uploadedImage, setUploadedImage] = useState(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
+  const [postToDelete, setPostToDelete] = useState(null);
+  const [userImage, setUserImage] = useState("https://via.placeholder.com/40");
+
+  useEffect(() => {
+    const fetchUserImage = async () => {
+      if (userId) {
+        try {
+          const response = await fetch(`https://localhost:7098/api/UserAPI/getUserById?userId=${userId}`);
+          if (response.ok) {
+            const userData = await response.json();
+            setUserImage(userData.userImage || "https://via.placeholder.com/40");
+          } else {
+            console.error("Failed to fetch user data");
+          }
+        } catch (error) {
+          console.error("Error fetching user image:", error);
+        }
+      }
+    };
+    fetchUserImage();
+    fetchPosts();
+  }, [userId]);
+
+  const fetchPosts = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("https://localhost:7098/api/PostAPI/getPost");
+      if (!response.ok) throw new Error("Failed to fetch posts");
+      const postData = await response.json();
+
+      const likedPostsResponse = await fetch(`https://localhost:7098/api/PostAPI/getUserLikedPosts?userId=${userId}`);
+      const likedPosts = likedPostsResponse.ok ? await likedPostsResponse.json() : [];
+
+      localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
+
+      const postsWithUsernames = await Promise.all(
+        postData.map(async (post) => {
+          try {
+            const userResponse = await fetch(
+              `https://localhost:7098/api/UserAPI/getUserById?userId=${post.userId}`
+            );
+            if (!userResponse.ok) throw new Error("Failed to fetch user data");
+            const userData = await userResponse.json();
+
+            const hasLiked = likedPosts.includes(post.postId);
+            const likeCount = post.likePost || 0;
+
+            return {
+              ...post,
+              username: userData.username,
+              userImage: userData.userImage || "https://via.placeholder.com/40",
+              hasLiked,
+              likePost: likeCount,
+            };
+          } catch (error) {
+            console.error("Error fetching post details:", error);
+            return { ...post, username: "Unknown", userImage: "https://via.placeholder.com/40", hasLiked: false, likePost: 0 };
+          }
+        })
+      );
+
+      const sortedPosts = postsWithUsernames.sort(
+        (a, b) => new Date(b.createdate) - new Date(a.createdate)
+      );
+      setPosts(sortedPosts);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      setLoading(false);
+    }
+  };
 
   const openModal = () => setIsOpen(true);
   const closeModal = () => {
     setIsOpen(false);
     setContent("");
+    setUploadedImage(null);
+    setImagePreviewUrl("");
   };
 
-  const handleContentChange = (value) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      postContent: value, // Update postContent in formData directly
-    }));
-  };
-  
+  const handleContentChange = (value) => setContent(value);
 
-  const toolbarOptions = [
-    [{ header: "1" }, { header: "2" }, { font: [] }],
-    [{ list: "ordered" }, { list: "bullet" }],
-    ["bold", "italic", "underline", "strike"],
-    [{ color: [] }, { background: [] }],
-    [{ align: [] }],
-    ["link"],
-    ["clean"],
-  ];
-
-  const modules = {
-    toolbar: toolbarOptions,
-  };
-
-  const [uploadedImage, setUploadedImage] = useState(null);
-
-  const handleImageChange = async (e) => {
+  const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const base64 = await convertToBase64(file);
-      setFormData((prevData) => ({
-        ...prevData,
-        postImage: base64, // Store the Base64 string for the image
-      }));
-      setImagePreviewUrl(URL.createObjectURL(file)); // Set the preview URL
+      setUploadedImage(file);
+      setImagePreviewUrl(URL.createObjectURL(file));
     }
-  };
-
-
-  const convertToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result.split(",")[1]); // Only the Base64 string part
-      reader.onerror = (error) => reject(error);
-    });
   };
 
   const handleDeleteImage = () => {
     setUploadedImage(null);
+    setImagePreviewUrl("");
   };
 
-  const handleDeletePost = (postId) => {
-    setPosts(posts.filter((post) => post.id !== postId));
+  const createPost = async () => {
+    const formData = new FormData();
+    formData.append("postId", 0);
+    formData.append("userId", userId);
+    formData.append("postContent", content);
+    formData.append("createdate", new Date().toISOString());
+
+    if (uploadedImage) {
+      formData.append("uploadedImage", uploadedImage);
+    }
+
+    try {
+      const response = await fetch("https://localhost:7098/api/PostAPI/createPost", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        await fetchPosts();
+        closeModal();
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to create post:", errorText);
+        alert("Error creating post: " + errorText);
+      }
+    } catch (error) {
+      console.error("Error creating post:", error);
+    }
   };
 
-  const [showAllComments, setShowAllComments] = useState({});
+  const confirmDeletePost = (postId) => {
+    setPostToDelete(postId);
+    setConfirmDeleteModal(true);
+  };
 
-  const handleShowMoreComments = (postId) => {
-    setShowAllComments((prev) => ({
-      ...prev,
-      [postId]: !prev[postId],
-    }));
+  const handleDeletePost = async () => {
+    try {
+      const response = await fetch(
+        `https://localhost:7098/api/PostAPI/deletePost?id=${postToDelete}`,
+        { method: "DELETE" }
+      );
+
+      if (response.ok) {
+        setConfirmDeleteModal(false);
+        await fetchPosts();
+        setDeletePopup(true);
+        setTimeout(() => setDeletePopup(false), 2000);
+      } else {
+        console.error("Failed to delete post");
+      }
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
+  };
+
+  const formatLikes = (likes) => {
+    if (likes >= 1000000) return `${Math.floor(likes / 1000000)}tr`;
+    if (likes >= 1000) return `${Math.floor(likes / 1000)}k`;
+    return likes;
+  };
+
+  const handleLikePost = async (post) => {
+    if (!userId) {
+      window.location.href = "/sign-in";
+      return;
+    }
+    try {
+      const isLiked = post.hasLiked;
+      const likeValue = isLiked ? 0 : 1;
+
+      const response = await fetch(
+        `https://localhost:7098/api/PostAPI/likePost?like=${likeValue}&postId=${post.postId}&userId=${userId}`,
+        {
+          method: "POST",
+        }
+      );
+
+      if (response.ok) {
+        const updatedLikedPosts = JSON.parse(localStorage.getItem("likedPosts")) || [];
+        if (likeValue === 1) {
+          updatedLikedPosts.push(post.postId);
+        } else {
+          const index = updatedLikedPosts.indexOf(post.postId);
+          if (index > -1) {
+            updatedLikedPosts.splice(index, 1);
+          }
+        }
+        localStorage.setItem("likedPosts", JSON.stringify(updatedLikedPosts));
+
+        setPosts((prevPosts) =>
+          prevPosts.map((p) =>
+            p.postId === post.postId
+              ? {
+                  ...p,
+                  likePost: isLiked ? p.likePost - 1 : p.likePost + 1,
+                  hasLiked: !isLiked,
+                }
+              : p
+          )
+        );
+      } else {
+        console.error("Failed to update like status");
+      }
+    } catch (error) {
+      console.error("Error updating like status:", error);
+    }
   };
 
   return (
     <main className="bg-gray-100 min-h-screen p-4">
-      <div className="max-w-full lg:max-w-lg w-full bg-white shadow-md rounded-lg mx-auto p-4 my-4">
-        <div className="flex items-center border-b border-gray-200 pb-4 mb-4">
-          <img
-            src="https://via.placeholder.com/40"
-            alt="Profile"
-            className="w-10 h-10 rounded-full mr-3"
-          />
-          <div
-            onClick={openModal}
-            className="flex-grow bg-gray-100 px-4 py-2 rounded-full text-gray-500 cursor-pointer"
-          >
-            User ơi, bạn đang nghĩ gì thế?
-          </div>
+      {loading ? (
+        <div className="flex flex-col items-center justify-center h-screen space-y-3">
+          <Spinner size="xl" aria-label="Loading..." className="text-blue-600" />
+          <p className="text-gray-600 font-medium text-lg">Loading...</p>
         </div>
-
-        <div className="flex justify-center">
-          <button
-            onClick={openModal}
-            className="flex items-center space-x-1 text-green-500"
-          >
-            <FaImage />
-            <span>Ảnh</span>
-          </button>
-        </div>
-
-        <Modal show={isOpen} onClose={closeModal}>
-          <Modal.Header>Tạo bài viết</Modal.Header>
-          <Modal.Body>
-            <div className="space-y-4 max-h-[500px] overflow-y-auto">
-              <ReactQuill
-                value={formData.postContent}
-                onChange={handleContentChange}
-                modules={modules}
-                placeholder="Nhân ơi, bạn đang nghĩ gì thế?"
-                className="h-60"
-              />
-            </div>
-
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="mt-4 mb-2 block"
-            />
-
-            {uploadedImage && (
-              <div className="mt-2 flex flex-col items-center">
-                <img
-                  src={uploadedImage}
-                  alt="Uploaded Preview"
-                  className="w-48 h-auto rounded-md mb-2"
-                />
-                <button
-                  onClick={handleDeleteImage}
-                  className="text-red-500 text-sm underline hover:text-red-700"
-                >
-                  Xóa ảnh
-                </button>
-              </div>
-            )}
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              onClick={createPost}
-              disabled={!formData.postContent.trim()}
-              className="w-full"
-            >
-              Đăng
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      </div>
-
-
-      <div className="space-y-4 max-w-full lg:max-w-lg mx-auto">
-  {posts.map((post) => {
-    let imageSrc;
-
-    // Kiểm tra xem postImage có tồn tại và là URL hay là dữ liệu Base64
-    if (post.postImage) {
-      if (post.postImage.startsWith("http://") || post.postImage.startsWith("https://")) {
-        // Nếu là URL, dùng trực tiếp
-        imageSrc = post.postImage;
-      } else {
-        // Nếu là chuỗi Base64, thêm tiền tố `data:image/jpeg;base64,`
-        imageSrc = `data:image/jpeg;base64,${post.postImage}`;
-      }
-    } else {
-      imageSrc = ""; // Nếu không có `postImage`, đặt giá trị mặc định
-    }
-
-    return (
-          <div key={post.id} className="bg-white shadow-md rounded-lg p-4">
-            <div className="flex items-center mb-4">
+      ) : (
+        <>
+          <div className="max-w-full lg:max-w-lg w-full bg-white shadow-md rounded-lg mx-auto p-4 my-4">
+            <div className="flex items-center border-b border-gray-200 pb-4 mb-4">
               <img
-                src={post.profileImage}
+                src={userImage}
                 alt="Profile"
-                className="w-10 h-10 rounded-full"
+                className="w-12 h-12 rounded-full mr-4"
+                onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/40"; }}
               />
-              <div className="ml-3 flex-grow">
-                <div className="font-semibold">{post.username}</div>
-                <div className="text-sm text-gray-500">{formatTime(post.createdAt)}</div>
-              </div>
-              <Dropdown
-                arrowIcon={false}
-                inline
-                label={
-                  <FiMoreHorizontal className="text-gray-500 cursor-pointer" />
-                }
+              <div
+                onClick={openModal}
+                className="flex-grow bg-gray-100 px-4 py-3 rounded-full text-gray-500 cursor-pointer text-lg"
               >
-                <Dropdown.Item>Sửa bài viết</Dropdown.Item>
-                <Dropdown.Item onClick={() => handleDeletePost(post.id)}>
-                  Xóa bài viết
-                </Dropdown.Item>
-              </Dropdown>
-            </div>
-
-            <div className="mb-4" dangerouslySetInnerHTML={{ __html: post.postContent }} />
-
-
-            <div className="rounded-lg overflow-hidden mb-4">
-              <img src={imageSrc} alt="Post Content" className="w-full" />
-            </div>
-
-            <div className="flex justify-around border-t border-b border-gray-200 py-2 text-gray-600">
-              <button className="flex items-center space-x-1 hover:text-blue-600">
-                <FaThumbsUp />
-                <span>Thích</span>
-              </button>
-              <button className="flex items-center space-x-1 hover:text-blue-600">
-                <FaComment />
-                <span>Bình luận</span>
-              </button>
-            </div>
-
-            <div className="mt-3">
-              {/* View More Comments Button */}
-              <button
-                    onClick={() => handleShowMoreComments(post.id)}
-                    className="text-blue-500 text-sm font-medium mt-2"
-                  >
-                    {showAllComments[post.id]
-                      ? "Ẩn bớt bình luận"
-                      : "Xem thêm bình luận"}
-                  </button>
-
-              {/* Comment Input Field */}
-              <div className="flex items-center space-x-3 mb-3">
-                <img
-                  src={post.profileImage}
-                  alt="Comment Profile"
-                  className="w-8 h-8 rounded-full"
-                />
-                <input
-                  type="text"
-                  placeholder={`Bình luận dưới tên ${post.username}`}
-                  className="flex-grow bg-gray-100 p-2 rounded-full outline-none text-gray-600"
-                />
+                User ơi, bạn đang nghĩ gì thế?
               </div>
-
-              {post.comments && post.comments.length > 0 && (
-                <div className="space-y-2">
-                  {(showAllComments[post.id]
-                    ? post.comments
-                    : post.comments.slice(0, 2)
-                  ).map((comment) => (
-                    <div
-                      key={comment.id}
-                      className="flex items-start space-x-2"
-                    >
-                      <div className="flex items-start space-x-2">
-                        <img
-                          src="https://via.placeholder.com/32"
-                          alt="Comment Profile"
-                          className="w-8 h-8 rounded-full"
-                        />
-                        <div className="flex flex-col flex-1">
-                          <div className="flex justify-between items-center">
-                            <div className="bg-gray-100 p-2 rounded-lg">
-                              <span className="font-semibold mr-1">
-                                {comment.username}
-                              </span>
-                              <span>{comment.content}</span>
-                            </div>
-                            <span className="ml-2 text-gray-500 text-xs">
-                              {comment.time}
-                            </span>
-                          </div>
-                          <div className="flex space-x-4 mt-1 text-sm text-gray-500">
-                            <button className="hover:underline">Thích</button>
-                            <button className="hover:underline">
-                              Phản hồi
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-            
-                </div>
-              )}
             </div>
+
+            <Modal show={isOpen} onClose={closeModal}>
+              <Modal.Header>Tạo bài viết</Modal.Header>
+              <Modal.Body>
+                <div className="space-y-4 max-h-[500px] overflow-y-auto">
+                  <ReactQuill
+                    value={content}
+                    onChange={handleContentChange}
+                    placeholder="Bạn đang nghĩ gì thế?"
+                    className="h-60"
+                  />
+                </div>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="mt-4 mb-2 block"
+                />
+
+                {imagePreviewUrl && (
+                  <div className="mt-2 flex flex-col items-center">
+                    <img
+                      src={imagePreviewUrl}
+                      alt="Uploaded Preview"
+                      className="w-48 h-auto rounded-md mb-2"
+                    />
+                    <button
+                      onClick={handleDeleteImage}
+                      className="text-red-500 text-sm underline hover:text-red-700"
+                    >
+                      Xóa ảnh
+                    </button>
+                  </div>
+                )}
+              </Modal.Body>
+              <Modal.Footer>
+                <Button
+                  onClick={createPost}
+                  disabled={!content.trim()}
+                  className="w-full text-lg"
+                >
+                  Đăng
+                </Button>
+              </Modal.Footer>
+            </Modal>
           </div>
-        )} 
-        )}
-      </div>
+
+          {deletePopup && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="bg-white p-6 rounded-lg shadow-md text-center space-y-3">
+                <p className="text-lg font-semibold text-green-600">
+                  Xóa bài đăng thành công!
+                </p>
+              </div>
+            </div>
+          )}
+
+          <Modal
+            show={confirmDeleteModal}
+            onClose={() => setConfirmDeleteModal(false)}
+            size="md"
+            popup={true}
+          >
+            <Modal.Header className="text-lg font-semibold text-red-600">
+              Xác nhận xóa
+            </Modal.Header>
+            <Modal.Body>
+              <p className="text-sm text-gray-700">
+                Bạn có chắc chắn muốn xóa bài viết này không? Hành động này không thể hoàn tác.
+              </p>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button onClick={() => setConfirmDeleteModal(false)} color="gray">
+                Hủy
+              </Button>
+              <Button onClick={handleDeletePost} color="red">
+                Xóa
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
+          <div className="space-y-4 max-w-full lg:max-w-lg mx-auto">
+            {posts.map((post) => (
+              <div key={post.postId} className="bg-white shadow-md rounded-lg p-4">
+                <div className="flex items-center mb-4">
+                  <img
+                    src={post.userImage}
+                    alt="Profile"
+                    className="w-12 h-12 rounded-full"
+                    onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/40"; }}
+                  />
+                  <div className="ml-4 flex-grow">
+                    <div className="font-semibold text-lg">{post.username}</div>
+                    <div className="text-sm text-gray-500">
+                      {formatTimeDifference(post.createdate)}
+                    </div>
+                  </div>
+                  {(post.userId === userId || role === "1") && (
+                    <Dropdown
+                      arrowIcon={false}
+                      inline
+                      label={<FiMoreHorizontal className="text-gray-500 cursor-pointer" />}
+                    >
+                      {post.userId === userId && (
+                        <Dropdown.Item>Sửa bài viết</Dropdown.Item>
+                      )}
+                      <Dropdown.Item onClick={() => confirmDeletePost(post.postId)}>
+                        Xóa bài viết
+                      </Dropdown.Item>
+                    </Dropdown>
+                  )}
+                </div>
+
+                <div
+                  className="mb-4 text-lg"
+                  dangerouslySetInnerHTML={{ __html: post.postContent }}
+                />
+
+                {post.postImage && (
+                  <div className="rounded-lg overflow-hidden mb-4">
+                    <img
+                      src={post.postImage}
+                      alt="Post Content"
+                      className="w-full"
+                      onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/40"; }}
+                    />
+                  </div>
+                )}
+
+                <div className="flex justify-between border-t border-b border-gray-200 py-4 text-gray-600">
+                  <div className="flex items-center space-x-2">
+                    <button
+                      className={`flex items-center space-x-1 ${post.hasLiked ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
+                        }`}
+                      onClick={() => handleLikePost(post)}
+                    >
+                      <FaThumbsUp />
+                      <span className="text-lg">Thích</span>
+                    </button>
+                    <span className="text-sm text-gray-500">
+                      {formatLikes(post.likePost)} lượt thích
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      className="flex items-center space-x-1 hover:text-blue-600"
+                      onClick={() => handleAddComment(post.postId)}
+                    >
+                      <FaComment />
+                      <span className="text-lg">Bình luận</span>
+                    </button>
+                  </div>
+                </div>
+
+                <CommentSection postId={post.postId} userId={userId} refreshPosts={fetchPosts} />
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </main>
   );
 }
