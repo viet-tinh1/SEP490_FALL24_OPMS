@@ -18,15 +18,19 @@ namespace Web_API_OPMS.Controllers
     [ApiController]
     public class PostAPI : ControllerBase
     {
+        private readonly ICommentRepository _commentRepository;
+        private readonly IReplyCommentRepository _repcommentRepository;
         private readonly IPostRepository _postRepository;
         private readonly IConfiguration _configuration;
         private readonly Db6213Context _context = new Db6213Context();
 
-        public PostAPI(IPostRepository postRepository, IConfiguration configuration, Db6213Context context)
+        public PostAPI(IPostRepository postRepository, ICommentRepository commentRepository, IReplyCommentRepository repcommentRepository, IConfiguration configuration, Db6213Context context)
         {
             _context = context;
             _postRepository = postRepository;
             _configuration = configuration;
+            _repcommentRepository = repcommentRepository;
+            _commentRepository = commentRepository;
         }
         //lấy danh sach post
         [HttpGet("getPost")]
@@ -60,6 +64,22 @@ namespace Web_API_OPMS.Controllers
             }
 
             return Ok(post);
+        }
+
+        [HttpGet("getUserLikedPosts")]
+        public ActionResult<IEnumerable<int>> GetUserLikedPosts(int userId)
+        {
+            var likedPosts = _context.PostLikes
+                .Where(pl => pl.UserId == userId)
+                .Select(pl => pl.PostId)
+                .ToList();
+
+            if (likedPosts == null || likedPosts.Count == 0)
+            {
+                return NotFound("No liked posts found.");
+            }
+
+            return Ok(likedPosts);
         }
         [HttpPost("createPost")]
         public async Task<IActionResult> CreatePostAsync([FromForm] PostDTO postDTO, IFormFile uploadedImage)
@@ -177,10 +197,30 @@ namespace Web_API_OPMS.Controllers
                 {
                     return NotFound($"Post with ID {id} not found.");
                 }
+                // Delete associated likes directly from the context
+                var likePosts = _context.PostLikes.Where(pl => pl.PostId == post.PostId).ToList();
+                foreach (var like in likePosts)
+                {
+                    _context.PostLikes.Remove(like);
+                }
+                _context.SaveChanges();
+                var comments = _commentRepository.GetCommentByPostId(post.PostId).ToList();
+                if (comments.Any())
+                {
+                    foreach (var comment in comments)
+                    {
+                        var replies = _repcommentRepository.GetReplyCommentByCommentId(comment.CommentId);
+                        if (replies != null)
+                        {
+                            _repcommentRepository.DeleteReplyComment(comment.CommentId);
+                        }
+                        _commentRepository.DeleteComment(comment.CommentId);
+                    }
+                }
 
                 if (!string.IsNullOrEmpty(post.PostImage))
                 {
-                     DeleteImageFromImgbb(post.PostImage);
+                    DeleteImageFromImgbb(post.PostImage);
                 }
 
                 _postRepository.DeletePost(id);
@@ -192,6 +232,7 @@ namespace Web_API_OPMS.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
         [HttpPost("likePost")]
         public IActionResult LikePost(int like, int postId, int userId)
         {
