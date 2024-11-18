@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
-
+import { Spinner } from "flowbite-react";
 export default function DiscountEdit() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -158,7 +158,14 @@ export default function DiscountEdit() {
   };
 
   if (loading) {
-    return <div>Đang tải dữ liệu...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen w-full">
+        <div className="flex flex-col items-center">
+          <Spinner aria-label="Loading spinner" size="xl" />
+          <span className="mt-3 text-lg font-semibold">Loading...</span>
+        </div>
+      </div>
+    );
   }
 
   if (error) {

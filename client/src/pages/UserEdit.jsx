@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
+import { Spinner } from "flowbite-react";
 
 export default function UserEdit() {
   const location = useLocation();
@@ -180,7 +181,12 @@ export default function UserEdit() {
   };
 
   if (loading) {
-    return <div>Đang tải dữ liệu...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner aria-label="Loading spinner" size="xl" />
+        <span className="ml-3 text-lg font-semibold">Loading...</span>
+      </div>
+    );
   }
 
   if (error) {
