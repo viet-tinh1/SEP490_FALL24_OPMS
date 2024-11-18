@@ -10,6 +10,7 @@ using System.Data;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Linq;
 
 namespace Web_API_OPMS.Controllers
 {
@@ -50,7 +51,7 @@ namespace Web_API_OPMS.Controllers
 
                 try
                 {
-                    
+                    var orderList = new List<Order>();
 
                     foreach (var cartId in orderDTO.ShoppingCartItemIds)
                     {
@@ -97,6 +98,7 @@ namespace Web_API_OPMS.Controllers
 
                         // Lưu đơn hàng mới vào repository
                         OrderRepository.CreateOrder(order);
+                        orderList.Add(order);
 
                         // Thực hiện xóa CartUser
                         try
@@ -120,7 +122,7 @@ namespace Web_API_OPMS.Controllers
                     // Commit transaction sau khi tất cả các bước trên thành công
                     transaction.Commit();
 
-                    return Ok(); // Trả về phản hồi thành công
+                    return Ok(new {message ="", orders = orderList }); // Trả về phản hồi thành công
                 }
                 catch (Exception ex)
                 {
@@ -134,17 +136,7 @@ namespace Web_API_OPMS.Controllers
         // API cập nhật trạng thái đơn hàng chỉ cho seller.
         [HttpPost("updateOrderStatus")]
         public IActionResult UpdateOrderStatus([FromBody] UpdateOrderStatusDTO updateOrderStatusDTO)
-        {
-            var userRole = HttpContext.Session.GetInt32("UserRole");  // Lấy vai trò người dùng từ session.
-            if (userRole == null)
-            {
-                return Unauthorized(new { message = "User not logged in." });
-            }
-            if (userRole != 3)  // Kiểm tra nếu người dùng không phải là seller.
-            {
-                return Unauthorized(new { message = "Only sellers can update order status." });  // Trả về lỗi 401 Unauthorized.
-            }
-
+        {       
             try
             {
                 // Lấy thông tin đơn hàng từ Repository
@@ -153,7 +145,10 @@ namespace Web_API_OPMS.Controllers
                 {
                     return NotFound(new { message = "Order not found." });
                 }
-
+                if (order.IsSuccess == 1 && updateOrderStatusDTO.Status.ToLower() == "cancel")
+                {
+                    return BadRequest(new { message = "Cannot cancel a successful order." });
+                }
                 // Cập nhật trạng thái đơn hàng.
                 OrderRepository.UpdateOrderStatus(updateOrderStatusDTO.OrderId, updateOrderStatusDTO.Status);
 
@@ -239,19 +234,12 @@ namespace Web_API_OPMS.Controllers
         }
         // Lấy danh sách Order theo UserId
         [HttpGet("getOrdersByUserId")]
-        public ActionResult<IEnumerable<Order>> GetOrdersByUserId()
+        public ActionResult<IEnumerable<Order>> GetOrdersByUserId(int userId)
         {
-            // Lấy UserId từ session
-            var userId = HttpContext.Session.GetInt32("UserId");
-
-            // Kiểm tra nếu session không tồn tại hoặc hết hạn
-            if (userId == null)
-            {
-                return Unauthorized(new { message = "Session expired or user not logged in. Please log in again." });
-            }
-
+            
+                
             // Lấy danh sách đơn hàng theo UserId
-            var orders = OrderRepository.GetOrdersByUserId(userId.Value);
+            var orders = OrderRepository.GetOrdersByUserId(userId);
 
             // Kiểm tra nếu không có đơn hàng nào được tìm thấy, trả về mã lỗi 404 Not Found
             if (orders == null || !orders.Any())
@@ -262,7 +250,51 @@ namespace Web_API_OPMS.Controllers
             // Nếu tìm thấy đơn hàng, trả về danh sách đơn hàng
             return Ok(orders);
         }
+        [HttpGet("getOrdersBySeller")]
+        public IActionResult GetOrdersBySeller([FromQuery] int sellerId)
+        {
+            try
+            {
+                // Step 1: Retrieve all plant IDs associated with the seller
+                var sellerPlantIds = _context.Plants
+                    .Where(p => p.UserId == sellerId)
+                    .Select(p => p.PlantId)
+                    .ToList();
 
+                // If the seller has no plants, return an empty result
+                if (sellerPlantIds.Count == 0)
+                {
+                    return Ok(new { message = "No orders found for this seller's products.", orders = new List<object>() });
+                }
+
+                // Step 2: Retrieve orders that contain any of the seller's plants in their shopping cart items
+                var orders = _context.Orders
+                    .Where(order => sellerPlantIds.Contains(order.ShoppingCartItem.PlantId))
+                    .Select(order => new
+                {
+                order.OrderId,
+                order.OrderDate,
+                order.TotalAmount,
+                order.Status,
+                order.IsSuccess,
+                order.PaymentMethod,
+                ShoppingCartItems = new
+                {
+                    order.ShoppingCartItem.PlantId,
+                    PlantName = order.ShoppingCartItem.Plant.PlantName,
+                    order.ShoppingCartItem.Quantity
+                }
+            })
+            .ToList();
+
+                return Ok(new { message = "Orders found for the seller's products.", orders });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (if logging is set up) and return a 500 error with details
+                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            }
+        }
 
 
     }
