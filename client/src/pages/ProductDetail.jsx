@@ -26,7 +26,7 @@ export default function ProductDetail() {
   const [users, setUsers] = useState([]);
   const userIds = localStorage.getItem("userId");
   // Fetch product data when the component mounts
-  useEffect(() => {
+ 
     
     
     const fetchProductData = async () => {
@@ -46,33 +46,6 @@ export default function ProductDetail() {
         const usersData = await UsersResponse.json();
         console.log(usersData)
         setUsers(usersData);
-
-        // lấy review của plants
-        const reviewResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getReviewsByPlantId?plantId=${plantId}`);
-        let reviewData = await reviewResponse.json();
-  
-        // Ensure reviews is an array
-        if (!Array.isArray(reviewData)) reviewData = [];
-  
-        // Use Promise.all to fetch user names for each review's userId
-        const updatedReviews = await Promise.all(
-          reviewData.map(async (review) => {
-            // Fetch userName based on userId
-            const userResponse = await fetch(`https://localhost:7098/api/UserAPI/getUserByIds?userId=${review.userId}`);
-            if (!userResponse.ok) {
-              console.error(`Error fetching user data for userId: ${review.userId}`);
-              return review; // Return the review unchanged if the user API call fails
-            }
-            const userData = await userResponse.json();
-            // Assign the fetched userName to the review
-            return { ...review, userName: userData.userName };
-          })
-        );
-
-        setReviews(updatedReviews);
-
-        
-
         // Fetch rating summary
         const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
         const ratingData = await ratingResponse.json();
@@ -84,31 +57,53 @@ export default function ProductDetail() {
       }
     };
 
-    fetchProductData(); // Call the fetch function on mount
-
-  }, [plantId]);
+   
   const handleReasonSelect = (reason) => {
     setSelectedReason(reason);
     setIsReasonModalOpen(false);
     setIsFormModalOpen(true);
   };
   // Hàm để lấy tên người dùng dựa trên userId
-  const fetchUserNameForReview = async (userId) => {
+  const fetchProductReviews = async () => {
     try {
-      const userResponse = await fetch(`https://localhost:7098/api/UserAPI/getUserByIds?userId=${userId}`);
-      if (!userResponse.ok) {
-        console.error(`Error fetching user data for userId: ${userId}`);
-        return "Unknown User"; 
-      }
-      const userData = await userResponse.json();
-      console.log("Fetched User Data: ", userData.userName);
-      setUserData(userData);
+      const reviewResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getReviewsByPlantId?plantId=${plantId}`);
+      let reviewData = await reviewResponse.json();
+  
+      // Ensure reviews is an array
+      if (!Array.isArray(reviewData)) reviewData = [];
+  
+      // Fetch user details for each review
+      const updatedReviews = await Promise.all(
+        reviewData.map(async (review) => {
+          try {
+            const userResponse = await fetch(`https://localhost:7098/api/UserAPI/getUserByIds?userId=${review.userId}`);
+            const userData = await userResponse.json();
+            return {
+              ...review,
+              username: userData.userName,
+              userImage: userData.userImage || "https://via.placeholder.com/40"
+            };
+          } catch (error) {
+            console.error("Error fetching user data for review:", error);
+            return {
+              ...review,
+              username: "Unknown User",
+              userImage: "https://via.placeholder.com/40"
+            };
+          }
+        })
+      );
+  
+      setReviews(updatedReviews);
     } catch (error) {
-      console.error("Error fetching user name:", error);
-      return "Unknown User"; 
+      console.error("Error fetching reviews:", error);
     }
   };
+  useEffect(() => {
+    fetchProductReviews(); 
+  fetchProductData(); // Call the fetch function on mount
 
+}, [plantId]);
   // Function to handle increment
   const incrementQuantity = () => {
     setQuantity((prevQuantity) => prevQuantity + 1);
@@ -174,23 +169,8 @@ export default function ProductDetail() {
           setNotification(""); // Ẩn thông báo sau 3 giây
         }, 3000);
 
-        // Fetch reviews and rating summary again after successful submission
-        // Refresh reviews and rating summary after submission
-        const reviewResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getReviewsByPlantId?plantId=${plantId}`);
-      let reviewData = await reviewResponse.json();
-
-      // Ensure reviews is an array
-      if (!Array.isArray(reviewData)) reviewData = [];
-
-      // Compare review.userId with userData.userId and assign userName
-      const updatedReviews = reviewData.map((review) => {
-        // If review.userId matches userData.userId, assign userData.userName
-        if (review.userId === userData?.userId) {
-          review.userName = userData.userName; // Assign userData.userName to the review
-        }
-        return review;
-      });
-        setReviews(updatedReviews);
+       
+        fetchProductReviews();
 
         const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
         const ratingData = await ratingResponse.json();
@@ -321,7 +301,7 @@ export default function ProductDetail() {
                     onClick={() => setIsReasonModalOpen(true)}
                     className="block text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800"
                   >
-                    Tố cáo
+                    Phản hổi
                   </button>
                 </div>
                 {/* Reason Modal */}
@@ -544,7 +524,7 @@ export default function ProductDetail() {
                   />
                   <div>
                     <div className="flex items-center space-x-2">
-                      <h4 className="font-semibold">{review.userName }</h4>
+                      <h4 className="font-semibold">{review.username }</h4>
                       <span className="text-sm text-gray-500">{new Date(review.reviewDate).toLocaleDateString()}</span>
                     </div>
                     <p className="mt-2 text-gray-700">{review.comment}</p>

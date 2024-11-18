@@ -209,7 +209,13 @@ export default function DashSidebar() {
               </Sidebar.Item>
             </Link>
             )}
-
+            {(role === '1' || role === '3') &&(
+            <Link to="/dashboard?tab=OrderManager">
+            <Sidebar.Item active={tab === "OrderManager"} icon={HiDocumentText} as="div">
+              Quản lí đặt hàng 
+            </Sidebar.Item>
+          </Link>
+          )}
             {/*quản lý mã giảm giá của role người bán  */ }  
             {role == 3 &&(
               <Link to="/dashboard?tab=DashDiscount">

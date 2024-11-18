@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { PiShoppingCartLight } from "react-icons/pi";
 import { useState, useEffect } from "react";
 import { FaShoppingCart } from "react-icons/fa";
-
+import { Spinner } from "flowbite-react";
 export default function PlantItem() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -67,7 +67,14 @@ export default function PlantItem() {
   };*/}
 
   if (loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="flex items-center justify-center h-screen w-full">
+        <div className="flex flex-col items-center">
+          <Spinner aria-label="Loading spinner" size="xl" />
+          <span className="mt-3 text-lg font-semibold">Loading...</span>
+        </div>
+      </div>
+    );
   }
 
   if (error) {

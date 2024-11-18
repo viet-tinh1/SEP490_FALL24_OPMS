@@ -42,37 +42,81 @@ function CommentSection({ postId, userId, refreshPosts }) {
 
   useEffect(() => {
     const fetchComments = async () => {
-      setLoadingComments(true);
-      try {
-        const response = await fetch(`https://localhost:7098/api/CommentAPI/getCommentByPostId?postId=${postId}`);
-        if (!response.ok) throw new Error("Failed to fetch comments");
-        const commentsData = await response.json();
+        setLoadingComments(true);
+        try {
+            const response = await fetch(`https://localhost:7098/api/CommentAPI/getCommentByPostId?postId=${postId}`);
+            if (!response.ok) throw new Error("Failed to fetch comments");
+            const commentsData = await response.json();
 
-        const commentsWithUserImages = await Promise.all(
-          commentsData.map(async (comment) => {
-            try {
-              const userResponse = await fetch(
-                `https://localhost:7098/api/UserAPI/getUserById?userId=${comment.userId}`
-              );
-              if (!userResponse.ok) throw new Error("Failed to fetch user data");
-              const userData = await userResponse.json();
-              return { ...comment, userImage: userData.userImage || "https://via.placeholder.com/40", username: userData.username };
-            } catch (error) {
-              console.error("Error fetching user image for comment:", error);
-              return { ...comment, userImage: "https://via.placeholder.com/40", username: "Unknown" };
-            }
-          })
-        );
+            // Fetch user images and basic info for each comment
+            const commentsWithUserImages = await Promise.all(
+                commentsData.map(async (comment) => {
+                    try {
+                        const userResponse = await fetch(
+                            `https://localhost:7098/api/UserAPI/getUserById?userId=${comment.userId}`
+                        );
+                        if (!userResponse.ok) throw new Error("Failed to fetch user data");
+                        const userData = await userResponse.json();
 
-        setComments(commentsWithUserImages);
-      } catch (error) {
-        console.error("Error fetching comments:", error);
-      } finally {
-        setLoadingComments(false);
-      }
+                        // Fetch replies for each comment
+                        const repliesResponse = await fetch(
+                            `https://localhost:7098/api/ReplyCommentAPI/getReplyCommentByCommentId?commentId=${comment.commentId}`
+                        );
+                        const repliesData = repliesResponse.ok ? await repliesResponse.json() : [];
+
+                        // Fetch user data for each reply
+                        const repliesWithUserData = await Promise.all(
+                            repliesData.map(async (reply) => {
+                                try {
+                                    const replyUserResponse = await fetch(
+                                        `https://localhost:7098/api/UserAPI/getUserById?userId=${reply.userId}`
+                                    );
+                                    if (!replyUserResponse.ok) throw new Error("Failed to fetch user data for reply");
+                                    const replyUserData = await replyUserResponse.json();
+
+                                    return {
+                                        ...reply,
+                                        username: replyUserData.username,
+                                        userImage: replyUserData.userImage || "https://via.placeholder.com/40"
+                                    };
+                                } catch (error) {
+                                    console.error("Error fetching user data for reply:", error);
+                                    return {
+                                        ...reply,
+                                        username: "Unknown",
+                                        userImage: "https://via.placeholder.com/40"
+                                    };
+                                }
+                            })
+                        );
+
+                        return { 
+                            ...comment, 
+                            userImage: userData.userImage || "https://via.placeholder.com/40", 
+                            username: userData.username, 
+                            replies: repliesWithUserData 
+                        };
+                    } catch (error) {
+                        console.error("Error fetching user image or replies for comment:", error);
+                        return { 
+                            ...comment, 
+                            userImage: "https://via.placeholder.com/40", 
+                            username: "Unknown", 
+                            replies: [] 
+                        };
+                    }
+                })
+            );
+
+            setComments(commentsWithUserImages);
+        } catch (error) {
+            console.error("Error fetching comments:", error);
+        } finally {
+            setLoadingComments(false);
+        }
     };
     fetchComments();
-  }, [postId]);
+}, [postId]);
 
   const handleAddComment = async () => {
     if (!userId) {
@@ -149,17 +193,18 @@ function CommentSection({ postId, userId, refreshPosts }) {
     <div className="mt-4">
       {loadingComments ? (
         <div className="text-center">
-          <Spinner size="lg" aria-label="Loading comments..." />
-          <p className="text-gray-500">Loading comments...</p>
+          <Spinner size="lg" aria-label="Đang tải bình luận..." />
+          <p className="text-gray-500">Đang tải bình luận...</p>
         </div>
       ) : (
         <div className="space-y-4">
           {comments.slice(0, visibleComments).map((comment) => (
             <div key={comment.commentId} className="flex flex-col space-y-2">
+              {/* Main Comment */}
               <div className="flex items-start space-x-4">
                 <img
                   src={comment.userImage || "https://via.placeholder.com/40"}
-                  alt="Profile"
+                  alt="Hình đại diện"
                   className="w-12 h-12 rounded-full"
                   onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/40"; }}
                 />
@@ -173,11 +218,15 @@ function CommentSection({ postId, userId, refreshPosts }) {
                   </div>
                   <div className="mt-1 text-sm text-gray-500 flex items-center space-x-4">
                     <span>{formatTimeDifference(comment.commentTime)}</span>
-                    <button className="flex items-center space-x-1 text-gray-600 hover:text-blue-600" onClick={() => handleReply(comment.commentId, comment.username)}>
+                    <button
+                      className="flex items-center space-x-1 text-gray-600 hover:text-blue-600"
+                      onClick={() => handleReply(comment.commentId, comment.username)}
+                    >
                       <FaComment />
                       <span>Phản hồi</span>
                     </button>
                   </div>
+                  {/* Reply Input Field */}
                   {replyingTo === comment.commentId && (
                     <div className="flex items-center mt-2">
                       <input
@@ -192,17 +241,19 @@ function CommentSection({ postId, userId, refreshPosts }) {
                         className="ml-2 text-lg"
                         disabled={!ReplyCommentContent.trim()}
                       >
-                        Trả lời
+                        Gửi
                       </Button>
                     </div>
                   )}
                 </div>
               </div>
+              
+              {/* Replies to the Comment */}
               {comment.replies && comment.replies.map((reply) => (
                 <div key={reply.replyId} className="ml-12 mt-2 flex items-start space-x-4">
                   <img
                     src={reply.userImage || "https://via.placeholder.com/40"}
-                    alt="Profile"
+                    alt="Hình đại diện"
                     className="w-10 h-10 rounded-full"
                     onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/40"; }}
                   />
@@ -212,10 +263,10 @@ function CommentSection({ postId, userId, refreshPosts }) {
                         {reply.username}
                       </span>
                       <br />
-                      <span className="text-sm">{reply.ReplyCommentContent}</span>
+                      <span className="text-sm">{reply.replyCommentContent}</span>
                     </div>
-                    <div className="mt-1 text-xs text-gray-500 flex items-center space-x-4">
-                      <span>{formatTimeDifference(reply.replyTime)}</span>
+                    <div className="mt-1 text-xs text-gray-500">
+                      <span>{formatTimeDifference(reply.createAt)}</span>
                     </div>
                   </div>
                 </div>
@@ -232,12 +283,14 @@ function CommentSection({ postId, userId, refreshPosts }) {
           )}
         </div>
       )}
+      
+      {/* Add New Comment Section */}
       <div className="flex items-center mt-4">
         <input
           type="text"
           value={commentContent}
           onChange={(e) => setCommentContent(e.target.value)}
-          placeholder={`Bình luận dưới tên ${userId ? "của bạn" : "Guest"}`}
+          placeholder={`Bình luận dưới tên ${userId ? "của bạn" : "Khách"}`}
           className="flex-grow p-3 border rounded-full bg-gray-100"
         />
         <Button
@@ -470,9 +523,11 @@ export default function Forum() {
   return (
     <main className="bg-gray-100 min-h-screen p-4">
       {loading ? (
-        <div className="flex flex-col items-center justify-center h-screen space-y-3">
-          <Spinner size="xl" aria-label="Loading..." className="text-blue-600" />
-          <p className="text-gray-600 font-medium text-lg">Loading...</p>
+        <div className="flex items-center justify-center h-screen w-full">
+          <div className="flex flex-col items-center">
+            <Spinner aria-label="Loading spinner" size="xl" />
+            <span className="mt-3 text-lg font-semibold">Loading...</span>
+          </div>  
         </div>
       ) : (
         <>

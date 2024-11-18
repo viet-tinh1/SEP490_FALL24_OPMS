@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { Link } from "react-router-dom";
+import { Spinner } from "flowbite-react";
 
 export default function ProductCreate() {
   const [formData, setFormData] = useState({
@@ -127,7 +128,14 @@ export default function ProductCreate() {
     }
   };
 
-  // Helper function to convert image file to Base64 string
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner aria-label="Loading spinner" size="xl" />
+        <span className="ml-3 text-lg font-semibold">Loading...</span>
+      </div>
+    );
+  }
   
 
   return (

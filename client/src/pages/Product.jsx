@@ -65,15 +65,14 @@ export default function Product() {
   }, [location, navigate]);
 
   useEffect(() => {
-    // Parse the query parameters
     const searchParams = new URLSearchParams(location.search);
-    const nameParam = searchParams.get("search"); // Get the "search" parameter from URL
+    const nameParam = searchParams.get("search");
 
     if (nameParam) {
-      setName(nameParam); // Store the search name in state
-      searchPlants(nameParam); // Call the search function with the name parameter
+      searchPlants(nameParam);
+    } else {
+      fetchProductsAndCategories();
     }
-
   }, [location.search]);
 
   // Sửa logic xóa tìm kiếm
@@ -90,7 +89,7 @@ export default function Product() {
     }
   };
   //useEffect(() => {
-  const fetchProductsAndCategories = async () => {
+  const fetchProductsAndCategories = async () => { 
     setLoading(true); // Bắt đầu loading
     try {
       // lấy sản phẩm 
@@ -133,6 +132,7 @@ export default function Product() {
       // Tạo query tìm kiếm
       const query = [];
       if (name) query.push(`name=${encodeURIComponent(name)}`);
+      if(!name){fetchProductsAndCategories();}
       if (selectedCategoryIds.length)
         query.push(selectedCategoryIds.map(id => `categoryId=${id}`).join("&"));
       if (minPrice) query.push(`minPrice=${minPrice}`);
