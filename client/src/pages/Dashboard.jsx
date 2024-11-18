@@ -9,6 +9,7 @@ import Dashproduct from '../components/Dashproduct';
 import DashRegisterSeller from '../components/DashRegisterSeller';
 import DashVerifyProduct from '../components/DashVerifyProduct';
 import DashDiscount from "../components/DashDiscount";
+import OrderManager from "../components/OrderManager";
 export default function Dashboard() {
   const location = useLocation();
   const [tab, setTab] = useState('');
@@ -41,6 +42,7 @@ export default function Dashboard() {
       {tab === "DashRegisterSeller" && <DashRegisterSeller />}
       {/* Dash Discount */}
       {tab === "DashDiscount" && <DashDiscount />}
+      {tab === "OrderManager" && <OrderManager />}
     </div>
   );
 }

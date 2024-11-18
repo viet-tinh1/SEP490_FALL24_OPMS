@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import { Spinner } from "flowbite-react";
 
 export default function ProductEdit() {
   const { plantId } = useParams();
@@ -143,7 +144,14 @@ export default function ProductEdit() {
     Categories();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner aria-label="Loading spinner" size="xl" />
+        <span className="ml-3 text-lg font-semibold">Loading...</span>
+      </div>
+    );
+  }
   if (error) return <div>Error: {error}</div>;
 
   return (

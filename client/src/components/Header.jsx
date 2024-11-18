@@ -108,37 +108,62 @@ export default function Header() {
   const closeConfirmationDialog = () => {
     setShowConfirmation(false);
   };
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) {
-      // If searchQuery is empty, navigate to the products page without a query
-      window.location.replace("/product");
-      setSearchResults([]);  // Clear search results
-      setSearchQuery('');    // Clear search query
-      return;
-    }
-    try {
+const handleSearch = async () => {
+  try {
+    if (searchQuery.trim()) {
       const response = await fetch(
         `https://localhost:7098/api/PlantAPI/searchPlants?name=${searchQuery}&categoryId=0`
       );
-  
+
       if (!response.ok) {
         throw new Error("Failed to fetch search results");
       }
-  
+
       const productsData = await response.json();
       setSearchResults(productsData); // Store search results in state
-      
+
       // Navigate to "/product" with the search query as a URL parameter
       navigate(`/product?search=${encodeURIComponent(searchQuery)}`, { state: { results: productsData } });
-      // Clear search query and results after navigation
-    setSearchQuery('');
-    setSearchResults([]);
-    } catch (error) {
-      console.error("Error fetching search results:", error);
+    } else {
+      // Fetch all verified plants when search query is empty
+      const response = await fetch(
+        `https://localhost:7098/api/PlantAPI/getVerifiedPlants`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch all verified plants");
+      }
+      const productsData = await response.json();
+      setSearchResults(productsData);
+      navigate(`/product`, { state: { results: productsData } });
     }
-  };
+  } catch (error) {
+    console.error("Error fetching search results:", error);
+  }
+};
+// ko cho request link only click button
+  {/*useEffect(() => {
+    const debounceTimeout = setTimeout(() => {
+      handleSearch();
+    }, 200); // Delay of 500ms
+
+    return () => clearTimeout(debounceTimeout);
+  }, [searchQuery]);*/}
+  // cho requset link
+  useEffect(() => {
+    if (path === "/product") {
+      const debounceTimeout = setTimeout(() => {
+        handleSearch();
+      }, 200); // Đợi 200ms trước khi chạy tìm kiếm
   
+      return () => clearTimeout(debounceTimeout);
+    }
+  }, [searchQuery]);
+  useEffect(() => {
+    if (path !== "/product") {
+      setSearchQuery(""); // Đặt lại tìm kiếm khi rời khỏi trang
+      setSearchResults([]); // Xóa kết quả tìm kiếm cũ
+    }
+  }, [path]);
   return (
     <Navbar className="border-b-2">
       <Link
@@ -243,6 +268,11 @@ export default function Header() {
         <Navbar.Link active={path === "/Forum"} as={"div"}>
           <Link to="/Forum">Diễn đàn</Link>
         </Navbar.Link>
+        {(role === "2" ) && (
+        <Navbar.Link active={path === "/order-success"} as={"div"}>
+          <Link to="/order-success">Đơn Hàng</Link>
+        </Navbar.Link>
+      )}
         <Navbar.Link active={path === "/cart"} as={"div"}>
           <Link to="/cart" className="text-2xl">
             <MdOutlineShoppingCart />

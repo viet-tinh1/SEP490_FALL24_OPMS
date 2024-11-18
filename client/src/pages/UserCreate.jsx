@@ -273,7 +273,7 @@ export default function UserCreate() {
           />
         </div>
         <div className="flex justify-between space-x-2">
-          <Link to="/dashboard" className="w-full">
+          <Link to="/dashboard?tab=users" className="w-full">
             <button
               type="button"
               className="w-full px-4 py-2 bg-gray-500 text-white font-medium rounded-md shadow-sm"

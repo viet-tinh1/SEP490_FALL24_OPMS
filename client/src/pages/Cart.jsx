@@ -45,7 +45,7 @@ export default function Cart() {
           }
         );
 
-        
+
         if (!response.ok) {
           const data = await response.json();
 
@@ -105,7 +105,11 @@ export default function Cart() {
     fetchCartData();
   }, []);
   // Function to reset or clear voucher
-
+  const handleProceedToCheckout = () => {
+    // Save selected shoppingCartItemIds to localStorage
+    localStorage.setItem("selectedCartItems", JSON.stringify(selectedItems));
+    navigate("/payment");
+  };
   // Hàm áp dụng mã voucher
   const applyVoucher = async (e, itemId) => {
     e.preventDefault();
@@ -217,7 +221,7 @@ export default function Cart() {
       ...prevCodes,
       [itemId]: inputValue,
     }));
-  
+
     // Nếu xóa mã giảm giá, đặt lại mức giảm giá và cho phép nhập lại mã mới
     if (!inputValue) {
       setProductDiscounts((prevDiscounts) => ({
@@ -236,7 +240,7 @@ export default function Cart() {
   //   return (totalWithDiscount + tax - storePickup).toFixed(3);
   // };
 
-  
+
   // Tính tổng tiền sau khi áp dụng giảm giá của sản phẩm và voucher (nếu có)
   const calculateSelectedTotalWithVouchers = () => {
     return cartItems.reduce((total, item) => {
@@ -254,7 +258,12 @@ export default function Cart() {
       return total;
     }, 0).toFixed(3);
   };
-
+  useEffect(() => {
+    const totalWithVouchers = parseFloat(calculateSelectedTotalWithVouchers());
+    if (totalWithVouchers > 0) {
+      localStorage.setItem("totalWithVouchers", totalWithVouchers);
+    }
+  }, [cartItems, selectedItems, productDiscounts]); 
 
   if (loading) {
     return (
@@ -347,6 +356,7 @@ export default function Cart() {
       return total;
     }, 0);
   };
+ 
   const handleBlur = (itemId, quantity) => {
     if (!quantity || quantity < 1) {
       setCartItems((prevItems) =>
@@ -375,7 +385,7 @@ export default function Cart() {
                 </div>
               ) : (
                 cartItems.map((item) => {
-                  
+
                   const discountedProductPrice = item.plantDetails?.price * (1 - (item.plantDetails?.discount / 100 || 0));
                   const originalPrice = discountedProductPrice * (item.quantity || 1);
                   const itemVoucherDiscount = productDiscounts[item.shoppingCartItemId] || 0;
@@ -453,7 +463,7 @@ export default function Cart() {
                           </div>
                           <div className="text-end md:order-4 md:w-32">
                             <p className="text-base font-bold text-gray-900 dark:text-white">
-                             ${finalPrice.toFixed(3)}
+                              ${finalPrice.toFixed(3)}
                             </p>
                           </div>
                         </div>
@@ -515,7 +525,7 @@ export default function Cart() {
                           className="flex w-full items-center justify-center rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white"
                         >
                           Áp dụng mã giảm giá
-                        </button>                       
+                        </button>
                       </form>
                     </div>
                   );
@@ -558,8 +568,8 @@ export default function Cart() {
                       {selectedItems.length || 0}
                     </dd>
                   </dl>
-                 
-                  
+
+
                 </div>
                 <dl className="flex items-center justify-between gap-4 border-t border-gray-200 pt-2 dark:border-gray-700">
                   <dt className="text-base font-bold text-gray-900 dark:text-white">
@@ -572,13 +582,17 @@ export default function Cart() {
 
               </div>
 
-              <Link
-                to="/payment"
-                className="flex w-full items-center justify-center rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-300 dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:focus:ring-emerald-800"
+              <button
+                onClick={handleProceedToCheckout}
+                disabled={calculateSelectedTotalWithVouchers() <= 0}
+                className={`flex w-full items-center justify-center rounded-lg px-5 py-2.5 text-sm font-medium text-white focus:outline-none focus:ring-4 ${calculateSelectedTotalWithVouchers() > 0
+                    ? "bg-emerald-700 hover:bg-emerald-800 focus:ring-emerald-300 dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:focus:ring-emerald-800"
+                    : "bg-gray-400 cursor-not-allowed"
+                  }`}
               >
                 Tiến hành thanh toán
 
-              </Link>
+              </button>
 
 
               <div className="flex items-center justify-center gap-2">

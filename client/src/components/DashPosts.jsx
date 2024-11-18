@@ -85,19 +85,19 @@ export default function DashPosts() {
   };
 
 
-   // Pagination: Calculate the number of pages
-   const pageCount = Math.ceil(users.length / usersPerPage);
-  
-   // Handle page click
-   const handlePageClick = ({ selected }) => {
-     setCurrentPage(selected);
-   };
- 
-   // Get users to display on the current page
-   const usersToDisplay = users.slice(
-     currentPage * usersPerPage,
-     (currentPage + 1) * usersPerPage
-   );
+  // Pagination: Calculate the number of pages
+  const pageCount = Math.ceil(users.length / usersPerPage);
+
+  // Handle page click
+  const handlePageClick = ({ selected }) => {
+    setCurrentPage(selected);
+  };
+
+  // Get users to display on the current page
+  const usersToDisplay = users.slice(
+    currentPage * usersPerPage,
+    (currentPage + 1) * usersPerPage
+  );
 
   return (
     <main className="overflow-x-auto md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
@@ -194,8 +194,8 @@ export default function DashPosts() {
           </Table.Body>
         </Table>
 
-          {/* Pagination Component */}
-          <div className="mt-4">
+        {/* Pagination Component */}
+        <div className="mt-4">
           <ReactPaginate
             previousLabel={"← Previous"}
             nextLabel={"Next →"}
