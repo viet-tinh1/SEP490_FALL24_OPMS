@@ -157,8 +157,13 @@ const handleSearch = async () => {
   
       return () => clearTimeout(debounceTimeout);
     }
-  }, [searchQuery, path]);
-  
+  }, [searchQuery]);
+  useEffect(() => {
+    if (path !== "/product") {
+      setSearchQuery(""); // Đặt lại tìm kiếm khi rời khỏi trang
+      setSearchResults([]); // Xóa kết quả tìm kiếm cũ
+    }
+  }, [path]);
   return (
     <Navbar className="border-b-2">
       <Link

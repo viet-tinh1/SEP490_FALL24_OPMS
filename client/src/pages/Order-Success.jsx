@@ -136,7 +136,7 @@ export default function OrderSuccess() {
             });
             const data = await response.json();
             if (!response.ok) {
-                if(response.status === 400 && data.message === "Cannot cancel a successful order."){
+                if (response.status === 400 && data.message === "Cannot cancel a successful order.") {
                     alert(`Không thể hủy sản phẩm đã thanh toán.`);
                 }
                 throw new Error("Failed to update order status");
@@ -178,14 +178,14 @@ export default function OrderSuccess() {
     );
     if (loading) {
         return (
-          <div className="flex items-center justify-center h-screen w-full">
-            <div className="flex flex-col items-center">
-              <Spinner aria-label="Loading spinner" size="xl" />
-              <span className="mt-3 text-lg font-semibold">Loading...</span>
+            <div className="flex items-center justify-center h-screen w-full">
+                <div className="flex flex-col items-center">
+                    <Spinner aria-label="Loading spinner" size="xl" />
+                    <span className="mt-3 text-lg font-semibold">Loading...</span>
+                </div>
             </div>
-          </div>
         );
-      }
+    }
 
     return (
         <main className="overflow-x-auto md:mx-auto p-3 scrollbar scrollbar-track-slate-100  scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
@@ -263,15 +263,20 @@ export default function OrderSuccess() {
                                     {order.paymentMethod === "1" ? "Thanh toán khi nhận hàng" : order.paymentMethod || "Thanh toán khi nhận hàng"}
                                 </Table.Cell>
                                 <Table.Cell className="py-4">
-                                    <select
-                                        value={orderStatuses[order.orderId]}
-                                        onChange={(e) =>
-                                            handleStatusChange(order.orderId, e.target.value)
-                                        }
-                                        className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    >
-                                        <option value="Cancel">Hủy</option>
-                                    </select>
+                                    {order.status === "Success" ? (
+                                        <span></span>
+                                    ) : (
+                                        <select
+                                            value={orderStatuses[order.orderId]}
+                                            onChange={(e) =>
+                                                handleStatusChange(order.orderId, e.target.value)
+                                            }
+                                            className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        >
+                                            <option value="Pending">Đang xử lý</option>
+                                            <option value="Cancel">Hủy</option>
+                                        </select>
+                                    )}
                                 </Table.Cell>
                             </Table.Row>
                         ))}
@@ -281,8 +286,8 @@ export default function OrderSuccess() {
             {/* Pagination Component */}
             <div className="mt-4 min-h-[60px]">
                 <ReactPaginate
-                    previousLabel={"← Previous"}
-                    nextLabel={"Next →"}
+                    previousLabel={"← Trước"}
+                    nextLabel={"Sau →"}
                     pageCount={pageCount}
                     onPageChange={handlePageClick}
                     containerClassName={"flex justify-center space-x-4"}
