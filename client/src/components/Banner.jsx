@@ -1,8 +1,11 @@
 import { IoBagHandleOutline } from "react-icons/io5";
 import Imgleaf from "../assets/img/leaf.png";
 import Imgtree from "../assets/img/tree.png";
-
+import { Link } from 'react-router-dom';
 export default function Banner() {
+  const userId = localStorage.getItem("userId");
+
+ 
   return (
     <section>
       <div className="container grid grid-cols-1 md:grid-cols-2 min-h-[650px] relative">
@@ -24,11 +27,19 @@ export default function Banner() {
             </p>
             {/*button section*/}
             <div className="flex justify-center md:justify-start">
-              <button className="primary-btn flex items-center gap-2">
-                <IoBagHandleOutline />
-                Đặt hàng ngay
-              </button>
+              {userId ? (
+                <Link to="/cart" className="primary-btn flex items-center gap-2">
+                  <IoBagHandleOutline />
+                  Đặt hàng ngay
+                </Link>
+              ) : (
+                <Link to="/signin" className="primary-btn flex items-center gap-2">
+                  <IoBagHandleOutline />
+                  Đặt hàng ngay
+                </Link>
+              )}
             </div>
+
           </div>
         </div>
         {/*tree image*/}

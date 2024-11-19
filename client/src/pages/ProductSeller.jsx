@@ -299,7 +299,7 @@ export default function ProductSeller() {
       <div className="p-6 bg-white shadow-lg rounded-md md:py-10 dark:bg-gray-900 shadow-gray-200 antialiased">
         <div className="flex items-center">
           {/* Profile Image and Info Section */}
-          <div className="bg-green-500 p-4 rounded-lg flex items-center space-x-4">
+          <div className="bg-green-500 p-4 rounded-lg flex items-center space-x-4 w-[300px]">
             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
               {/* Placeholder for Profile Image */}
               <img
@@ -315,13 +315,7 @@ export default function ProductSeller() {
               </h2>
             </div>
             ))}
-            <button className="ml-4 px-3 py-1 bg-red-500 text-white rounded text-sm">
-              Theo dõi
-            </button>
-
-            <button className="ml-4 px-3 py-1 bg-red-500 text-white rounded text-sm">
-            💬Chat
-            </button>
+            
 
        
           </div>
@@ -474,12 +468,22 @@ export default function ProductSeller() {
             ) : (
               productsToDisplay.map((product) => {              
                 return(
-                <div
+                  <div
                   key={product.plantId}
-                  className="bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto"
+                  className={`relative bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto ${product.stock === 0 ? "opacity-98" : ""
+                    }`}
                 >
-                    
-                  <Link to={`/productdetail/${product.plantId}`}>
+                  {/* Hiển thị chữ "Hết hàng" khi stock === 0 */}
+                  {product.stock === 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-10">
+                      <span className="text-red-400 font-bold text-lg">Hết hàng</span>
+                    </div>
+                  )}
+                  {/* Liên kết đến trang chi tiết sản phẩm */}
+                  <Link
+                    to={product.stock === 0 ? "#" : `/productdetail/${product.plantId}`}
+                    className={`${product.stock === 0 ? "pointer-events-none" : ""}`}
+                  >
                     <div className="relative p-2.5 overflow-hidden rounded-xl bg-clip-border">
                       <img
                         src={product.imageUrl}
