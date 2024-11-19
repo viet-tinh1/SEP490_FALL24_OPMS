@@ -81,7 +81,7 @@ export default function ProductDetail() {
             return {
               ...review,
               username: userData.userName,
-              userImage: userData.userImage || "https://via.placeholder.com/40"
+              userImage: userData.image || "https://via.placeholder.com/40"
             };
           } catch (error) {
             console.error("Error fetching user data for review:", error);
@@ -518,7 +518,7 @@ export default function ProductDetail() {
               reviews.map((review) => (
                 <div key={review.reviewId} className="flex space-x-4">
                   <img
-                    src={review.userAvatar || "https://via.placeholder.com/40"}
+                    src={review.userImage || "https://via.placeholder.com/40"}
                     alt={`${review.userName} avatar`}
                     className="w-10 h-10 rounded-full"
                   />

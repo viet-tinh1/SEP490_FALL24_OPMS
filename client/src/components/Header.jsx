@@ -273,6 +273,11 @@ const handleSearch = async () => {
           <Link to="/order-success">Đơn Hàng</Link>
         </Navbar.Link>
       )}
+      {(role === "3" ) && (
+        <Navbar.Link active={path === "/order-success"} as={"div"}>
+          <Link to={`/producsSeller/${userId}`}>Cửa hàng </Link>
+        </Navbar.Link>
+      )}
         <Navbar.Link active={path === "/cart"} as={"div"}>
           <Link to="/cart" className="text-2xl">
             <MdOutlineShoppingCart />

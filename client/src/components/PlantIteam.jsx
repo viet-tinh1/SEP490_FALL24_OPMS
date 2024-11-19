@@ -13,7 +13,7 @@ export default function PlantItem() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('https://localhost:7098/api/PlantAPI/most-purchased?limit=6', {
+        const response = await fetch('https://localhost:7098/api/PlantAPI/most-purchased?limit=3', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

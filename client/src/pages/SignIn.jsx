@@ -90,11 +90,11 @@ export default function SignIn() {
         // Dispatch a custom event to notify other components of the login state
         window.dispatchEvent(new Event("storage"));
         if (data.role === 1) {
-          navigate("/dashboard?tab=users");
+          navigate("/dashboard?tab=dash");
         } else if (data.role === 2) {
           navigate("/product");
         } else if (data.role === 3) {
-          navigate("/dashboard?tab=product");
+          navigate("/dashboard?tab=dash");
         } else {
           setError("Unknown role. Please contact support.");
         }

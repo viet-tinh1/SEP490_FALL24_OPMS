@@ -89,7 +89,7 @@ export default function Product() {
     }
   };
   //useEffect(() => {
-  const fetchProductsAndCategories = async () => { 
+  const fetchProductsAndCategories = async () => {
     setLoading(true); // Bắt đầu loading
     try {
       // lấy sản phẩm 
@@ -132,7 +132,7 @@ export default function Product() {
       // Tạo query tìm kiếm
       const query = [];
       if (name) query.push(`name=${encodeURIComponent(name)}`);
-      if(!name){fetchProductsAndCategories();}
+      if (!name) { fetchProductsAndCategories(); }
       if (selectedCategoryIds.length)
         query.push(selectedCategoryIds.map(id => `categoryId=${id}`).join("&"));
       if (minPrice) query.push(`minPrice=${minPrice}`);
@@ -338,8 +338,8 @@ export default function Product() {
             <button
               onClick={() => handleSortClick(5)}
               className={`px-4 py-2 rounded-md font-medium ${sortOption === 5
-                  ? "bg-red-500 text-white"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                ? "bg-red-500 text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
 
             >
@@ -369,7 +369,7 @@ export default function Product() {
               </button>
 
               {isPriceDropdownOpen && (
-                <div className="absolute top-full mt-1 min-w-[150px] bg-white shadow-md border rounded-md z-10"
+                <div className="absolute top-full mt-1 min-w-[150px] bg-white shadow-md border rounded-md z-50"
                   onMouseEnter={openDropdown} // Keeps dropdown open if hovering over it
                   onMouseLeave={closeDropdown} // Closes dropdown if leaving dropdown area
                 >
@@ -404,11 +404,21 @@ export default function Product() {
               productsToDisplay.map((product) => {
                 return (
                   <div
-
                     key={product.plantId}
-                    className="bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto"
+                    className={`relative bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto ${product.stock === 0 ? "opacity-98" : ""
+                      }`}
                   >
-                    <Link to={`/productdetail/${product.plantId}`}>
+                    {/* Hiển thị chữ "Hết hàng" khi stock === 0 */}
+                    {product.stock === 0 && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-10">
+                        <span className="text-red-400 font-bold text-lg">Hết hàng</span>
+                      </div>
+                    )}
+                    {/* Liên kết đến trang chi tiết sản phẩm */}
+                    <Link
+                      to={product.stock === 0 ? "#" : `/productdetail/${product.plantId}`}
+                      className={`${product.stock === 0 ? "pointer-events-none" : ""}`}
+                    >
                       <div className="relative p-2.5 overflow-hidden rounded-xl bg-clip-border">
                         <img
                           src={product.imageUrl}
