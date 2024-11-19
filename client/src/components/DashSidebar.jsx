@@ -6,6 +6,7 @@ import {
   HiOutlineUserGroup,
   HiAnnotation,
   HiChartPie,
+  HiOutlineShoppingCart,
 } from "react-icons/hi";
 import { AiOutlineAppstore } from "react-icons/ai";
 import { useEffect, useState, useRef } from "react";
@@ -211,7 +212,7 @@ export default function DashSidebar() {
             )}
             {(role === '1' || role === '3') &&(
             <Link to="/dashboard?tab=OrderManager">
-            <Sidebar.Item active={tab === "OrderManager"} icon={HiDocumentText} as="div">
+            <Sidebar.Item active={tab === "OrderManager"} icon={HiOutlineShoppingCart} as="div">
               Quản lí đặt hàng 
             </Sidebar.Item>
           </Link>
