@@ -318,6 +318,7 @@ export default function Forum() {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState("");
   const [postToDelete, setPostToDelete] = useState(null);
+  const [postToUpdate, setPostToUpdate] = useState(null);
   const [userImage, setUserImage] = useState("https://via.placeholder.com/40");
 
   useEffect(() => {
@@ -467,6 +468,45 @@ export default function Forum() {
     }
   };
 
+  const confirmUpdatePost = (post) => {
+    setPostToUpdate(post);
+    setIsOpen(true);
+    setContent(post.postContent);
+    if (post.postImage) {
+      setImagePreviewUrl(post.postImage);
+    }
+  };
+
+  const handleUpdatePost = async () => {
+    const formData = new FormData();
+    formData.append("postId", postToUpdate.postId);
+    formData.append("userId", userId);
+    formData.append("postContent", content);
+    formData.append("createdate", postToUpdate.createdate);
+
+    if (uploadedImage) {
+      formData.append("uploadedImage", uploadedImage);
+    }
+
+    try {
+      const response = await fetch("https://localhost:7098/api/PostAPI/updatePost", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        await fetchPosts();
+        closeModal();
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to update post:", errorText);
+        alert("Error updating post: " + errorText);
+      }
+    } catch (error) {
+      console.error("Error updating post:", error);
+    }
+  };
+
   const formatLikes = (likes) => {
     if (likes >= 1000000) return `${Math.floor(likes / 1000000)}tr`;
     if (likes >= 1000) return `${Math.floor(likes / 1000)}k`;
@@ -547,8 +587,8 @@ export default function Forum() {
               </div>
             </div>
 
-            <Modal show={isOpen} onClose={closeModal}>
-              <Modal.Header>Tạo bài viết</Modal.Header>
+            <Modal show={isOpen} onClose={closeModal} size="lg">
+              <Modal.Header>{postToUpdate ? "Sửa bài viết" : "Tạo bài viết"}</Modal.Header>
               <Modal.Body>
                 <div className="space-y-4 max-h-[500px] overflow-y-auto">
                   <ReactQuill
@@ -584,11 +624,11 @@ export default function Forum() {
               </Modal.Body>
               <Modal.Footer>
                 <Button
-                  onClick={createPost}
+                  onClick={postToUpdate ? handleUpdatePost : createPost}
                   disabled={!content.trim()}
                   className="w-full text-lg"
                 >
-                  Đăng
+                  {postToUpdate ? "Cập nhật" : "Đăng"}
                 </Button>
               </Modal.Footer>
             </Modal>
@@ -651,7 +691,7 @@ export default function Forum() {
                       label={<FiMoreHorizontal className="text-gray-500 cursor-pointer" />}
                     >
                       {post.userId === userId && (
-                        <Dropdown.Item>Sửa bài viết</Dropdown.Item>
+                        <Dropdown.Item onClick={() => confirmUpdatePost(post)}>Sửa bài viết</Dropdown.Item>
                       )}
                       <Dropdown.Item onClick={() => confirmDeletePost(post.postId)}>
                         Xóa bài viết
@@ -693,7 +733,7 @@ export default function Forum() {
                   <div className="flex items-center space-x-2">
                     <button
                       className="flex items-center space-x-1 hover:text-blue-600"
-                      onClick={() => handleAddComment(post.postId)}
+                      onClick={() => {}}
                     >
                       <FaComment />
                       <span className="text-lg">Bình luận</span>
