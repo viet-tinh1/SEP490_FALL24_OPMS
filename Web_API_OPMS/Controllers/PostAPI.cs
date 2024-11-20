@@ -212,7 +212,10 @@ namespace Web_API_OPMS.Controllers
                         var replies = _repcommentRepository.GetReplyCommentByCommentId(comment.CommentId);
                         if (replies != null)
                         {
-                            _repcommentRepository.DeleteReplyComment(comment.CommentId);
+                            foreach (var rep in replies)
+                            {
+                                _repcommentRepository.DeleteReplyComment(rep.ReplyCommentId);
+                            }             
                         }
                         _commentRepository.DeleteComment(comment.CommentId);
                     }
