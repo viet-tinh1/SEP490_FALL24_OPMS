@@ -17,7 +17,11 @@ export default function DashProfile() {
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [LimitPasswordError, setLimitPasswordError] = useState('');
   const fileInputRef = useRef(null);
-
+  const [showModal, setShowModal] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const steps = ["Thông tin Shop", "Xác thực Email", "Xác thực OTP", "Thông tin cửa hàng"];
+  const [successMessage, setSuccessMessage] = useState('');
+  const [otp, setOtp] = useState('');
   // Hàm lấy dữ liệu người dùng từ API
   useEffect(() => {
     const fetchUserData = async () => {
@@ -53,11 +57,167 @@ export default function DashProfile() {
 
     fetchUserData();
   }, []);
+  const handleNextStep = async () => {
+    if (currentStep === 1) {
+      const success = await updateShopName();
+      if (!success) return;
+      setSuccessMessage('Tên shop và địa chỉ đã được cập nhật thành công!');
+
+    }
+
+    if (currentStep === 2) {
+      const emailSuccess = await updateEmail();
+      if (!emailSuccess) return;
+      setSuccessMessage('Email đã được cập nhật thành công!');
+
+      const otpSuccess = await sendOtpToEmail();
+      if (!otpSuccess) return;
+      setSuccessMessage('OTP đã được gửi đến email của bạn!');
+
+    }
+    if (currentStep === 3) {
+      const otpVerified = await verifyOtp();
+      if (!otpVerified) return;
+      setSuccessMessage('OTP đã được xác thực thành công!');
+    }
+    if (currentStep === 4) {
+      const sellerRequested = await requestSeller(); // Call the API here
+      if (!sellerRequested) return;
+      setSuccessMessage('Yêu cầu trở thành người bán đã được gửi thành công!');
+    }
+    setTimeout(() => setSuccessMessage(''), 2000);
+    setCurrentStep((prev) => prev + 1);
+  };
+
+  const updateShopName = async () => {
+    try {
+      const response = await fetch('https://localhost:7098/api/UserAPI/updateShopName', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.userId,
+          shopName: user.shopName,
+          address: user.address,
+          email: user.email,
+          username: user.username,
+          password: user.password,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update shop name');
+      const data = await response.json();
+      setSuccessMessage('Tên shop và địa chỉ đã được cập nhật thành công!'); // Set success message
+      setTimeout(() => setSuccessMessage(''), 2000);
+      return true;
+    } catch (error) {
+      console.error('Error updating shop name:', error);
+      alert('Error updating shop name');
+      return false;
+    }
+  };
+
+  const updateEmail = async () => {
+    try {
+      const response = await fetch('https://localhost:7098/api/UserAPI/updateShopName', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.userId,
+          shopName: user.shopName,
+          address: user.address,
+          email: user.email,
+          username: user.username,
+          password: user.password,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update email');
+      const data = await response.json();
+      setSuccessMessage('Email đã được cập nhật thành công!'); // Set success message
+      setTimeout(() => setSuccessMessage(''), 2000);
+      return true;
+    } catch (error) {
+      console.error('Error updating email:', error);
+      alert('Error updating email');
+      return false;
+    }
+  };
+
+  const sendOtpToEmail = async () => {
+    try {
+      const response = await fetch('https://localhost:7098/api/SendMailAPI/sendOtpToEmail', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          recipientEmail: user.email,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to send OTP');
+      const data = await response.json();
+      setSuccessMessage('OTP đã được gửi đến email của bạn!'); // Set success message
+      setTimeout(() => setSuccessMessage(''), 2000);
+      return true;
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      alert('Error sending OTP');
+      return false;
+    }
+  };
+  const verifyOtp = async () => {
+    try {
+      const response = await fetch('https://localhost:7098/api/SendMailAPI/verify-otp-seller', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          recipientEmail: user.email, // Include user ID
+          otp: otp,       // OTP value from the input
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to verify OTP');
+
+      const data = await response.json();
+      setSuccessMessage('OTP đã được xác thực thành công!'); // Set success message
+      setTimeout(() => setSuccessMessage(''), 2000);         // Auto-hide after 2 seconds
+      return true; // Return success
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      alert('Lỗi xác thực OTP. Vui lòng thử lại!');
+      return false; // Return failure
+    }
+  };
+  const requestSeller = async () => {
+    try {
+      const response = await fetch(`https://localhost:7098/api/UserAPI/Request-seller?userId=${user.userId}`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) throw new Error('Failed to request seller status');
+
+      const data = await response.json();
+      setSuccessMessage('Yêu cầu trở thành người bán đã được gửi thành công!');
+      setTimeout(() => setSuccessMessage(''), 2000); // Auto-hide message after 2 seconds
+      return true; // Success
+    } catch (error) {
+      console.error('Error requesting seller:', error);
+      alert('Lỗi gửi yêu cầu trở thành người bán!');
+      return false; // Failure
+    }
+  };
 
   // Hàm xử lý khi submit form cho thông tin người dùng
   const handleUserSubmit = async (event) => {
     event.preventDefault();
-  
+
     const formData = new FormData();
     formData.append("UserId", user.userId);
     formData.append("Username", user.username);
@@ -70,22 +230,22 @@ export default function DashProfile() {
     formData.append("UserImage", user.userImage || "");  // You can update this if you have a file
     formData.append("Status", user.status);
     formData.append("ShopName", user.shopName || "");
-    
+
     // Assuming you have a file input and you want to upload an image
     if (user.uploadedImage) {
       formData.append("uploadedImage", user.uploadedImage);
     }
-  
+
     try {
       const response = await fetch('https://localhost:7098/api/UserAPI/updateUser', {
         method: 'POST',
         body: formData
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to update user');
       }
-  
+
       alert("User information updated successfully!");
     } catch (error) {
       console.error("Error updating user:", error);
@@ -227,16 +387,25 @@ export default function DashProfile() {
   if (error) {
     return <div>{error}</div>;  // Hiển thị lỗi nếu có
   }
-  const isValidUrl = (string) => {
-    try {
-      new URL(string);
-      return true;
-    } catch (_) {
-      return false;
+  const handleShowModal = () => {
+    // Validate required fields
+    if (
+      !user.username ||
+      !user.fullName ||
+      !user.email ||
+      !user.phoneNumber ||
+      !user.address ||
+      !user.createdDate
+    ) {
+      alert("Vui lòng điền đầy đủ thông tin trước khi tiếp tục.");
+      return;
     }
+
+    // Show the modal if validation passes
+    setShowModal(true);
   };
 
- 
+
 
   return (
     <div className="flex overflow-hidden bg-white pt-16 w-full">
@@ -246,7 +415,7 @@ export default function DashProfile() {
           <div className="col-span-full mb-4 xl:mb-0">
             <div className="mb-1 w-full">
               <div className="mb-4">
-                <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl">User settings</h1>
+                <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl">Thiết lập hồ sơ cá nhân</h1>
               </div>
             </div>
           </div>
@@ -301,16 +470,19 @@ export default function DashProfile() {
                   <div className="text-sm font-medium">
                     *Đăng ký thành người bán cây
                   </div>
-                  <a
-                    href="/dashboard?tab=DashRegisterSeller"
-                    className="inline-flex items-center py-2 px-3 text-sm font-medium text-center text-white bg-gradient-to-br from-pink-500 to-purple-500 rounded-lg shadow-md shadow-gray-300 hover:scale-[1.02] transition-transform"
+                  <button
+                    onClick={handleShowModal} // Hiển thị modal
+                    disabled={!user.userImage || !user.username || !user.email} // Điều kiện để kích hoạt nút
+                    className={`inline-flex items-center py-2 px-3 text-sm font-medium text-center rounded-lg shadow-md shadow-gray-300 hover:scale-[1.02] transition-transform ${user.userImage && user.username && user.email
+                        ? "text-white bg-gradient-to-br from-pink-500 to-purple-500"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      }`}
                   >
                     <MdOutlineSell className="mr-2 -ml-1 w-4 h-4" />
                     Đăng Ký Người Bán
-                  </a>
+                  </button>
                 </div>
-              )
-            }
+              )}
 
           </div>
 
@@ -520,6 +692,189 @@ export default function DashProfile() {
             </div>
           </div>
         </div>
+
+
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div className="bg-white rounded-lg shadow-lg w-1/2 p-6 relative ">
+              {/* Nút Đóng */}
+              <button
+                onClick={() => setShowModal(false)}
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+              {/* Stepper */}
+              <div className="mb-6">
+                <div className="flex justify-center items-center">
+                  {steps.map((step, index) => (
+                    <div key={index} className="flex items-center">
+                      {/* Step Circle */}
+                      <div
+                        className={`flex items-center justify-center w-8 h-8 rounded-full ${currentStep === index + 1
+                          ? "bg-red-500 text-white"
+                          : "bg-gray-300 text-gray-600"
+                          }`}
+                        onClick={() => handleStepChange(index + 1)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        {index + 1}
+                      </div>
+                      {/* Step Label */}
+                      <span
+                        className={`ml-2 ${currentStep === index + 1
+                          ? "text-red-500 font-semibold"
+                          : "text-gray-500"
+                          }`}
+                      >
+                        {step}
+                      </span>
+                      {/* Step Line */}
+                      {index < steps.length - 1 && (
+                        <div
+                          className={`w-12 h-1 ${currentStep > index + 1 ? "bg-red-500" : "bg-gray-300"
+                            }`}
+                        ></div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {successMessage && (
+                <div className="fixed top-4 right-4 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg">
+                  {successMessage}
+                </div>
+              )}
+              {/* Nội dung từng bước */}
+              <div className="px-4 py-4">
+                {currentStep === 1 && (
+                  <div>
+                    <h3 className="text-lg font-bold mb-2">Thông Tin Shop</h3>
+                    <form>
+                      <div className="mb-4">
+                        <label htmlFor="shopName" className="block text-sm font-medium text-gray-700">
+                          Tên Shop *
+                        </label>
+                        <input
+                          type="text"
+                          name="shopName"
+                          value={user.shopName || ''}
+                          onChange={handleChange}
+                          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-pink-500 focus:border-pink-500 sm:text-sm"
+                          placeholder="Nhập tên shop"
+                        />
+                      </div>
+                      <div className="mb-4">
+                        <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                          Địa chỉ *
+                        </label>
+                        <input
+                          type="text"
+                          name="address"
+                          value={user.address || ''}
+                          onChange={handleChange}
+                          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-pink-500 focus:border-pink-500 sm:text-sm"
+                          placeholder="Nhập địa chỉ"
+                        />
+                      </div>
+                    </form>
+                  </div>
+                )}
+                {currentStep === 2 && (
+                  <div>
+                    <h3 className="text-lg font-bold mb-2">Xác thực Email</h3>
+                    <form>
+                      <div className="mb-4">
+                        <label htmlFor="shopName" className="block text-sm font-medium text-gray-700">
+                          Email *
+                        </label>
+                        <input
+                          type="text"
+                          id="Email"
+                          value={user.email || ''}
+                          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-pink-500 focus:border-pink-500 sm:text-sm"
+                          placeholder="Nhập Email"
+                        />
+                      </div>
+                    </form>
+                  </div>
+                )}
+                {currentStep === 3 && (
+                  <div>
+                    <h3 className="text-lg font-bold mb-2">Xác thực OTP</h3>
+                    <form>
+                      <div className="mb-4">
+                        <label htmlFor="otp" className="block text-sm font-medium text-gray-700">
+                          OTP *
+                        </label>
+                        <input
+                          type="text"
+                          id="otp"
+                          value={otp} // Bind the value to the otp state
+                          onChange={(e) => setOtp(e.target.value)} // Update the state on change
+                          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-pink-500 focus:border-pink-500 sm:text-sm"
+                          placeholder="Nhập OTP"
+                        />
+                      </div>
+                    </form>
+                  </div>
+                )}
+                {currentStep === 4 && (
+                  <div>
+                    <h3 className="text-lg font-bold mb-2">Thông Tin Shop</h3>
+                    <p>Tên cửa hàng : {user.shopName} </p>
+                    <p> Địa chỉ : {user.address} </p>
+                    <p>Email : {user.email} </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Nút điều hướng */}
+              <div className="flex justify-between items-center mt-6">
+                <button
+                  className={`px-4 py-2 text-sm font-medium text-white bg-gray-400 rounded-lg ${currentStep === 1 ? "cursor-not-allowed" : "hover:bg-gray-500"
+                    }`}
+                  disabled={currentStep === 1}
+                  onClick={() => setCurrentStep((prev) => prev - 1)}
+                >
+                  Quay Lại
+                </button>
+                {currentStep < steps.length ? (
+                  <button
+                    className="px-4 py-2 text-sm font-medium text-white bg-pink-500 rounded-lg hover:bg-pink-600"
+                    onClick={handleNextStep}
+                  >
+                    Tiếp Theo
+                  </button>
+                ) : (
+                  <button
+                    className="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-lg hover:bg-green-600"
+
+                    onClick={() => {
+                      handleNextStep(); // Perform the final step logic
+                      setShowModal(false); // Close the modal
+                    }}
+                  >
+                    Hoàn Tất
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

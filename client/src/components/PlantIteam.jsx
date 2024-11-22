@@ -51,9 +51,9 @@ export default function PlantItem() {
   };
   const formatNumber = (number) => {
     if (number >= 100) {
-      return (number / 100).toFixed(1) + "tr"; // Định dạng triệu
-    } else if (number >= 10) {
-      return (number / 10).toFixed(1) + "k"; // Định dạng nghìn
+      return (number / 1000000).toFixed(1) + "tr"; // Định dạng triệu
+    } else if (number >= 1000) {
+      return (number / 1000).toFixed(1) + "k"; // Định dạng nghìn
     }
     return number.toString(); // Trả về số gốc nếu nhỏ hơn 1,000
   };

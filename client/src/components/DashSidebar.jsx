@@ -166,10 +166,11 @@ export default function DashSidebar() {
             Hồ sơ
             </Sidebar.Item>
           </Link>
-          {(role === '1' || role === '3') &&(
-            <Link to="/dashboard?tab=posts">
-            <Sidebar.Item active={tab === "posts"} icon={HiDocumentText} as="div">
-            Bài Viết
+          {/*role === '1' || role === '3'*/ }
+          {(role === '1' ) &&(
+            <Link to="/dashboard?tab=feedback">
+            <Sidebar.Item active={tab === "feedback"} icon={HiDocumentText} as="div">
+            Danh sách phản hồi
             </Sidebar.Item>
           </Link>
           )}
@@ -183,7 +184,8 @@ export default function DashSidebar() {
               </Sidebar.Item>
             </Link>
             )}
-            {(role === '1' || role === '3') &&(
+            {/*role === '1' || role === '3'*/ }
+            {(role === '1' && role === '3') &&(
             <Link to="/dashboard?tab=comments">
               <Sidebar.Item active={tab === "comments"} icon={HiAnnotation} as="div">
               Quản lý bình luận

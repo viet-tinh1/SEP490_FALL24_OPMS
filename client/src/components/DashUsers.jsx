@@ -5,6 +5,7 @@ import { TbLock, TbLockOpen } from "react-icons/tb";
 import { TextInput } from "flowbite-react";
 import { AiOutlineSearch } from "react-icons/ai";
 import ReactPaginate from "react-paginate";
+import { AiOutlineCheck, AiOutlineClose } from "react-icons/ai";
 import { Spinner } from "flowbite-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { MdEdit } from "react-icons/md";
@@ -23,21 +24,30 @@ export default function DashUsers() {
   // Fetch users from API
   const fetchUsersByRole = async (roleId) => {
     try {
-      const response = await fetch(
-        `https://localhost:7098/api/UserAPI/getUserByRole?roleId=${roleId}`
-      );
-      const data = await response.json();
+      setLoading(true); // Bật trạng thái loading
+      setError(null); // Xóa lỗi cũ
+
+      let response;
+      if (roleId === 4) {
+        // Gọi API cho các yêu cầu trở thành người bán
+        response = await fetch(`https://localhost:7098/api/UserAPI/getUserRequest?request=1`);
+      } else {
+        // Gọi API cho người dùng theo roleId
+        response = await fetch(`https://localhost:7098/api/UserAPI/getUserByRole?roleId=${roleId}`);
+      }
 
       if (!response.ok) {
-        throw new Error("Failed to fetch users");
+        throw new Error("Không thể lấy danh sách người dùng. Vui lòng thử lại sau!");
       }
-      setUsers(data); // Set the fetched users into state
-      setLoading(false); // Turn off the loading state
+
+      const data = await response.json();
+      setUsers(data); // Đặt dữ liệu người dùng vào state
     } catch (err) {
-      setError(err.message); // Handle any errors
-      setLoading(false);
+      setError(err.message); // Ghi nhận lỗi nếu có
+    } finally {
+      setLoading(false); // Tắt trạng thái loading
     }
-  }; // Empty dependency array to fetch only once on component mount
+  };
 
   // useEffect gọi API lần đầu với roleId = 1
   useEffect(() => {
@@ -50,10 +60,63 @@ export default function DashUsers() {
     setRoleId(newRoleId);
     setCurrentPage(0); // Cập nhật roleId mới
   };
+  // xác nhận từ người mua lên thành người bán 
+  const handleApproveSellerRequest = async (userId) => {
+    try {
+      const response = await fetch(
+        `https://localhost:7098/api/UserAPI/updateRoleSeller?userId=${userId}&req=1`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Không thể phê duyệt yêu cầu người bán.");
+      }
+
+      alert("Yêu cầu trở thành người bán đã được phê duyệt!");
+
+      // Refresh the user list
+      await fetchUsersByRole(roleId);
+    } catch (error) {
+      console.error("Lỗi khi phê duyệt yêu cầu người bán:", error);
+      alert("Có lỗi xảy ra khi phê duyệt yêu cầu người bán.");
+    }
+  };
+  ///
+  const handleRejectSellerRequest = async (userId) => {
+    try {
+      const response = await fetch(
+        `https://localhost:7098/api/UserAPI/updateRoleSeller?userId=${userId}&req=0`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Không thể từ chối yêu cầu người bán.");
+      }
+
+      alert("Yêu cầu trở thành người bán đã bị từ chối!");
+
+      // Refresh the user list
+      await fetchUsersByRole(roleId);
+    } catch (error) {
+      console.error("Lỗi khi từ chối yêu cầu người bán:", error);
+      alert("Có lỗi xảy ra khi từ chối yêu cầu người bán.");
+    }
+  };
+
   const getRoleName = (roleId) => {
     switch (roleId) {
       case 1:
-        return "Admin";
+        return "Quản lí";
       case 2:
         return "Người dùng";
       case 3:
@@ -67,6 +130,7 @@ export default function DashUsers() {
     setSelectedUser(user);
     setShowModal(true);
   };
+  /// khóa tk người dùng 
   const handleConfirmBlock = async () => {
     try {
       // Gọi API để cập nhật trạng thái người dùng
@@ -174,6 +238,16 @@ export default function DashUsers() {
             >
               Người bán
             </Button>
+            <Button
+              id="4"
+              onClick={() => handleRoleChange(4)}
+              className={`${activeButton === 4
+                ? "bg-green-600 text-white border-green-700"
+                : "bg-gray-200 text-gray-700 border-gray-300"
+                } py-1 px-3 text-sm font-semibold rounded-lg shadow`}
+            >
+              Xác Nhận Người Bán
+            </Button>
           </div>
         </div>
       </div>
@@ -190,16 +264,20 @@ export default function DashUsers() {
             <Table.HeadCell>Phone</Table.HeadCell>
             <Table.HeadCell className="whitespace-nowrap">Chức vụ</Table.HeadCell>
             <Table.HeadCell className="whitespace-nowrap">Địa chỉ</Table.HeadCell>
-            <Table.HeadCell className="whitespace-nowrap">Trạng thái</Table.HeadCell>
+            {roleId === 4 ? (
+              <Table.HeadCell className="whitespace-nowrap">Xác nhận</Table.HeadCell>
+            ) : (
+              <Table.HeadCell className="whitespace-nowrap">Trạng thái</Table.HeadCell>
+            )}
           </Table.Head>
           <Table.Body className="divide-y">
-            {usersToDisplay.map((user) => {           
+            {usersToDisplay.map((user) => {
               return (
                 <Table.Row
                   className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
                   key={user.userId}
                 >
-                  <Table.Cell className="py-4"> {new Date(user.createdDate).toLocaleDateString('en-CA')}</Table.Cell>
+                  <Table.Cell className="py-4"> {new Date(user.createdDate).toLocaleDateString('en-GB')}</Table.Cell>
                   <Table.Cell className="py-4 flex items-center">
                     <img
                       src={user.userImage}
@@ -213,8 +291,23 @@ export default function DashUsers() {
                   <Table.Cell className="text-center">{getRoleName(user.roles)}</Table.Cell>
                   <Table.Cell >{user.address}</Table.Cell>
                   <Table.Cell className="text-center">
+                    {roleId === 4 ? (
+                      <div className="flex space-x-2">
+                        <Button
+                          className="bg-green-600 py-0.5 px-1 text-xs font-medium rounded-xl text-white hover:bg-green-700"
+                          onClick={() => handleApproveSellerRequest(user.userId)} // Pass the userId to the handler
+                        >
+                          <AiOutlineCheck className="text-white" />
+                        </Button>
+                        <Button
+                          className="bg-red-600 py-0.5 px-1 text-xs font-medium rounded-xl text-white hover:bg-red-700"
+                          onClick={() => handleRejectSellerRequest(user.userId)} // Hàm từ chối
+                        >
+                          <AiOutlineClose className="text-white" />
+                        </Button>
+                      </div>
 
-                    {user.roles === 2 || user.roles === 3 ? ( // Kiểm tra role
+                    ) : ((user.roles === 2 || user.roles === 3 ? ( // Kiểm tra role
                       <label className="inline-flex items-center mb-5 cursor-pointer">
                         {/* Conditionally render lock or lock-open icon and the label */}
                         <Link
@@ -250,8 +343,7 @@ export default function DashUsers() {
                         {/* <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div> */}
                         <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300"></span>
                       </label>
-                    ) : null}
-
+                    ) : null))}
                   </Table.Cell>
                 </Table.Row>
 
