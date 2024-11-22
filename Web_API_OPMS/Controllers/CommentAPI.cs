@@ -13,10 +13,11 @@ namespace Web_API_OPMS.Controllers
     public class CommentAPI : ControllerBase
     {
         private readonly ICommentRepository _commentRepository;
-
-        public CommentAPI(ICommentRepository commentRepository)
+        private readonly IReplyCommentRepository _repcommentRepository;
+        public CommentAPI(ICommentRepository commentRepository, IReplyCommentRepository repcommentRepository)
         {
             _commentRepository = commentRepository;
+            _repcommentRepository = repcommentRepository;
         }
         [HttpGet("getComment")]
         public ActionResult<IEnumerable<Comment>> GetComment() 
@@ -133,7 +134,14 @@ namespace Web_API_OPMS.Controllers
                 {
                     return NotFound($"Comment with ID {id} not found.");
                 }
-
+                var replies = _repcommentRepository.GetReplyCommentByCommentId(comment.CommentId);
+                if (replies != null)
+                {
+                    foreach (var rep in replies)
+                    {
+                        _repcommentRepository.DeleteReplyComment(rep.ReplyCommentId);
+                    }
+                }
                 _commentRepository.DeleteComment(id);
 
                 return Ok(new { message = "Comment deleted successfully" });

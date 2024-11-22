@@ -130,8 +130,8 @@ namespace Web_API_OPMS.Controllers
             // Lưu OTP vào biến tạm (hoặc có thể lưu trong DB)
             storedOtp = otp;
 
-            string subject = "OTP for Password Reset";
-            string body = $"Your OTP for password reset is: {otp}. This OTP is valid for 5 minutes.";
+            string subject = "Mã OTP Đặt Lại Mật Khẩu";
+            string body = $"Mã OTP để đặt lại mật khẩu của bạn là: {otp}. Mã OTP này có hiệu lực trong vòng 3 phút.";
             bool emailSent = await _mailService.SendMailAsync(mail.RecipientEmail, subject, body);
 
             if (emailSent)
@@ -366,7 +366,7 @@ namespace Web_API_OPMS.Controllers
                 return NotFound(new { message = "User not found" });
             }
 
-            return Ok(new { message = "Successful", role = user.Roles, userId = user.UserId , userName = user.Username });
+            return Ok(new { message = "Successful", role = user.Roles, userId = user.UserId , userName = user.Username, Image = user.UserImage });
         }
         [HttpGet("getUserById")]
         public ActionResult<User> getUserById(int userId)
@@ -418,6 +418,114 @@ namespace Web_API_OPMS.Controllers
             }
             catch (Exception ex)
             {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+        [HttpPost("updateShopName")]
+        public IActionResult UpdateShopName(UserDTO u)
+        {
+            try
+            {
+                // Find the existing user by their ID
+                var existingUser = UserRepository.GetUserById(u.UserId);
+                if (existingUser == null)
+                {
+                    return NotFound($"User with ID {u.UserId} not found.");
+                }
+
+                // Toggle the user's status
+                existingUser.ShopName = u.ShopName;
+                existingUser.Address = u.Address;
+                existingUser.Email = u.Email;
+
+                // Save changes to the repository
+                UserRepository.UpdateUser(existingUser);
+
+                // Return success message with the new status
+                return Ok(new { message = "Shop name updated successfully" });
+            
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+        [HttpPost("Request-seller")]
+        public IActionResult Requestseller(int  userId)
+        {
+            try
+            {
+                // Find the existing user by their ID
+                var existingUser = UserRepository.GetUserById(userId);
+                if (existingUser == null)
+                {
+                    return NotFound($"User with ID {userId} not found.");
+                }
+
+                // Toggle the user's status
+                existingUser.IsSellerRequest = 1;
+               
+
+                // Save changes to the repository
+                UserRepository.UpdateUser(existingUser);
+
+                // Return success message with the new status
+                return Ok(new { message = "Shop name updated successfully" });
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+        [HttpGet("getUserRequest")]
+        public ActionResult<IEnumerable<User>> getUserRequest(int request)
+        {
+            // Không lấy từ session nữa, mà từ tham số truyền vào
+            var users = UserRepository.GetUserRequest(request);
+
+            if (users == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
+            return Ok(users);
+        }
+
+        [HttpPost("updateRoleSeller")]
+        public IActionResult UpdateRoleSeller([FromQuery] int userId, [FromQuery] int? req)
+        {
+            try
+            {
+                // Fetch user by ID
+                var existingUser = UserRepository.GetUserById(userId);
+                if (existingUser == null)
+                {
+                    return NotFound($"User with ID {userId} not found.");
+                }
+
+                // Update roles and seller request status based on the request
+                if (req == 1) // Approve request
+                {
+                    existingUser.Roles = 3; // Set role to 'Seller'
+                    existingUser.IsSellerRequest = 2; // Mark request as 'Accepted'
+                }
+                else // Reject request
+                {
+                    existingUser.Roles = 2; // Set role back to 'User'
+                    existingUser.IsSellerRequest = 3; // Mark request as 'Rejected'
+                }
+
+                // Save changes
+                UserRepository.UpdateUser(existingUser);
+
+                // Return success message
+                string action = req == 1 ? "approved as a Seller" : "rejected as a Seller";
+                return Ok($"User '{existingUser.Username}' has been {action}.");
+            }
+            catch (Exception ex)
+            {
+                // Log the error (if applicable) and return a generic error message
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }

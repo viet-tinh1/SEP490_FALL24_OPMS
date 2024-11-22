@@ -113,7 +113,79 @@ namespace Web_API_OPMS.Controllers.Authentication
                 return BadRequest(new { message = "Invalid OTP." });
             }
         }
+        [HttpPost("sendOtpToEmail")]
+        public async Task<IActionResult> SendOtpToEmail([FromBody] MailDto mail)
+        {
+            TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTime utcNow = DateTime.UtcNow;
+            DateTime vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            otpExpiration = vietnamTime.AddMinutes(3); // OTP hết hạn sau 3 phút
+            if (string.IsNullOrEmpty(mail.RecipientEmail))
+            {
+                return BadRequest(new { message = "Email is required" });
+            }
 
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == mail.RecipientEmail);
+            if (user == null)
+            {
+                return NotFound(new { message = "Email not registered" });
+            }
+
+            // Tạo OTP và gửi qua email
+            string otp = GenerateRandomPasscode();
+            // Lưu OTP vào biến tạm (hoặc có thể lưu trong DB)
+            storedOtp = otp;
+
+            string subject = "Mã OTP Xác Thực Email";
+            string body = $"Mã OTP để xác thực email của bạn là: {otp}. Mã OTP này có hiệu lực trong vòng 3 phút.";
+            bool emailSent = await _mailService.SendMailAsync(mail.RecipientEmail, subject, body);
+
+            if (emailSent)
+            {
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "OTP sent successfully" });
+            }
+
+            return StatusCode(500, "Failed to send OTP");
+        }
+
+        [HttpPost("verify-otp-seller")]
+        public IActionResult VerifyOtpSeller([FromBody] VerifyOtpRequestDto verifyRequest)
+        {
+            // Lấy giờ hiện tại theo giờ Việt Nam (GMT+7)
+            TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTime utcNow = DateTime.UtcNow;
+            DateTime currentVietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            // Kiểm tra mã OTP có đúng và không hết hạn
+            if (verifyRequest.Otp == storedOtp && currentVietnamTime <= otpExpiration)
+            {
+                var user = _context.Users.FirstOrDefault(u => u.Email == verifyRequest.RecipientEmail);
+
+                if (user != null)
+                {
+                    // Cập nhật trạng thái verify thành 1
+                    user.IsVerifyEmail = 1;
+
+                    // Lưu thay đổi vào cơ sở dữ liệu
+                    _context.Update(user);
+                    _context.SaveChangesAsync();
+
+                    return Ok(new { message = "OTP is valid and has not expired." });
+                }
+                else
+                {
+                    return NotFound(new { message = "User not found with the provided email." });
+                }
+            }
+            else if (currentVietnamTime > otpExpiration)
+            {
+                return BadRequest(new { message = "OTP has expired." });
+            }
+            else
+            {
+                return BadRequest(new { message = "Invalid OTP." });
+            }
+        }
         private string GenerateRandomPasscode()
         {
             // Implement your passcode generation logic here
