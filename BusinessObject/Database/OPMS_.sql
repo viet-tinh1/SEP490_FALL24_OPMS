@@ -20,6 +20,7 @@
     | 2024-11-02   | TinhNV          | Chỉnh data bảng Plants (chỉnh cột ImageURL từ kiểu nvarchar sang varbinary, Description sang NVARCHAR(MAX)   |
     | 2024-11-03   | TinhNV          | Update database FORUM ( add Table Posts, Comments, LikeReview, RepyReview, LikePost, ReplyComment            |
     | 2024-11-03   | TinhNV          | Update database                                                                                              |
+    | 2024-11-20   | TinhNV          | Update database                                                                                              |
     -------------------------------------------------------------------------------------------------------------------------------------------------
      
     Notes:
@@ -51,7 +52,8 @@ CREATE TABLE Users (
     UserImage                                   NVARCHAR(MAX) NULL,
     Status                                      INT NULL,
     shop_name                                   NVARCHAR(100) NULL,
-    IsVerifyEmail                               INT NOT NULL DEFAULT 0
+    IsVerifyEmail                               INT NOT NULL DEFAULT 0,
+    IsSellerRequest                             INT NOT NULL DEFAULT 0
 );
 
 -- chi tiết cây 
@@ -105,6 +107,8 @@ CREATE TABLE Orders (
     TotalAmount                                 DECIMAL(10, 2) NOT NULL,
     Status		                                VARCHAR(50) DEFAULT 'Pending',
     UserId                                      INT NOT NULL,
+    MethodPayment                               VARCHAR(50)NULL,
+    IsSuccess                                   INT NULL,
     ShippingAddress                             NVARCHAR(Max),
     FOREIGN KEY (ShoppingCartItemId)            REFERENCES Shopping_Cart_Item(ShoppingCartItemId),
     FOREIGN KEY (UserId)                        REFERENCES Users(UserId)
@@ -176,6 +180,15 @@ CREATE TABLE Follower (
     PRIMARY KEY (FollowerId, UserID),
     FOREIGN KEY (FollowerId)                    REFERENCES Follower(FollowerId),
     FOREIGN KEY (UserID)                        REFERENCES Users(UserID)
+);
+-- feedback
+CREATE TABLE Feedback (
+    FeedbackID INT PRIMARY KEY IDENTITY(1,1), -- Mã phản hồi, tự tăng
+    Name NVARCHAR(255) NOT NULL,             -- Tên của người gửi phản hồi
+    Email NVARCHAR(255) NOT NULL,            -- Email của người gửi phản hồi
+    FeedbackText NVARCHAR(MAX) NOT NULL,     -- Nội dung phản hồi
+    Rating NVARCHAR(255), -- Điểm đánh giá (1-5)
+    CreatedAt DATETIME     -- Thời gian tạo phản hồi
 );
 
 ----------- Post 
