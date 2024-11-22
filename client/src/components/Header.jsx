@@ -262,7 +262,7 @@ const handleSearch = async () => {
         </Navbar.Link>
         {(role === "1" || role === "3") && (
           <Navbar.Link active={path === "/dashboard"} as={"div"}>
-            <Link to="/dashboard">Dashboard</Link>
+            <Link to="/dashboard?tab=dash">Dashboard</Link>
           </Navbar.Link>
         )}
         <Navbar.Link active={path === "/Forum"} as={"div"}>
@@ -274,7 +274,7 @@ const handleSearch = async () => {
         </Navbar.Link>
       )}
       {(role === "3" ) && (
-        <Navbar.Link active={path === "/order-success"} as={"div"}>
+        <Navbar.Link active={path === `/producsSeller/${userId}`} as={"div"}>
           <Link to={`/producsSeller/${userId}`}>Cửa hàng </Link>
         </Navbar.Link>
       )}

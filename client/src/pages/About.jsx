@@ -1,5 +1,59 @@
+import { useState } from "react";
 
 export default function About() {
+  const email = localStorage.getItem("email");
+  const username = localStorage.getItem("username");
+  const [formData, setFormData] = useState({
+    name: username || "",
+    email: email || "",
+    feedbackText: "",
+    rating: "",
+  });
+  const [errors, setErrors] = useState({}); // Để lưu các thông báo lỗi
+  const [successMessage, setSuccessMessage] = useState("");
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData({ ...formData, [id]: value });
+  };
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.name.trim()) newErrors.name = "Tên không được để trống.";
+    if (!formData.email.trim()) newErrors.email = "Email không được để trống.";
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email không hợp lệ.";
+    if (!formData.feedbackText.trim()) newErrors.feedbackText = "Phản hồi không được để trống.";
+    if (!formData.rating) newErrors.rating = "Vui lòng chọn đánh giá.";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (validate()) {
+      try {
+        const response = await fetch("https://localhost:7098/api/FeebbackAPI/createFeedback", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+
+        if (!response.ok) {
+          throw new Error("Không thể gửi phản hồi. Vui lòng thử lại sau.");
+        }
+
+        setSuccessMessage("Phản hồi của bạn đã được gửi. Cảm ơn!");
+        setFormData({ name: "", email: "", feedbackText: "", rating: "" }); // Xóa dữ liệu sau khi gửi
+        setErrors({});
+        setTimeout(() => {
+          setSuccessMessage("");
+        }, 2000);
+      } catch (error) {
+        console.error("Lỗi khi gửi phản hồi:", error);
+        setErrors({ apiError: "Đã xảy ra lỗi khi gửi phản hồi. Vui lòng thử lại sau." });
+      }
+    }
+  };
   return (
     <div className="bg-gray-100 min-h-screen">
       {/* Header */}
@@ -84,10 +138,7 @@ export default function About() {
             {/* Feedback Form */}
             <form
               className="space-y-6"
-              onSubmit={(e) => {
-                e.preventDefault(); // Ngăn form tải lại trang
-                console.log("Phản hồi đã được gửi!");
-              }}
+              onSubmit={handleSubmit}
             >
               {/* Tên */}
               <div>
@@ -97,9 +148,13 @@ export default function About() {
                 <input
                   type="text"
                   id="name"
-                  className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-600"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className={`w-full border ${errors.name ? "border-red-500" : "border-gray-300"} rounded px-4 py-2 focus:outline-none focus:ring-2 ${errors.name ? "focus:ring-red-500" : "focus:ring-green-600"
+                    }`}
                   placeholder="Nhập tên của bạn"
                 />
+                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
               </div>
 
               {/* Email */}
@@ -110,22 +165,30 @@ export default function About() {
                 <input
                   type="email"
                   id="email"
-                  className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-600"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={`w-full border ${errors.email ? "border-red-500" : "border-gray-300"} rounded px-4 py-2 focus:outline-none focus:ring-2 ${errors.email ? "focus:ring-red-500" : "focus:ring-green-600"
+                    }`}
                   placeholder="Nhập email của bạn"
                 />
+                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
               </div>
 
               {/* Nội dung phản hồi */}
               <div>
-                <label htmlFor="message" className="block text-gray-700 font-medium mb-2">
+                <label htmlFor="feedbackText" className="block text-gray-700 font-medium mb-2">
                   Phản hồi
                 </label>
                 <textarea
-                  id="message"
+                  id="feedbackText"
+                  value={formData.feedbackText}
+                  onChange={handleChange}
                   rows="5"
-                  className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-600"
+                  className={`w-full border ${errors.feedbackText ? "border-red-500" : "border-gray-300"} rounded px-4 py-2 focus:outline-none focus:ring-2 ${errors.feedbackText ? "focus:ring-red-500" : "focus:ring-green-600"
+                    }`}
                   placeholder="Nhập phản hồi của bạn"
                 ></textarea>
+                {errors.feedbackText && <p className="text-red-500 text-sm mt-1">{errors.feedbackText}</p>}
               </div>
 
               {/* Đánh giá */}
@@ -135,16 +198,28 @@ export default function About() {
                 </label>
                 <select
                   id="rating"
-                  className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-600"
+                  value={formData.rating}
+                  onChange={handleChange}
+                  className={`w-full border ${errors.rating ? "border-red-500" : "border-gray-300"} rounded px-4 py-2 focus:outline-none focus:ring-2 ${errors.rating ? "focus:ring-red-500" : "focus:ring-green-600"
+                    }`}
                 >
                   <option value="">Chọn đánh giá</option>
-                  <option value="1">1 - Rất tệ</option>
-                  <option value="2">2 - Tệ</option>
-                  <option value="3">3 - Bình thường</option>
-                  <option value="4">4 - Tốt</option>
-                  <option value="5">5 - Tuyệt vời</option>
+                  <option value="Rất tệ">1 - Rất tệ</option>
+                  <option value="Tệ">2 - Tệ</option>
+                  <option value="Bình thường">3 - Bình thường</option>
+                  <option value="Tốt">4 - Tốt</option>
+                  <option value="Tuyệt vời">5 - Tuyệt vời</option>
                 </select>
+                {errors.rating && <p className="text-red-500 text-sm mt-1">{errors.rating}</p>}
               </div>
+              {/* Thông báo thành công */}
+              {successMessage && (
+                <p className="text-green-500 font-medium mb-4">{successMessage}</p>
+              )}
+
+              {/* Lỗi từ API */}
+              {errors.apiError && <p className="text-red-500 font-medium mb-4">{errors.apiError}</p>}
+
 
               {/* Nút Gửi */}
               <button
@@ -165,11 +240,11 @@ export default function About() {
                 allowFullScreen=""
                 loading="lazy"
               ></iframe>
-              
+
             </div>
           </div>
         </section>
-      </main>     
+      </main>
     </div>
   );
 }

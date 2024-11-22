@@ -57,17 +57,19 @@ export default function Dashboard() {
             </Link>
           )}
           {/* Card 2 */}
-          {(role === '1' || role === '3') && (
-            <Link to="/dashboard?tab=posts"
+          {/*role === '1' || role === '3'*/ }
+          {(role === '1' ) && (
+            <Link to="/dashboard?tab=feedback"
               className="p-6 bg-white shadow rounded-lg hover:shadow-lg cursor-pointer"
             >
               <FaFileAlt className="text-4xl text-green-500 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-800">Bài Viết</h3>
-              <p className="text-gray-600">Quản lý các bài viết trên hệ thống.</p>
+              <h3 className="text-lg font-semibold text-gray-800">Danh sách phản hồi</h3>
+              <p className="text-gray-600">Quản lý các phản hồi của người dùng trên hệ thống.</p>
             </Link>
           )}
           {/* Card 3 */}
-          {(role === '1' || role === '3') && (
+          {/*role === '1' || role === '3'*/ }
+          {(role === '1' && role === '3') && (
             <Link to="/dashboard?tab=comments"
               className="p-6 bg-white shadow rounded-lg hover:shadow-lg cursor-pointer"
             >
