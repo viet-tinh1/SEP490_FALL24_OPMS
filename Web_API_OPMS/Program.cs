@@ -97,6 +97,7 @@ namespace Web_API_OPMS
             builder.Services.AddScoped<IVoucherRepository, VoucherRepository>();
             builder.Services.AddScoped<IPostRepository, PostRepository>();
             builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+            builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
             builder.Services.AddScoped<IReplyCommentRepository, ReplyCommentRepository>();
             builder.Services.AddSingleton<IGeographyRepository, GeographyRepository>();
             builder.Services.AddTransient<MailService>();

@@ -29,6 +29,7 @@ public partial class User
 
     public int? Status { get; set; }
     public string? ShopName { get; set; }
+    public int IsSellerRequest { get; set; }
 
     public virtual ICollection<Fplant> Fplants { get; set; } = new List<Fplant>();
 

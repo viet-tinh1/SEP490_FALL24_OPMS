@@ -37,6 +37,8 @@ public partial class Db6213Context : DbContext
     public virtual DbSet<PostLike> PostLikes { get; set; }
     public virtual DbSet<ReplyComment> ReplyComments { get; set; }
 
+    public virtual DbSet<Feedback> Feedbacks { get; set; }
+
     public virtual DbSet<Plant> Plants { get; set; }
 
     public virtual DbSet<Review> Reviews { get; set; }
@@ -155,6 +157,18 @@ public partial class Db6213Context : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Comments__UserID__2739D489");
+        });
+        modelBuilder.Entity<Feedback>(entity =>
+        {
+            entity.HasKey(e => e.FeedbackId).HasName("PK__Feedback__6A4BEDF6F43B81ED");
+
+            entity.ToTable("Feedback");
+
+            entity.Property(e => e.FeedbackId).HasColumnName("FeedbackID");
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.Email).HasMaxLength(255);
+            entity.Property(e => e.Name).HasMaxLength(255);
+            entity.Property(e => e.Rating).HasMaxLength(255);
         });
         modelBuilder.Entity<Fplant>(entity =>
         {
@@ -412,6 +426,9 @@ public partial class Db6213Context : DbContext
             //entity.Property(e => e.UserImage)
             //    .HasColumnName("UserImage")
             //    .HasColumnType("VARBINARY(MAX)");
+            //entity.Property(e => e.IsSellerRequest)
+            //    .HasColumnName("IsSellerRequest")
+            //    .HasDefaultValue(0);
             entity.Property(e => e.Username)
                 .HasMaxLength(50)
                 .IsUnicode(false);

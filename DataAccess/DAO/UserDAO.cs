@@ -79,5 +79,11 @@ namespace DataAccess.DAO
                            .Where(u => u.Roles == roleId) // Only return plants with isVerfied = 1
                            .ToList(); // Trả về User có ID tương ứng.
         }
+        public List<User> GetUserRequest(int request)
+        {
+            return _context.Users
+                           .Where(u => u.IsSellerRequest == request) // Only return plants with isVerfied = 1
+                           .ToList(); // Trả về User có ID tương ứng.
+        }
     }
 }
