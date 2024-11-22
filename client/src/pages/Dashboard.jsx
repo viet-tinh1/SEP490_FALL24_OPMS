@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import DashSidebar from '../components/DashSidebar';
 import DashHome from '../components/DashHome';
 import DashProfile from '../components/DashProfile';
-import DashPosts from '../components/DashPosts';
+
 import DashUsers from '../components/DashUsers';
 import DashComments from '../components/DashComments';
 import Dashproduct from '../components/Dashproduct';
@@ -11,6 +11,7 @@ import DashRegisterSeller from '../components/DashRegisterSeller';
 import DashVerifyProduct from '../components/DashVerifyProduct';
 import DashDiscount from "../components/DashDiscount";
 import OrderManager from "../components/OrderManager";
+import DashFeedback from '../components/DashFeedback';
 export default function Dashboard() {
   const location = useLocation();
   const [tab, setTab] = useState('');
@@ -31,7 +32,7 @@ export default function Dashboard() {
       {/* profile... */}
       {tab === "profile" && <DashProfile />}
       {/* posts... */}
-      {tab === "posts" && <DashPosts />}
+      {tab === "feedback" && <DashFeedback />}
       {/* users */}
       {tab === "users" && <DashUsers />}
       {/* comments  */}

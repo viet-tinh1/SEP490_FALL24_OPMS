@@ -33,7 +33,7 @@ export default function Banner() {
                   Đặt hàng ngay
                 </Link>
               ) : (
-                <Link to="/signin" className="primary-btn flex items-center gap-2">
+                <Link to="/sign-in" className="primary-btn flex items-center gap-2">
                   <IoBagHandleOutline />
                   Đặt hàng ngay
                 </Link>

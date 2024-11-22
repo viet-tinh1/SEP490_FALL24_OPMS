@@ -33,90 +33,99 @@ function formatTimeDifference(timestamp) {
 
 function CommentSection({ postId, userId, refreshPosts }) {
   const [comments, setComments] = useState([]);
+
+  const [deleteCommentPopup, setDeleteCommentPopup] = useState(false);
+  const [updateCommentPopup, setUpdateCommentPopup] = useState(false);
+  const [updateContent, setUpdateContent] = useState("");
   const [visibleComments, setVisibleComments] = useState(3);
   const [commentContent, setCommentContent] = useState("");
   const [loadingComments, setLoadingComments] = useState(true);
   const [ReplyCommentContent, setReplyCommentContent] = useState("");
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyingToUsername, setReplyingToUsername] = useState("");
+  const role = localStorage.getItem("role");
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState(null);
+  const [commentToUpdate, setCommentToUpdate] = useState(null);
+  const [confirmupdateModal, setConfirmUpdateModal] = useState(false);
 
   useEffect(() => {
     const fetchComments = async () => {
-        setLoadingComments(true);
-        try {
-            const response = await fetch(`https://localhost:7098/api/CommentAPI/getCommentByPostId?postId=${postId}`);
-            if (!response.ok) throw new Error("Failed to fetch comments");
-            const commentsData = await response.json();
+      setLoadingComments(true);
+      try {
+        const response = await fetch(`https://localhost:7098/api/CommentAPI/getCommentByPostId?postId=${postId}`);
+        if (!response.ok) throw new Error("Failed to fetch comments");
+        const commentsData = await response.json();
 
-            // Fetch user images and basic info for each comment
-            const commentsWithUserImages = await Promise.all(
-                commentsData.map(async (comment) => {
-                    try {
-                        const userResponse = await fetch(
-                            `https://localhost:7098/api/UserAPI/getUserById?userId=${comment.userId}`
-                        );
-                        if (!userResponse.ok) throw new Error("Failed to fetch user data");
-                        const userData = await userResponse.json();
+        // Fetch user images and basic info for each comment
+        const commentsWithUserImages = await Promise.all(
+          commentsData.map(async (comment) => {
+            try {
+              const userResponse = await fetch(
+                `https://localhost:7098/api/UserAPI/getUserById?userId=${comment.userId}`
+              );
+              if (!userResponse.ok) throw new Error("Failed to fetch user data");
+              const userData = await userResponse.json();
 
-                        // Fetch replies for each comment
-                        const repliesResponse = await fetch(
-                            `https://localhost:7098/api/ReplyCommentAPI/getReplyCommentByCommentId?commentId=${comment.commentId}`
-                        );
-                        const repliesData = repliesResponse.ok ? await repliesResponse.json() : [];
+              // Fetch replies for each comment
+              const repliesResponse = await fetch(
+                `https://localhost:7098/api/ReplyCommentAPI/getReplyCommentByCommentId?commentId=${comment.commentId}`
+              );
+              const repliesData = repliesResponse.ok ? await repliesResponse.json() : [];
 
-                        // Fetch user data for each reply
-                        const repliesWithUserData = await Promise.all(
-                            repliesData.map(async (reply) => {
-                                try {
-                                    const replyUserResponse = await fetch(
-                                        `https://localhost:7098/api/UserAPI/getUserById?userId=${reply.userId}`
-                                    );
-                                    if (!replyUserResponse.ok) throw new Error("Failed to fetch user data for reply");
-                                    const replyUserData = await replyUserResponse.json();
+              // Fetch user data for each reply
+              const repliesWithUserData = await Promise.all(
+                repliesData.map(async (reply) => {
+                  try {
+                    const replyUserResponse = await fetch(
+                      `https://localhost:7098/api/UserAPI/getUserById?userId=${reply.userId}`
+                    );
+                    if (!replyUserResponse.ok) throw new Error("Failed to fetch user data for reply");
+                    const replyUserData = await replyUserResponse.json();
 
-                                    return {
-                                        ...reply,
-                                        username: replyUserData.username,
-                                        userImage: replyUserData.userImage || "https://via.placeholder.com/40"
-                                    };
-                                } catch (error) {
-                                    console.error("Error fetching user data for reply:", error);
-                                    return {
-                                        ...reply,
-                                        username: "Unknown",
-                                        userImage: "https://via.placeholder.com/40"
-                                    };
-                                }
-                            })
-                        );
-
-                        return { 
-                            ...comment, 
-                            userImage: userData.userImage || "https://via.placeholder.com/40", 
-                            username: userData.username, 
-                            replies: repliesWithUserData 
-                        };
-                    } catch (error) {
-                        console.error("Error fetching user image or replies for comment:", error);
-                        return { 
-                            ...comment, 
-                            userImage: "https://via.placeholder.com/40", 
-                            username: "Unknown", 
-                            replies: [] 
-                        };
-                    }
+                    return {
+                      ...reply,
+                      username: replyUserData.username,
+                      userImage: replyUserData.userImage || "https://via.placeholder.com/40"
+                    };
+                  } catch (error) {
+                    console.error("Error fetching user data for reply:", error);
+                    return {
+                      ...reply,
+                      username: "Unknown",
+                      userImage: "https://via.placeholder.com/40"
+                    };
+                  }
                 })
-            );
+              );
 
-            setComments(commentsWithUserImages);
-        } catch (error) {
-            console.error("Error fetching comments:", error);
-        } finally {
-            setLoadingComments(false);
-        }
+              return {
+                ...comment,
+                userImage: userData.userImage || "https://via.placeholder.com/40",
+                username: userData.username,
+                replies: repliesWithUserData
+              };
+            } catch (error) {
+              console.error("Error fetching user image or replies for comment:", error);
+              return {
+                ...comment,
+                userImage: "https://via.placeholder.com/40",
+                username: "Unknown",
+                replies: []
+              };
+            }
+          })
+        );
+
+        setComments(commentsWithUserImages);
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+      } finally {
+        setLoadingComments(false);
+      }
     };
     fetchComments();
-}, [postId]);
+  }, [postId]);
 
   const handleAddComment = async () => {
     if (!userId) {
@@ -189,6 +198,86 @@ function CommentSection({ postId, userId, refreshPosts }) {
     }
   };
 
+  const confirmUpdateComment = (comment) => {
+    setCommentToUpdate(comment); // Đặt comment cần cập nhật
+    setUpdateContent(comment.commentsContent); // Lưu nội dung vào state
+    setConfirmUpdateModal(true); // Mở modal
+  };
+  const confirmDeleteComment = (commentId) => {
+    setCommentToDelete(commentId);
+    setConfirmDeleteModal(true);
+  };
+  const handleDeleteComment = async () => {
+    try {
+      const response = await fetch(
+        `https://localhost:7098/api/CommentAPI/deleteComment?id=${commentToDelete}`,
+        { method: "DELETE" }
+      );
+
+      if (response.ok) {
+        refreshPosts();
+        setConfirmDeleteModal(false);
+        setDeleteCommentPopup(true);
+        setTimeout(() => setDeleteCommentPopup(false), 2000);
+      } else {
+        console.error("Failed to delete post");
+      }
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
+  };
+  const handleUpdateComment = async () => {
+    try {
+      const response = await fetch("https://localhost:7098/api/CommentAPI/updateComment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          postId: commentToUpdate.postId,
+          userId: commentToUpdate.userId,
+          commentId: commentToUpdate.commentId,
+          commentsContent: updateContent,
+        }),
+      });
+
+      if (response.ok) {
+        refreshPosts();
+        setConfirmUpdateModal(false);
+        setUpdateCommentPopup(true);
+        setTimeout(() => setUpdateCommentPopup(false), 2000);
+      } else {
+        console.error("Failed to update comment");
+      }
+    } catch (error) {
+      console.error("Error updating comment:", error);
+    }
+  };
+  const handleLikeComment = async (comment) => {
+    if (!userId) {
+      window.location.href = "/sign-in";
+      return;
+    }
+    try {
+
+
+      const response = await fetch(
+        `https://localhost:7098/api/CommentAPI/likeComment?id=${comment.commentId}`,
+        {
+          method: "POST",
+        }
+      );
+
+      if (response.ok) {
+
+      } else {
+        console.error("Failed to update like status");
+      }
+    } catch (error) {
+      console.error("Error updating like status:", error);
+    }
+  };
+
   return (
     <div className="mt-4">
       {loadingComments ? (
@@ -217,7 +306,24 @@ function CommentSection({ postId, userId, refreshPosts }) {
                     <span className="text-base">{comment.commentsContent}</span>
                   </div>
                   <div className="mt-1 text-sm text-gray-500 flex items-center space-x-4">
-                    <span>{formatTimeDifference(comment.commentTime)}</span>
+                    <span>
+                      {comment.updatedAt && new Date(comment.updatedAt) > new Date(comment.commentTime)
+                        ? formatTimeDifference(comment.updatedAt)
+                        : formatTimeDifference(comment.commentTime)}
+                    </span>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        className={`flex items-center space-x-1 ${comment.hasLiked ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
+                          }`}
+                        onClick={() => handleLikeComment(comment)}
+                      >
+                        <FaThumbsUp />
+
+                      </button>
+                      <span className="text-sm text-gray-500">
+                        {comment.likeComment} lượt thích
+                      </span>
+                    </div>
                     <button
                       className="flex items-center space-x-1 text-gray-600 hover:text-blue-600"
                       onClick={() => handleReply(comment.commentId, comment.username)}
@@ -246,8 +352,82 @@ function CommentSection({ postId, userId, refreshPosts }) {
                     </div>
                   )}
                 </div>
+                {/*add delete coment */}
+                {(comment.userId === userId || role === "1") && (
+                  <Dropdown
+                    arrowIcon={false}
+                    inline
+                    label={<FiMoreHorizontal className="text-gray-500 cursor-pointer" />}
+                  >
+                    {comment.userId === userId && (
+                      <Dropdown.Item onClick={() => confirmUpdateComment(comment)}>Sửa bình luận</Dropdown.Item>
+                    )}
+                    <Dropdown.Item onClick={() => confirmDeleteComment(comment.commentId)}>
+                      Xóa bình luận
+                    </Dropdown.Item>
+                  </Dropdown>
+                )}
               </div>
-              
+              {deleteCommentPopup && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                  <div className="bg-white p-6 rounded-lg shadow-md text-center space-y-3">
+                    <p className="text-lg font-semibold text-green-600">
+                      Xóa bình luận thành công!
+                    </p>
+                  </div>
+                </div>
+              )}
+              <Modal
+                show={confirmupdateModal}
+                onClose={() => setConfirmUpdateModal(false)}
+                size="md"
+                popup={true}
+              >
+                <Modal.Header className="text-lg font-semibold text-red-600">
+                  chỉnh sửa bình luận
+                </Modal.Header>
+
+                <Modal.Footer>
+                  <input
+                    type="text"
+                    name="comment"
+                    value={updateContent}
+                    onChange={(e) => setUpdateContent(e.target.value)}
+                    placeholder={`Chỉnh sửa bình luận`}
+                    className="flex-grow p-3 border rounded-full bg-gray-100"
+                  />
+                  <Button
+                    onClick={handleUpdateComment}
+                    className="ml-2 text-lg"
+                    disabled={!updateContent.trim()}
+                  >
+                    Gửi
+                  </Button>
+                </Modal.Footer>
+              </Modal>
+              <Modal
+                show={confirmDeleteModal}
+                onClose={() => setConfirmDeleteModal(false)}
+                size="md"
+                popup={true}
+              >
+                <Modal.Header className="text-lg font-semibold text-red-600">
+                  Xác nhận xóa
+                </Modal.Header>
+                <Modal.Body>
+                  <p className="text-sm text-gray-700">
+                    Bạn có chắc chắn muốn xóa bình luận này không? Hành động này không thể hoàn tác.
+                  </p>
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button onClick={() => setConfirmDeleteModal(false)} color="gray">
+                    Hủy
+                  </Button>
+                  <Button onClick={handleDeleteComment} color="red">
+                    Xóa
+                  </Button>
+                </Modal.Footer>
+              </Modal>
               {/* Replies to the Comment */}
               {comment.replies && comment.replies.map((reply) => (
                 <div key={reply.replyId} className="ml-12 mt-2 flex items-start space-x-4">
@@ -283,7 +463,7 @@ function CommentSection({ postId, userId, refreshPosts }) {
           )}
         </div>
       )}
-      
+
       {/* Add New Comment Section */}
       <div className="flex items-center mt-4">
         <input
@@ -545,10 +725,10 @@ export default function Forum() {
           prevPosts.map((p) =>
             p.postId === post.postId
               ? {
-                  ...p,
-                  likePost: isLiked ? p.likePost - 1 : p.likePost + 1,
-                  hasLiked: !isLiked,
-                }
+                ...p,
+                likePost: isLiked ? p.likePost - 1 : p.likePost + 1,
+                hasLiked: !isLiked,
+              }
               : p
           )
         );
@@ -567,7 +747,7 @@ export default function Forum() {
           <div className="flex flex-col items-center">
             <Spinner aria-label="Loading spinner" size="xl" />
             <span className="mt-3 text-lg font-semibold">Loading...</span>
-          </div>  
+          </div>
         </div>
       ) : (
         <>
@@ -681,7 +861,11 @@ export default function Forum() {
                   <div className="ml-4 flex-grow">
                     <div className="font-semibold text-lg">{post.username}</div>
                     <div className="text-sm text-gray-500">
-                      {formatTimeDifference(post.createdate)}
+                      <span>
+                        {post.updatedate && new Date(post.updatedAt) > new Date(post.createdate)
+                          ? formatTimeDifference(post.updatedAt)
+                          : formatTimeDifference(post.createdate)}
+                      </span>
                     </div>
                   </div>
                   {(post.userId === userId || role === "1") && (
@@ -733,7 +917,7 @@ export default function Forum() {
                   <div className="flex items-center space-x-2">
                     <button
                       className="flex items-center space-x-1 hover:text-blue-600"
-                      onClick={() => {}}
+                      onClick={() => { }}
                     >
                       <FaComment />
                       <span className="text-lg">Bình luận</span>
