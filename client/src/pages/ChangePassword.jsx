@@ -17,7 +17,7 @@ export default function ChangePassword() {
     setError("");
 
     try {
-      const response = await fetch("https://localhost:7098/api/UserAPI/changePassword_Email", {
+      const response = await fetch("https://opms1.runasp.net/api/UserAPI/changePassword_Email", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

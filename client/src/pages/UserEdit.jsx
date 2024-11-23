@@ -35,8 +35,8 @@ export default function UserEdit() {
       }
 
       try {
-        const response = await fetch(`https://localhost:7098/api/UserAPI/getUserById?userId=${userId}`);
-        const nameResponse = await fetch("https://localhost:7098/api/UserAPI/getUser");
+        const response = await fetch(`https://opms1.runasp.net/api/UserAPI/getUserById?userId=${userId}`);
+        const nameResponse = await fetch("https://opms1.runasp.net/api/UserAPI/getUser");
 
         if (!response.ok || !nameResponse.ok) {
           throw new Error("Không thể tải dữ liệu người dùng.");
@@ -157,7 +157,7 @@ export default function UserEdit() {
     }
 
     try {
-      const response = await fetch("https://localhost:7098/api/UserAPI/updateUser", {
+      const response = await fetch("https://opms1.runasp.net/api/UserAPI/updateUser", {
         method: "POST",
         
         body: formDataToSend,

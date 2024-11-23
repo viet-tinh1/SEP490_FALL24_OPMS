@@ -35,7 +35,7 @@ export default function DashProduct() {
   try {
     let response;
     
-      response = await fetch(`https://localhost:7098/api/PlantAPI/getPlantByUser?UserId=${userId}`);
+      response = await fetch(`https://opms1.runasp.net/api/PlantAPI/getPlantByUser?UserId=${userId}`);
     
       
 
@@ -44,7 +44,7 @@ export default function DashProduct() {
       setPlants(data);
 
       // Fetch categories
-      const categoryResponse = await fetch("https://localhost:7098/api/CategoryAPI/getCategory");
+      const categoryResponse = await fetch("https://opms1.runasp.net/api/CategoryAPI/getCategory");
       if (!categoryResponse.ok) throw new Error("Failed to fetch categories");
       const categoryData = await categoryResponse.json();
       setCategories(categoryData);
@@ -82,7 +82,7 @@ useEffect(() => {
   
     try {
       // API call to delete the plant
-      const response = await fetch(`https://localhost:7098/api/PlantAPI/deletePlant?PlantId=${selectedPlant.plantId}`, {
+      const response = await fetch(`https://opms1.runasp.net/api/PlantAPI/deletePlant?PlantId=${selectedPlant.plantId}`, {
         method: "GET",
       });
   

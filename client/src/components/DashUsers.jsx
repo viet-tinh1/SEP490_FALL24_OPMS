@@ -30,10 +30,10 @@ export default function DashUsers() {
       let response;
       if (roleId === 4) {
         // Gọi API cho các yêu cầu trở thành người bán
-        response = await fetch(`https://localhost:7098/api/UserAPI/getUserRequest?request=1`);
+        response = await fetch(`https://opms1.runasp.net/api/UserAPI/getUserRequest?request=1`);
       } else {
         // Gọi API cho người dùng theo roleId
-        response = await fetch(`https://localhost:7098/api/UserAPI/getUserByRole?roleId=${roleId}`);
+        response = await fetch(`https://opms1.runasp.net/api/UserAPI/getUserByRole?roleId=${roleId}`);
       }
 
       if (!response.ok) {
@@ -64,7 +64,7 @@ export default function DashUsers() {
   const handleApproveSellerRequest = async (userId) => {
     try {
       const response = await fetch(
-        `https://localhost:7098/api/UserAPI/updateRoleSeller?userId=${userId}&req=1`,
+        `https://opms1.runasp.net/api/UserAPI/updateRoleSeller?userId=${userId}&req=1`,
         {
           method: "POST",
           headers: {
@@ -90,7 +90,7 @@ export default function DashUsers() {
   const handleRejectSellerRequest = async (userId) => {
     try {
       const response = await fetch(
-        `https://localhost:7098/api/UserAPI/updateRoleSeller?userId=${userId}&req=0`,
+        `https://opms1.runasp.net/api/UserAPI/updateRoleSeller?userId=${userId}&req=0`,
         {
           method: "POST",
           headers: {
@@ -134,7 +134,7 @@ export default function DashUsers() {
   const handleConfirmBlock = async () => {
     try {
       // Gọi API để cập nhật trạng thái người dùng
-      const response = await fetch(`https://localhost:7098/api/UserAPI/updateStatus?userId=${selectedUser.userId}`, {
+      const response = await fetch(`https://opms1.runasp.net/api/UserAPI/updateStatus?userId=${selectedUser.userId}`, {
         method: 'POST',
       });
 

@@ -74,7 +74,7 @@ export default function ProductSeller() {
       try {
         //lấy plants
         const productResponses = await fetch(
-          `https://localhost:7098/api/PlantAPI/getPlantByUserIsVerify?UserId=${userIdPlant}`);
+          `https://opms1.runasp.net/api/PlantAPI/getPlantByUserIsVerify?UserId=${userIdPlant}`);
         const productsDatas = await productResponses.json();
             
         if (!productResponses.ok) {
@@ -89,12 +89,12 @@ export default function ProductSeller() {
         }
         setProducts(productsDatas);
         const UserResponses = await fetch(
-          `https://localhost:7098/api/UserAPI/getUserById?userId=${userIdPlant}`);
+          `https://opms1.runasp.net/api/UserAPI/getUserById?userId=${userIdPlant}`);
         const UserimgDatas = await UserResponses.json();
         setUserImg(UserimgDatas);
         //lấy loại cây
         const categoryResponse = await fetch(
-          "https://localhost:7098/api/CategoryAPI/getCategory"
+          "https://opms1.runasp.net/api/CategoryAPI/getCategory"
         );
         if (!categoryResponse.ok) {
           throw new Error("Failed to fetch categories");
@@ -104,7 +104,7 @@ export default function ProductSeller() {
         
         //lấy tên users
         const UsersResponse = await fetch(
-          "https://localhost:7098/api/UserAPI/getUser"
+          "https://opms1.runasp.net/api/UserAPI/getUser"
         );
         if (!UsersResponse.ok) {
           throw new Error("Failed to fetch categories");
@@ -127,7 +127,7 @@ export default function ProductSeller() {
     if (id === 2) {
         setSortOption("most-purchased"); // Unique value for "Most Purchased"
         try {
-            const response = await fetch(`https://localhost:7098/api/PlantAPI/most-purchased-by-shop?limit=7&userId=${userIdPlant}`);
+            const response = await fetch(`https://opms1.runasp.net/api/PlantAPI/most-purchased-by-shop?limit=7&userId=${userIdPlant}`);
             const data = await response.json();
             if (!response.ok) throw new Error("Unable to fetch best-selling products");
 
@@ -169,7 +169,7 @@ export default function ProductSeller() {
 
       // Fetch the products with the constructed query
       const productResponses = await fetch(
-          `https://localhost:7098/api/PlantAPI/searchPlantsByShop?${query}`
+          `https://opms1.runasp.net/api/PlantAPI/searchPlantsByShop?${query}`
       );
       const productsData = await productResponses.json();
 
@@ -256,7 +256,7 @@ export default function ProductSeller() {
   // thêm vào giỏ hàng
   const addToCart = async (productId, quantity) => {
     try {
-        const response = await fetch('https://localhost:7098/api/ShoppingCartAPI/createShoppingCart', {
+        const response = await fetch('https://opms1.runasp.net/api/ShoppingCartAPI/createShoppingCart', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

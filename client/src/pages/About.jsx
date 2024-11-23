@@ -30,7 +30,7 @@ export default function About() {
 
     if (validate()) {
       try {
-        const response = await fetch("https://localhost:7098/api/FeebbackAPI/createFeedback", {
+        const response = await fetch("https://opms1.runasp.net/api/FeebbackAPI/createFeedback", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

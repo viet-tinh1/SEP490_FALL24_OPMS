@@ -17,7 +17,7 @@ export default function DiscountUpdate() {
   useEffect(() => {
     const fetchDiscountNames = async () => {
       try {
-        const response = await fetch("https://localhost:7098/api/VoucherAPI/getVouchers", {
+        const response = await fetch("https://opms1.runasp.net/api/VoucherAPI/getVouchers", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -109,7 +109,7 @@ export default function DiscountUpdate() {
     };
 
     try {
-      const response = await fetch("https://localhost:7098/api/VoucherAPI/createVoucher", {
+      const response = await fetch("https://opms1.runasp.net/api/VoucherAPI/createVoucher", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

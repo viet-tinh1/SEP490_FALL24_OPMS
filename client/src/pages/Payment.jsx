@@ -30,7 +30,7 @@ export default function Payment() {
 
       setLoading(true);
       try {
-        const response = await fetch(`https://localhost:7098/api/UserAPI/getUserById?userId=${userIds}`);
+        const response = await fetch(`https://opms1.runasp.net/api/UserAPI/getUserById?userId=${userIds}`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch user data.");
@@ -127,7 +127,7 @@ export default function Payment() {
 
     try {
       // Call createOrder API
-      const orderResponse = await fetch("https://localhost:7098/api/OrderAPI/createOrder", {
+      const orderResponse = await fetch("https://opms1.runasp.net/api/OrderAPI/createOrder", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -155,7 +155,7 @@ export default function Payment() {
         }
 
         // Call create-payment-link API with raw integer as body
-        const paymentResponse = await fetch("https://localhost:7098/api/PaymentAPI/create-payment-link", {
+        const paymentResponse = await fetch("https://opms1.runasp.net/api/PaymentAPI/create-payment-link", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

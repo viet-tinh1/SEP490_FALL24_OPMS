@@ -35,7 +35,7 @@ export default function DashProfile() {
         return;
       }
       try {
-        const userResponse = await fetch(`https://localhost:7098/api/UserAPI/getUserById?userId=${userId}`);
+        const userResponse = await fetch(`https://opms1.runasp.net/api/UserAPI/getUserById?userId=${userId}`);
         const userData = await userResponse.json();
 
         if (!userResponse.ok) {
@@ -91,7 +91,7 @@ export default function DashProfile() {
 
   const updateShopName = async () => {
     try {
-      const response = await fetch('https://localhost:7098/api/UserAPI/updateShopName', {
+      const response = await fetch('https://opms1.runasp.net/api/UserAPI/updateShopName', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +120,7 @@ export default function DashProfile() {
 
   const updateEmail = async () => {
     try {
-      const response = await fetch('https://localhost:7098/api/UserAPI/updateShopName', {
+      const response = await fetch('https://opms1.runasp.net/api/UserAPI/updateShopName', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -149,7 +149,7 @@ export default function DashProfile() {
 
   const sendOtpToEmail = async () => {
     try {
-      const response = await fetch('https://localhost:7098/api/SendMailAPI/sendOtpToEmail', {
+      const response = await fetch('https://opms1.runasp.net/api/SendMailAPI/sendOtpToEmail', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -172,7 +172,7 @@ export default function DashProfile() {
   };
   const verifyOtp = async () => {
     try {
-      const response = await fetch('https://localhost:7098/api/SendMailAPI/verify-otp-seller', {
+      const response = await fetch('https://opms1.runasp.net/api/SendMailAPI/verify-otp-seller', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -197,7 +197,7 @@ export default function DashProfile() {
   };
   const requestSeller = async () => {
     try {
-      const response = await fetch(`https://localhost:7098/api/UserAPI/Request-seller?userId=${user.userId}`, {
+      const response = await fetch(`https://opms1.runasp.net/api/UserAPI/Request-seller?userId=${user.userId}`, {
         method: 'POST',
       });
 
@@ -237,7 +237,7 @@ export default function DashProfile() {
     }
 
     try {
-      const response = await fetch('https://localhost:7098/api/UserAPI/updateUser', {
+      const response = await fetch('https://opms1.runasp.net/api/UserAPI/updateUser', {
         method: 'POST',
         body: formData
       });
@@ -282,7 +282,7 @@ export default function DashProfile() {
         return;
       }
 
-      const response = await fetch('https://localhost:7098/api/UserAPI/changePassword', {
+      const response = await fetch('https://opms1.runasp.net/api/UserAPI/changePassword', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -350,7 +350,7 @@ export default function DashProfile() {
     formData.append("newImage", file);
 
     try {
-      const response = await fetch(`https://localhost:7098/api/UserAPI/updateUserImage?userId=${userId}`, {
+      const response = await fetch(`https://opms1.runasp.net/api/UserAPI/updateUserImage?userId=${userId}`, {
         method: "POST",
         body: formData,
       });

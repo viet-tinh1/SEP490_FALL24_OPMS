@@ -32,13 +32,13 @@ export default function ProductDetail() {
     const fetchProductData = async () => {
       try {
         // lấy data plants theo plantid
-        const response = await fetch(`https://localhost:7098/api/PlantAPI/getPlantById?id=${plantId}`);
+        const response = await fetch(`https://opms1.runasp.net/api/PlantAPI/getPlantById?id=${plantId}`);
         if (!response.ok) throw new Error("Không thể lấy dữ liệu sản phẩm");
         const data = await response.json();
         setProductData(data);
         // lấy thông tin user
         const UsersResponse = await fetch(
-          "https://localhost:7098/api/UserAPI/getUser"
+          "https://opms1.runasp.net/api/UserAPI/getUser"
         );
         if (!UsersResponse.ok) {
           throw new Error("Failed to fetch categories");
@@ -47,7 +47,7 @@ export default function ProductDetail() {
         console.log(usersData)
         setUsers(usersData);
         // Fetch rating summary
-        const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
+        const ratingResponse = await fetch(`https://opms1.runasp.net/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
         const ratingData = await ratingResponse.json();
         setRatingSummary(ratingData);
       } catch (error) {
@@ -66,7 +66,7 @@ export default function ProductDetail() {
   // Hàm để lấy tên người dùng dựa trên userId
   const fetchProductReviews = async () => {
     try {
-      const reviewResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getReviewsByPlantId?plantId=${plantId}`);
+      const reviewResponse = await fetch(`https://opms1.runasp.net/api/ReviewAPI/getReviewsByPlantId?plantId=${plantId}`);
       let reviewData = await reviewResponse.json();
   
       // Ensure reviews is an array
@@ -76,7 +76,7 @@ export default function ProductDetail() {
       const updatedReviews = await Promise.all(
         reviewData.map(async (review) => {
           try {
-            const userResponse = await fetch(`https://localhost:7098/api/UserAPI/getUserByIds?userId=${review.userId}`);
+            const userResponse = await fetch(`https://opms1.runasp.net/api/UserAPI/getUserByIds?userId=${review.userId}`);
             const userData = await userResponse.json();
             return {
               ...review,
@@ -149,7 +149,7 @@ export default function ProductDetail() {
 
     // Gửi đánh giá đến API
     try {
-      const response = await fetch(`https://localhost:7098/api/ReviewAPI/createReview`, {
+      const response = await fetch(`https://opms1.runasp.net/api/ReviewAPI/createReview`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -172,7 +172,7 @@ export default function ProductDetail() {
        
         fetchProductReviews();
 
-        const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
+        const ratingResponse = await fetch(`https://opms1.runasp.net/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
         const ratingData = await ratingResponse.json();
         setRatingSummary(ratingData);
       } else {
@@ -196,7 +196,7 @@ export default function ProductDetail() {
       return;
     }
     try {
-      const response = await fetch('https://localhost:7098/api/ShoppingCartAPI/createShoppingCart', {
+      const response = await fetch('https://opms1.runasp.net/api/ShoppingCartAPI/createShoppingCart', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

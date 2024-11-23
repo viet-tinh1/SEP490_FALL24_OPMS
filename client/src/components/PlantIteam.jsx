@@ -13,7 +13,7 @@ export default function PlantItem() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('https://localhost:7098/api/PlantAPI/most-purchased?limit=3', {
+        const response = await fetch('https://opms1.runasp.net/api/PlantAPI/most-purchased?limit=3', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -27,7 +27,7 @@ export default function PlantItem() {
         const data = await response.json();
         setProducts(data); 
         const categoryResponse = await fetch(
-          "https://localhost:7098/api/CategoryAPI/getCategory"
+          "https://opms1.runasp.net/api/CategoryAPI/getCategory"
         );
         if (!categoryResponse.ok) {
           throw new Error("Failed to fetch categories");

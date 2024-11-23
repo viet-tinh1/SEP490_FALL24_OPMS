@@ -66,7 +66,7 @@ export default function ProductCreate() {
 
         //lấy category
         const categoryResponse = await fetch(
-          "https://localhost:7098/api/CategoryAPI/getCategory"
+          "https://opms1.runasp.net/api/CategoryAPI/getCategory"
         );
         if (!categoryResponse.ok) {
           throw new Error("Failed to fetch categories");
@@ -110,7 +110,7 @@ export default function ProductCreate() {
     }
   
     try {
-      const response = await fetch("https://localhost:7098/api/UserAPI/createUser", {
+      const response = await fetch("https://opms1.runasp.net/api/UserAPI/createUser", {
         method: "POST",
         body: formDataToSend,
       });

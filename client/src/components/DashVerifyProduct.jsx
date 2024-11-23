@@ -32,7 +32,7 @@ export default function DashVerifyProduct() {
     try {
       let response;
       if (storedRoles === '1') {
-        response = await fetch("https://localhost:7098/api/PlantAPI/getVerifiedPlants");
+        response = await fetch("https://opms1.runasp.net/api/PlantAPI/getVerifiedPlants");
       }
 
       if (response && response.ok) {
@@ -40,7 +40,7 @@ export default function DashVerifyProduct() {
         setPlants(data);
 
         // Fetch categories
-        const categoryResponse = await fetch("https://localhost:7098/api/CategoryAPI/getCategory");
+        const categoryResponse = await fetch("https://opms1.runasp.net/api/CategoryAPI/getCategory");
         if (!categoryResponse.ok) throw new Error("Failed to fetch categories");
         const categoryData = await categoryResponse.json();
         setCategories(categoryData);
@@ -71,9 +71,9 @@ export default function DashVerifyProduct() {
       try {
         let response;
         if (buttonId === 1) {
-          response = await fetch("https://localhost:7098/api/PlantAPI/getVerifiedPlants");
+          response = await fetch("https://opms1.runasp.net/api/PlantAPI/getVerifiedPlants");
         } else if (buttonId === 2) {
-          response = await fetch("https://localhost:7098/api/PlantAPI/getNonVerifiedPlants");
+          response = await fetch("https://opms1.runasp.net/api/PlantAPI/getNonVerifiedPlants");
         }
 
         if (response && response.ok) {
@@ -113,9 +113,9 @@ export default function DashVerifyProduct() {
     try {
       let apiUrl;
       if (plant.isVerfied === 1) {
-        apiUrl = `https://localhost:7098/api/PlantAPI/updateNonVerifyStatus?plantId=${plant.plantId}`;
+        apiUrl = `https://opms1.runasp.net/api/PlantAPI/updateNonVerifyStatus?plantId=${plant.plantId}`;
       } else {
-        apiUrl = `https://localhost:7098/api/PlantAPI/updateVerifyStatus?plantId=${plant.plantId}`;
+        apiUrl = `https://opms1.runasp.net/api/PlantAPI/updateVerifyStatus?plantId=${plant.plantId}`;
       }
 
       // Gọi API

@@ -36,33 +36,63 @@ export default function Product() {
   const closeTimeoutRef = useRef(null);
 
   //lấy session
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const userId = params.get("userId");
-    const role = params.get("role");
-    const token = params.get("token");
-    const email = params.get("email");
-    const username = params.get("username");
-
-    if (userId && role && token) {
-      // Lưu vào state
+    // Lấy thông tin từ URL hoặc localStorage
+    useEffect(() => {
+      const params = new URLSearchParams(location.search);
+  
+      const userIdFromUrl = params.get("userId");
+      const roleFromUrl = params.get("role");
+      const tokenFromUrl = params.get("token");
+      const emailFromUrl = params.get("email");
+      const usernameFromUrl = params.get("username");
+  
+      // Ưu tiên lấy từ URL nếu có, sau đó từ localStorage
+      const userId = userIdFromUrl || localStorage.getItem("userId");
+      const role = roleFromUrl || localStorage.getItem("role");
+      const token = tokenFromUrl || localStorage.getItem("token");
+      const email = emailFromUrl || localStorage.getItem("email");
+      const username = usernameFromUrl || localStorage.getItem("username");
+  
+      // Nếu lấy từ URL, lưu vào localStorage
+      if (userIdFromUrl && roleFromUrl && tokenFromUrl) {
+        localStorage.setItem("userId", userIdFromUrl);
+        localStorage.setItem("role", roleFromUrl);
+        localStorage.setItem("token", tokenFromUrl);
+        localStorage.setItem("email", emailFromUrl);
+        localStorage.setItem("username", usernameFromUrl);
+      }
+  
+      // Cập nhật React state
       setUserId(userId);
       setRole(role);
       setToken(token);
       setEmail(email);
       setUserName(username);
-
-      // Lưu vào localStorage
-      localStorage.setItem("userId", userId);
-      localStorage.setItem("role", role);
-      localStorage.setItem("token", token);
-      localStorage.setItem("email", email);
-      localStorage.setItem("username", username);
-
-      // Điều hướng tới trang chính
-      navigate("/product"); // Điều hướng tới trang product sau khi lưu thông tin
-    }
-  }, [location, navigate]);
+  
+      // Điều hướng xóa query parameters sau khi xử lý
+      if (userIdFromUrl && roleFromUrl && tokenFromUrl) {
+        navigate("/product", { replace: true });// Điều hướng tới URL sạch
+        setTimeout(() => {
+          window.location.reload(); // Buộc tải lại trang sau điều hướng
+        }, 100); 
+      }
+      
+    }, [location, navigate]);
+  
+    // Kiểm tra lại userId khi state hoặc localStorage thay đổi
+    useEffect(() => {
+      if (!userId) {
+        const userIdFromStorage = localStorage.getItem("userId");
+        if (userIdFromStorage) {
+          setUserId(userIdFromStorage);
+        }
+      }
+    }, [userId]);
+  
+    // Debug: Kiểm tra giá trị userId
+    useEffect(() => {
+      console.log("UserId:", userId);
+    }, [userId]);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -94,7 +124,7 @@ export default function Product() {
     try {
       // lấy sản phẩm 
       const productResponse = await fetch(
-        "https://localhost:7098/api/PlantAPI/getVerifiedPlants"
+        "https://opms1.runasp.net/api/PlantAPI/getVerifiedPlants"
       );
       const productsData = await productResponse.json();
 
@@ -111,7 +141,7 @@ export default function Product() {
       setProducts(productsData);
       //lấy category
       const categoryResponse = await fetch(
-        "https://localhost:7098/api/CategoryAPI/getCategory"
+        "https://opms1.runasp.net/api/CategoryAPI/getCategory"
       );
       if (!categoryResponse.ok) {
         throw new Error("Failed to fetch categories");
@@ -140,10 +170,10 @@ export default function Product() {
       if (sortOptionId) query.push(`sortOption=${sortOptionId}`);
 
       const finalQuery = query.length ? `?${query.join("&")}` : "";
-      const productResponse = await fetch(`https://localhost:7098/api/PlantAPI/searchPlants${finalQuery}`);
+      const productResponse = await fetch(`https://opms1.runasp.net/api/PlantAPI/searchPlants${finalQuery}`);
       const productsData = await productResponse.json();
       if (!productResponse.ok) throw new Error(productsData.message || "Không thể lấy cây trồng đã được lọc");
-      setProducts(productsData);
+      setProducts([...productsData]);
     } catch (err) {
       setError(err.message);
     }
@@ -159,7 +189,7 @@ export default function Product() {
     if (id === 2) {
       setSortOption("most-purchased"); // Assign a unique value for "Most Purchased" sorting
       try {
-        const response = await fetch("https://localhost:7098/api/PlantAPI/most-purchased?limit=7");
+        const response = await fetch("https://opms1.runasp.net/api/PlantAPI/most-purchased?limit=7");
         const data = await response.json();
         if (!response.ok) throw new Error("Unable to fetch best-selling products");
 
@@ -182,9 +212,9 @@ export default function Product() {
     } else {
       updatedCategories = updatedCategories.filter((id) => id !== categoryId);
     }
-
+    console.log("Updated Categories:", updatedCategories); 
     setSelectedCategories(updatedCategories);
-
+    searchPlants(name, updatedCategories, minPrice, maxPrice, sortOption); // Tìm kiếm sau khi cập nhật
   };
 
 
@@ -238,7 +268,7 @@ export default function Product() {
   // thêm sản phẩm vào giỏ hàng 
   const addToCart = async (productId, quantity) => {
     try {
-      const response = await fetch('https://localhost:7098/api/ShoppingCartAPI/createShoppingCart', {
+      const response = await fetch('https://opms1.runasp.net/api/ShoppingCartAPI/createShoppingCart', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

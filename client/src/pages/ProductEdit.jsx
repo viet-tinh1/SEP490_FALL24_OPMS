@@ -70,7 +70,7 @@ export default function ProductEdit() {
     }
 
     try {
-      const response = await fetch("https://localhost:7098/api/PlantAPI/updatePlant", {
+      const response = await fetch("https://opms1.runasp.net/api/PlantAPI/updatePlant", {
         method: "POST",       
         body: formDataToSend,
       });
@@ -92,7 +92,7 @@ export default function ProductEdit() {
     const fetchProductData = async () => {
       try {
         const response = await fetch(
-          `https://localhost:7098/api/PlantAPI/getPlantById?id=${plantId}`
+          `https://opms1.runasp.net/api/PlantAPI/getPlantById?id=${plantId}`
         );
         if (!response.ok) throw new Error("Không thể lấy dữ liệu sản phẩm");
         const data = await response.json();
@@ -126,7 +126,7 @@ export default function ProductEdit() {
 
         //lấy category
         const categoryResponse = await fetch(
-          "https://localhost:7098/api/CategoryAPI/getCategory"
+          "https://opms1.runasp.net/api/CategoryAPI/getCategory"
         );
         if (!categoryResponse.ok) {
           throw new Error("Failed to fetch categories");

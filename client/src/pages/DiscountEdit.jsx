@@ -29,8 +29,8 @@ export default function DiscountEdit() {
       }
 
       try {
-        const response = await fetch(`https://localhost:7098/api/VoucherAPI/getVoucherById?id=${voucherId}`);
-        const nameResponse = await fetch("https://localhost:7098/api/VoucherAPI/getVouchers");
+        const response = await fetch(`https://opms1.runasp.net/api/VoucherAPI/getVoucherById?id=${voucherId}`);
+        const nameResponse = await fetch("https://opms1.runasp.net/api/VoucherAPI/getVouchers");
 
         if (!response.ok || !nameResponse.ok) {
           throw new Error("Không thể tải dữ liệu mã giảm giá.");
@@ -132,7 +132,7 @@ export default function DiscountEdit() {
     };
 
     try {
-      const response = await fetch("https://localhost:7098/api/VoucherAPI/updateVoucher", {
+      const response = await fetch("https://opms1.runasp.net/api/VoucherAPI/updateVoucher", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

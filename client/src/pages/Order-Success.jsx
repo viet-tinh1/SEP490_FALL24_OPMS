@@ -45,7 +45,7 @@ export default function OrderSuccess() {
         const fetchOrders = async () => {
             setLoading(true);
             try {
-                const response = await fetch(`https://localhost:7098/api/OrderAPI/getOrdersByUserId?userId=${userId}`);
+                const response = await fetch(`https://opms1.runasp.net/api/OrderAPI/getOrdersByUserId?userId=${userId}`);
                 if (!response.ok) {
                     throw new Error("Failed to fetch orders");
                 }
@@ -86,7 +86,7 @@ export default function OrderSuccess() {
     }, [navigate]);
     const fetchCartDetails = async (id) => {
         try {
-            const response = await fetch(`https://localhost:7098/api/ShoppingCartAPI/getShoppingCartById?id=${id}`);
+            const response = await fetch(`https://opms1.runasp.net/api/ShoppingCartAPI/getShoppingCartById?id=${id}`);
             if (!response.ok) {
                 throw new Error(`Failed to fetch cart details for ID: ${id}`);
             }
@@ -101,7 +101,7 @@ export default function OrderSuccess() {
         if (plantNames[plantId]) return; // Skip if plant name is already fetched
 
         try {
-            const response = await fetch(`https://localhost:7098/api/PlantAPI/getPlantById?id=${plantId}`);
+            const response = await fetch(`https://opms1.runasp.net/api/PlantAPI/getPlantById?id=${plantId}`);
             if (!response.ok) {
                 throw new Error(`Failed to fetch plant name for plantId: ${plantId}`);
             }
@@ -124,7 +124,7 @@ export default function OrderSuccess() {
         }));
 
         try {
-            const response = await fetch("https://localhost:7098/api/OrderAPI/updateOrderStatus", {
+            const response = await fetch("https://opms1.runasp.net/api/OrderAPI/updateOrderStatus", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

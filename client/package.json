@@ -1,11 +1,13 @@
 {
   "name": "client",
+  "homepage": "https://clientfe.runasp.net/",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
+  
   "scripts": {
+    "start": "react-scripts start",
     "dev": "vite",
-    "build": "vite build",
+    "build": "react-scripts build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -19,6 +21,7 @@
     "react-quill": "^2.0.0",
     "react-rating-stars-component": "^2.2.0",
     "react-router-dom": "^6.26.1",
+    "react-scripts": "^5.0.1",
     "react-select": "^5.8.2"
   },
   "devDependencies": {
@@ -37,5 +40,17 @@
     "tailwind-scrollbar": "^3.1.0",
     "tailwindcss": "^3.4.10",
     "vite": "^5.4.1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

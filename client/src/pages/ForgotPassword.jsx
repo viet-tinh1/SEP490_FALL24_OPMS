@@ -16,7 +16,7 @@ export default function ForgotPassword() {
     setSuccessMessage("");
 
     try {
-      const response = await fetch("https://localhost:7098/api/UserAPI/sendOtpToEmail", {
+      const response = await fetch("https://opms1.runasp.net/api/UserAPI/sendOtpToEmail", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

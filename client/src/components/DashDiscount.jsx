@@ -23,7 +23,7 @@ export default function DashDiscount() {
 
       try {
         // Gọi API để lấy toàn bộ voucher
-        const response = await fetch(`https://localhost:7098/api/VoucherAPI/getVouchers`, {
+        const response = await fetch(`https://opms1.runasp.net/api/VoucherAPI/getVouchers`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -55,7 +55,7 @@ export default function DashDiscount() {
     if (!selectedDiscount) return;
   
     try {
-      const response = await fetch(`https://localhost:7098/api/VoucherAPI/deleteVoucher?id=${selectedDiscount.voucherId}`, {
+      const response = await fetch(`https://opms1.runasp.net/api/VoucherAPI/deleteVoucher?id=${selectedDiscount.voucherId}`, {
         method: 'DELETE', // Thay đổi phương thức thành DELETE
         headers: {
           'Content-Type': 'application/json',

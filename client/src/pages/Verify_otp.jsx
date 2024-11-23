@@ -26,7 +26,7 @@ export default function VerifyOtp() {
 
     try {
       // Call the OTP verification API
-      const response = await fetch("https://localhost:7098/api/SendMailAPI/verify-otp", {        method: "POST",
+      const response = await fetch("https://opms1.runasp.net/api/SendMailAPI/verify-otp", {        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },

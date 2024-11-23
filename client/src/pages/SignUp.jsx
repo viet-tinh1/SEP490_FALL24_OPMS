@@ -106,7 +106,7 @@ export default function Signup() {
     setLoading(true);
     try {
       // Thực hiện gọi API Google login và điều hướng người dùng tới trang Google để đăng nhập
-      window.location.href = "https://localhost:7098/api/Auth/google-login";
+      window.location.href = "https://opms1.runasp.net/api/Auth/google-login";
       // Sau đó, trình duyệt sẽ điều hướng tới trang đăng nhập Google, 
       // bạn không cần gọi hàm `checkGoogleLogin()` ngay tại đây nữa.
     } catch (error) {
@@ -136,7 +136,7 @@ export default function Signup() {
     setError(null); // Reset lỗi trước khi gửi
 
     try {
-      const response = await fetch("https://localhost:7098/api/Auth/register", {
+      const response = await fetch("https://opms1.runasp.net/api/Auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -169,7 +169,7 @@ export default function Signup() {
       console.log("Đăng ký thành công:", data);
       // Điều hướng người dùng tới trang khác, ví dụ trang đăng nhập
       if (data.message === "User registered successfully") {
-        const emailResponse = await fetch("https://localhost:7098/api/SendMailAPI/send-email", {
+        const emailResponse = await fetch("https://opms1.runasp.net/api/SendMailAPI/send-email", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

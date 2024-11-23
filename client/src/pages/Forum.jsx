@@ -53,7 +53,7 @@ function CommentSection({ postId, userId, refreshPosts }) {
     const fetchComments = async () => {
       setLoadingComments(true);
       try {
-        const response = await fetch(`https://localhost:7098/api/CommentAPI/getCommentByPostId?postId=${postId}`);
+        const response = await fetch(`https://opms1.runasp.net/api/CommentAPI/getCommentByPostId?postId=${postId}`);
         if (!response.ok) throw new Error("Failed to fetch comments");
         const commentsData = await response.json();
 
@@ -62,14 +62,14 @@ function CommentSection({ postId, userId, refreshPosts }) {
           commentsData.map(async (comment) => {
             try {
               const userResponse = await fetch(
-                `https://localhost:7098/api/UserAPI/getUserById?userId=${comment.userId}`
+                `https://opms1.runasp.net/api/UserAPI/getUserById?userId=${comment.userId}`
               );
               if (!userResponse.ok) throw new Error("Failed to fetch user data");
               const userData = await userResponse.json();
 
               // Fetch replies for each comment
               const repliesResponse = await fetch(
-                `https://localhost:7098/api/ReplyCommentAPI/getReplyCommentByCommentId?commentId=${comment.commentId}`
+                `https://opms1.runasp.net/api/ReplyCommentAPI/getReplyCommentByCommentId?commentId=${comment.commentId}`
               );
               const repliesData = repliesResponse.ok ? await repliesResponse.json() : [];
 
@@ -78,7 +78,7 @@ function CommentSection({ postId, userId, refreshPosts }) {
                 repliesData.map(async (reply) => {
                   try {
                     const replyUserResponse = await fetch(
-                      `https://localhost:7098/api/UserAPI/getUserById?userId=${reply.userId}`
+                      `https://opms1.runasp.net/api/UserAPI/getUserById?userId=${reply.userId}`
                     );
                     if (!replyUserResponse.ok) throw new Error("Failed to fetch user data for reply");
                     const replyUserData = await replyUserResponse.json();
@@ -135,7 +135,7 @@ function CommentSection({ postId, userId, refreshPosts }) {
     if (!commentContent.trim()) return;
 
     try {
-      const response = await fetch("https://localhost:7098/api/CommentAPI/createComment", {
+      const response = await fetch("https://opms1.runasp.net/api/CommentAPI/createComment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -172,7 +172,7 @@ function CommentSection({ postId, userId, refreshPosts }) {
     if (!ReplyCommentContent.trim()) return;
 
     try {
-      const response = await fetch("https://localhost:7098/api/ReplyCommentAPI/createReplyComment", {
+      const response = await fetch("https://opms1.runasp.net/api/ReplyCommentAPI/createReplyComment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -210,7 +210,7 @@ function CommentSection({ postId, userId, refreshPosts }) {
   const handleDeleteComment = async () => {
     try {
       const response = await fetch(
-        `https://localhost:7098/api/CommentAPI/deleteComment?id=${commentToDelete}`,
+        `https://opms1.runasp.net/api/CommentAPI/deleteComment?id=${commentToDelete}`,
         { method: "DELETE" }
       );
 
@@ -228,7 +228,7 @@ function CommentSection({ postId, userId, refreshPosts }) {
   };
   const handleUpdateComment = async () => {
     try {
-      const response = await fetch("https://localhost:7098/api/CommentAPI/updateComment", {
+      const response = await fetch("https://opms1.runasp.net/api/CommentAPI/updateComment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -262,7 +262,7 @@ function CommentSection({ postId, userId, refreshPosts }) {
 
 
       const response = await fetch(
-        `https://localhost:7098/api/CommentAPI/likeComment?id=${comment.commentId}`,
+        `https://opms1.runasp.net/api/CommentAPI/likeComment?id=${comment.commentId}`,
         {
           method: "POST",
         }
@@ -505,7 +505,7 @@ export default function Forum() {
     const fetchUserImage = async () => {
       if (userId) {
         try {
-          const response = await fetch(`https://localhost:7098/api/UserAPI/getUserById?userId=${userId}`);
+          const response = await fetch(`https://opms1.runasp.net/api/UserAPI/getUserById?userId=${userId}`);
           if (response.ok) {
             const userData = await response.json();
             setUserImage(userData.userImage || "https://via.placeholder.com/40");
@@ -524,11 +524,11 @@ export default function Forum() {
   const fetchPosts = async () => {
     setLoading(true);
     try {
-      const response = await fetch("https://localhost:7098/api/PostAPI/getPost");
+      const response = await fetch("https://opms1.runasp.net/api/PostAPI/getPost");
       if (!response.ok) throw new Error("Failed to fetch posts");
       const postData = await response.json();
 
-      const likedPostsResponse = await fetch(`https://localhost:7098/api/PostAPI/getUserLikedPosts?userId=${userId}`);
+      const likedPostsResponse = await fetch(`https://opms1.runasp.net/api/PostAPI/getUserLikedPosts?userId=${userId}`);
       const likedPosts = likedPostsResponse.ok ? await likedPostsResponse.json() : [];
 
       localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
@@ -537,7 +537,7 @@ export default function Forum() {
         postData.map(async (post) => {
           try {
             const userResponse = await fetch(
-              `https://localhost:7098/api/UserAPI/getUserById?userId=${post.userId}`
+              `https://opms1.runasp.net/api/UserAPI/getUserById?userId=${post.userId}`
             );
             if (!userResponse.ok) throw new Error("Failed to fetch user data");
             const userData = await userResponse.json();
@@ -605,7 +605,7 @@ export default function Forum() {
     }
 
     try {
-      const response = await fetch("https://localhost:7098/api/PostAPI/createPost", {
+      const response = await fetch("https://opms1.runasp.net/api/PostAPI/createPost", {
         method: "POST",
         body: formData,
       });
@@ -631,7 +631,7 @@ export default function Forum() {
   const handleDeletePost = async () => {
     try {
       const response = await fetch(
-        `https://localhost:7098/api/PostAPI/deletePost?id=${postToDelete}`,
+        `https://opms1.runasp.net/api/PostAPI/deletePost?id=${postToDelete}`,
         { method: "DELETE" }
       );
 
@@ -669,7 +669,7 @@ export default function Forum() {
     }
 
     try {
-      const response = await fetch("https://localhost:7098/api/PostAPI/updatePost", {
+      const response = await fetch("https://opms1.runasp.net/api/PostAPI/updatePost", {
         method: "POST",
         body: formData,
       });
@@ -703,7 +703,7 @@ export default function Forum() {
       const likeValue = isLiked ? 0 : 1;
 
       const response = await fetch(
-        `https://localhost:7098/api/PostAPI/likePost?like=${likeValue}&postId=${post.postId}&userId=${userId}`,
+        `https://opms1.runasp.net/api/PostAPI/likePost?like=${likeValue}&postId=${post.postId}&userId=${userId}`,
         {
           method: "POST",
         }

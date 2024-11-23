@@ -33,7 +33,7 @@ export default function OrderManager() {
         }
         const fetchOrders = async () => {
             try {
-                const response = await fetch(`https://localhost:7098/api/OrderAPI/getOrdersBySeller?sellerId=${userId}`);
+                const response = await fetch(`https://opms1.runasp.net/api/OrderAPI/getOrdersBySeller?sellerId=${userId}`);
                 if (!response.ok) {
                     throw new Error("Failed to fetch orders");
                 }
@@ -72,7 +72,7 @@ export default function OrderManager() {
         }));
 
         try {
-            const response = await fetch("https://localhost:7098/api/OrderAPI/updateOrderStatus", {
+            const response = await fetch("https://opms1.runasp.net/api/OrderAPI/updateOrderStatus", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -39,7 +39,7 @@ export default function SignIn() {
     setLoading(true);
     try {
       // Thực hiện gọi API Google login và điều hướng người dùng tới trang Google để đăng nhập
-      window.location.href = "https://localhost:7098/api/Auth/google-login";
+      window.location.href = "https://opms1.runasp.net/api/Auth/google-login";
       // Sau đó, trình duyệt sẽ điều hướng tới trang đăng nhập Google, 
       // bạn không cần gọi hàm `checkGoogleLogin()` ngay tại đây nữa.
     } catch (error) {
@@ -54,7 +54,7 @@ export default function SignIn() {
     setError("");
   
     try {
-      const response = await fetch("https://localhost:7098/api/Auth/login", {
+      const response = await fetch("https://opms1.runasp.net/api/Auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

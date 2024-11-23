@@ -112,7 +112,7 @@ const handleSearch = async () => {
   try {
     if (searchQuery.trim()) {
       const response = await fetch(
-        `https://localhost:7098/api/PlantAPI/searchPlants?name=${searchQuery}&categoryId=0`
+        `https://opms1.runasp.net/api/PlantAPI/searchPlants?name=${searchQuery}&categoryId=0`
       );
 
       if (!response.ok) {
@@ -127,7 +127,7 @@ const handleSearch = async () => {
     } else {
       // Fetch all verified plants when search query is empty
       const response = await fetch(
-        `https://localhost:7098/api/PlantAPI/getVerifiedPlants`
+        `https://opms1.runasp.net/api/PlantAPI/getVerifiedPlants`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch all verified plants");

@@ -19,7 +19,7 @@ export default function DashFeedback() {
   const fetchFeedbacks = async () => {
     try {
       setLoading(true); // Bật trạng thái loading
-      const response = await fetch("https://localhost:7098/api/FeebbackAPI/getFeedback");
+      const response = await fetch("https://opms1.runasp.net/api/FeebbackAPI/getFeedback");
                                     
       if (!response.ok) {
         throw new Error("Không thể lấy danh sách phản hồi. Vui lòng thử lại sau.");

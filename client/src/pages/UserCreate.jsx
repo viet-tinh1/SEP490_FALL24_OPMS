@@ -24,7 +24,7 @@ export default function UserCreate() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("https://localhost:7098/api/UserAPI/getUser");
+        const response = await fetch("https://opms1.runasp.net/api/UserAPI/getUser");
         if (response.ok) {
           const data = await response.json();
           setUsers(data); // Lưu danh sách người dùng vào state
@@ -135,7 +135,7 @@ export default function UserCreate() {
     }
 
     try {
-      const response = await fetch("https://localhost:7098/api/UserAPI/createUser", {
+      const response = await fetch("https://opms1.runasp.net/api/UserAPI/createUser", {
         method: "POST",
         body: formDataToSend,
       });

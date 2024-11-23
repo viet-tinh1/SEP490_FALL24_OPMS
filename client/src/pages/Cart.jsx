@@ -36,7 +36,7 @@ export default function Cart() {
 
       try {
         const response = await fetch(
-          `https://localhost:7098/api/ShoppingCartAPI/getShoppingCartByUser?userId=${userId}`,
+          `https://opms1.runasp.net/api/ShoppingCartAPI/getShoppingCartByUser?userId=${userId}`,
           {
             method: "GET",
             headers: {
@@ -78,7 +78,7 @@ export default function Cart() {
       const updatedCartItems = await Promise.all(
         cartItems.map(async (item) => {
           const plantResponse = await fetch(
-            `https://localhost:7098/api/PlantAPI/getPlantById?id=${item.plantId}`,
+            `https://opms1.runasp.net/api/PlantAPI/getPlantById?id=${item.plantId}`,
             {
               method: "GET",
               headers: {
@@ -119,7 +119,7 @@ export default function Cart() {
     }
     try {
       const response = await fetch(
-        `https://localhost:7098/api/VoucherAPI/getVoucherByName?name=${voucherCode}`,
+        `https://opms1.runasp.net/api/VoucherAPI/getVoucherByName?name=${voucherCode}`,
         {
           method: "GET",
           headers: {
@@ -147,7 +147,7 @@ export default function Cart() {
       // Nếu mã giảm giá hợp lệ, tiến hành gọi API để lấy chi tiết giỏ hàng và áp dụng giảm giá
       if (voucherData && voucherData.voucherPercent && cartItem.plantDetails.userId === voucherData.userId) {
         const cartResponse = await fetch(
-          `https://localhost:7098/api/ShoppingCartAPI/getShoppingCartById?id=${cartItem.shoppingCartItemId}`,
+          `https://opms1.runasp.net/api/ShoppingCartAPI/getShoppingCartById?id=${cartItem.shoppingCartItemId}`,
           {
             method: "GET",
             headers: {
@@ -164,7 +164,7 @@ export default function Cart() {
         setVoucherItem(cartData);
 
         const discountResponse = await fetch(
-          `https://localhost:7098/api/ShoppingCartAPI/applyDiscount?cartId=${cartItem.shoppingCartItemId}&discountPercent=${voucherData.voucherPercent}`,
+          `https://opms1.runasp.net/api/ShoppingCartAPI/applyDiscount?cartId=${cartItem.shoppingCartItemId}&discountPercent=${voucherData.voucherPercent}`,
           {
             method: "POST",
             headers: {
