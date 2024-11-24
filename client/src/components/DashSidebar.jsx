@@ -155,7 +155,7 @@ export default function DashSidebar() {
         {(role === '1' || role === '3') &&(
           <Link to="/dashboard?tab=dash">
           <Sidebar.Item active={tab === "dash" || !tab} icon={HiChartPie} as="div">
-            Dashboard
+            Bảng điều khiển
           </Sidebar.Item>
         </Link>
         )}
