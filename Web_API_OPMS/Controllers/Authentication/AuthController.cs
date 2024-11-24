@@ -121,7 +121,7 @@ namespace Web_API_OPMS.Controllers.Authentication
             HttpContext.Session.SetInt32("UserId", user.UserId);
             HttpContext.Session.SetInt32("UserRole", user.Roles);
 
-            return Redirect($"http://localhost:5173/product?userId={user.UserId}&role={user.Roles}&token={token}&username={user.Username}&email={user.Email}");
+            return Redirect($"https://clientfe.runasp.net/product?userId={user.UserId}&role={user.Roles}&token={token}&username={user.Username}&email={user.Email}");
         }
 
         [HttpPost("logout")]

@@ -2,6 +2,7 @@
 using BusinessObject.Models;
 using DataAccess.DTO;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Repositories.Interface;
 using System;
 using System.Collections.Generic;
@@ -14,10 +15,11 @@ namespace Web_API_OPMS.Controllers
     public class ReviewAPI : ControllerBase
     {
         private readonly IReviewRepository _reviewRepository;
-
-        public ReviewAPI(IReviewRepository reviewRepository)
+        private readonly Db6213Context _context;
+        public ReviewAPI(IReviewRepository reviewRepository,Db6213Context context)
         {
             _reviewRepository = reviewRepository;
+            _context = context;
         }
 
         // Lấy danh sách Review
@@ -195,5 +197,74 @@ namespace Web_API_OPMS.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+        /// <summary>
+        /// review khi cây đó có 1 đơn đã hoàn thành 
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="plantId"></param>
+        /// <returns></returns>
+        [HttpGet("canReview")]
+        public IActionResult CanUserReview(int userId, int plantId)
+        {
+            try
+            {
+                // Truy xuất thông tin từ bảng Order và ShoppingCartItem
+                var hasPurchased = _context.Orders
+                    .Include(o => o.ShoppingCartItem)
+                    .Any(o => o.UserId == userId
+                              && o.ShoppingCartItem.PlantId == plantId
+                              && o.Status == "Success"); // Đơn đã hoàn thành
+
+                if (hasPurchased)
+                {
+                    return Ok(new { canReview = true });
+                }
+
+                return Ok(new { canReview = false });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Đã xảy ra lỗi khi kiểm tra quyền.", error = ex.Message });
+            }
+        }
+        /// <summary>
+        /// review khi tất cả đơn về cây đó đc hoàn thành 
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="plantId"></param>
+        /// <returns></returns>
+        //[HttpGet("canReview")]
+        //public IActionResult CanUserReview(int userId, int plantId)
+        //{
+        //    try
+        //    {
+        //        // Truy xuất danh sách các đơn hàng liên quan đến người dùng và sản phẩm
+        //        var orders = _context.Orders
+        //            .Include(o => o.ShoppingCartItem)
+        //            .Where(o => o.UserId == userId && o.ShoppingCartItem.PlantId == plantId)
+        //            .ToList();
+
+        //        // Nếu không có đơn hàng nào thì không thể review
+        //        if (!orders.Any())
+        //        {
+        //            return Ok(new { canReview = false, message = "Không có đơn hàng nào liên quan đến sản phẩm này." });
+        //        }
+
+        //        // Kiểm tra nếu tất cả các đơn hàng đều có trạng thái "Success"
+        //        var allCompleted = orders.All(o => o.Status == "Success");
+
+        //        if (allCompleted)
+        //        {
+        //            return Ok(new { canReview = true });
+        //        }
+
+        //        return Ok(new { canReview = false, message = "Bạn cần hoàn thành tất cả các đơn hàng liên quan đến sản phẩm này để đánh giá." });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { message = "Đã xảy ra lỗi khi kiểm tra quyền.", error = ex.Message });
+        //    }
+        //}
     }
 }
+

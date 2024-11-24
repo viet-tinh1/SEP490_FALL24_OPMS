@@ -111,6 +111,7 @@ namespace DataAccess.DAO
                     CategoryId = p.CategoryId,
                     Price = p.Price,
                     ImageUrl = p.ImageUrl,
+                    Stock = p.Stock,
                     Discount = p.Discount,
                     TotalPurchased = g.TotalQuantity // Gán tổng số lượng đã mua cho mỗi Plant
                 })
@@ -138,6 +139,7 @@ namespace DataAccess.DAO
                     ImageUrl = p.ImageUrl ,
                     Discount = p.Discount,
                     UserId = p.UserId,
+                    Stock = p.Stock,
                     TotalPurchased = g.TotalQuantity // Gán tổng số lượng đã mua cho mỗi Plant
                 })
                 .ToListAsync(); // Trả về danh sách bất đồng bộ
