@@ -88,9 +88,19 @@ export default function PlantItem() {
         return(
         <div
           key={product.plantId}
-          className="bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto"
-        >
-          <Link>
+          className={`relative bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto ${product.stock === 0 ? "opacity-98" : ""
+          }`}
+      >
+          {product.stock === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-10">
+              <span className="text-red-400 font-bold text-lg">Hết hàng</span>
+            </div>
+          )}
+          {/* Liên kết đến trang chi tiết sản phẩm */}
+          <Link
+            to={product.stock === 0 ? "#" : `/productdetail/${product.plantId}`}
+            className={`${product.stock === 0 ? "pointer-events-none" : ""}`}
+          >
             <div className="relative p-2.5overflow-hidden rounded-xl bg-clip-border">
               <img
                 src={product.imageUrl}

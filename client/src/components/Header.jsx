@@ -7,7 +7,7 @@ import { MdOutlineShoppingCart } from "react-icons/md";
 import { useState, useEffect, useRef } from "react";
 import ConfirmationDialog from "../components/ConfirmationDialog";
 export default function Header() {
-  
+
   const path = useLocation().pathname;
   const [userId, setUserId] = useState(null);
   const [role, setURoles] = useState(null);
@@ -18,6 +18,7 @@ export default function Header() {
   const navigate = useNavigate();
   const timeoutRef = useRef(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [users, setUsers] = useState([]);
 
   const INACTIVITY_LIMIT = 1440 * 60 * 1000;
 
@@ -91,7 +92,7 @@ export default function Header() {
     };
   }, []);
   const handleSignOut = () => {
-     // Xóa tất cả các mục trong localStorage
+    // Xóa tất cả các mục trong localStorage
     localStorage.clear();
     // Phát sự kiện đăng xuất
     localStorage.setItem("signOut", Date.now());
@@ -108,39 +109,69 @@ export default function Header() {
   const closeConfirmationDialog = () => {
     setShowConfirmation(false);
   };
-const handleSearch = async () => {
-  try {
-    if (searchQuery.trim()) {
-      const response = await fetch(
-        `https://opms1.runasp.net/api/PlantAPI/searchPlants?name=${searchQuery}&categoryId=0`
-      );
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        // Lấy `userId` từ `localStorage`
+        const storedUserId = localStorage.getItem("userId");
+        if (!storedUserId) {
+          console.error("No userId found in session");
+          return;
+        }
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch search results");
+        // Gọi API để lấy thông tin người dùng
+        const response = await fetch(`https://opms1.runasp.net/api/UserAPI/getUserById?userId=${storedUserId}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+
+        const userData = await response.json();
+
+        // Cập nhật state người dùng
+        setUsers(userData);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
       }
+    };
 
-      const productsData = await response.json();
-      setSearchResults(productsData); // Store search results in state
-
-      // Navigate to "/product" with the search query as a URL parameter
-      navigate(`/product?search=${encodeURIComponent(searchQuery)}`, { state: { results: productsData } });
-    } else {
-      // Fetch all verified plants when search query is empty
-      const response = await fetch(
-        `https://opms1.runasp.net/api/PlantAPI/getVerifiedPlants`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch all verified plants");
-      }
-      const productsData = await response.json();
-      setSearchResults(productsData);
-      navigate(`/product`, { state: { results: productsData } });
+    // Nếu `userId` tồn tại, gọi API để lấy dữ liệu
+    if (userId) {
+      fetchUserData();
     }
-  } catch (error) {
-    console.error("Error fetching search results:", error);
-  }
-};
-// ko cho request link only click button
+  }, [userId]);
+  const handleSearch = async () => {
+    try {
+      if (searchQuery.trim()) {
+        const response = await fetch(
+          `https://opms1.runasp.net/api/PlantAPI/searchPlants?name=${searchQuery}&categoryId=0`
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch search results");
+        }
+
+        const productsData = await response.json();
+        setSearchResults(productsData); // Store search results in state
+
+        // Navigate to "/product" with the search query as a URL parameter
+        navigate(`/product?search=${encodeURIComponent(searchQuery)}`, { state: { results: productsData } });
+      } else {
+        // Fetch all verified plants when search query is empty
+        const response = await fetch(
+          `https://opms1.runasp.net/api/PlantAPI/getVerifiedPlants`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch all verified plants");
+        }
+        const productsData = await response.json();
+        setSearchResults(productsData);
+        navigate(`/product`, { state: { results: productsData } });
+      }
+    } catch (error) {
+      console.error("Error fetching search results:", error);
+    }
+  };
+  // ko cho request link only click button
   {/*useEffect(() => {
     const debounceTimeout = setTimeout(() => {
       handleSearch();
@@ -154,7 +185,7 @@ const handleSearch = async () => {
       const debounceTimeout = setTimeout(() => {
         handleSearch();
       }, 200); // Đợi 200ms trước khi chạy tìm kiếm
-  
+
       return () => clearTimeout(debounceTimeout);
     }
   }, [searchQuery]);
@@ -203,15 +234,13 @@ const handleSearch = async () => {
         <AiOutlineSearch />
       </Button>
       <div className="flex gap-2 md:order-2">
-        <Button className="w-12 h-10 hidden sm:inline" color="gray" pill>
-          <FaSun />
-        </Button>
+
 
         {userId ? (
           <Dropdown
             arrowIcon={false}
             inline
-            label={<Avatar alt="user" img="" rounded />}
+            label={<Avatar alt="user" img={users.userImage} rounded />}
           >
             <Dropdown.Header>
               <span className="block text-sm font-medium truncate">
@@ -239,12 +268,12 @@ const handleSearch = async () => {
         {/* Hiển thị hộp thoại xác nhận nếu `showConfirmation` là true */}
         {showConfirmation && (
           <ConfirmationDialog
-          message="Bạn có chắc chắn muốn đăng xuất không?"
-          onConfirm={() => {
-            handleSignOut();
-            closeConfirmationDialog();
-          }}
-          onCancel={closeConfirmationDialog}
+            message="Bạn có chắc chắn muốn đăng xuất không?"
+            onConfirm={() => {
+              handleSignOut();
+              closeConfirmationDialog();
+            }}
+            onCancel={closeConfirmationDialog}
           />
         )}
 
@@ -262,22 +291,22 @@ const handleSearch = async () => {
         </Navbar.Link>
         {(role === "1" || role === "3") && (
           <Navbar.Link active={path === "/dashboard"} as={"div"}>
-            <Link to="/dashboard?tab=dash">Dashboard</Link>
+            <Link to="/dashboard?tab=dash">Bảng điều khiển</Link>
           </Navbar.Link>
         )}
         <Navbar.Link active={path === "/Forum"} as={"div"}>
           <Link to="/Forum">Diễn đàn</Link>
         </Navbar.Link>
-        {(role === "2" ) && (
-        <Navbar.Link active={path === "/order-success"} as={"div"}>
-          <Link to="/order-success">Đơn Hàng</Link>
-        </Navbar.Link>
-      )}
-      {(role === "3" ) && (
-        <Navbar.Link active={path === `/producsSeller/${userId}`} as={"div"}>
-          <Link to={`/producsSeller/${userId}`}>Cửa hàng </Link>
-        </Navbar.Link>
-      )}
+        {(role === "2") && (
+          <Navbar.Link active={path === "/order-success"} as={"div"}>
+            <Link to="/order-success">Đơn Hàng</Link>
+          </Navbar.Link>
+        )}
+        {(role === "3") && (
+          <Navbar.Link active={path === `/producsSeller/${userId}`} as={"div"}>
+            <Link to={`/producsSeller/${userId}`}>Cửa hàng </Link>
+          </Navbar.Link>
+        )}
         <Navbar.Link active={path === "/cart"} as={"div"}>
           <Link to="/cart" className="text-2xl">
             <MdOutlineShoppingCart />
