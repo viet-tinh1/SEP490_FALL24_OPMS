@@ -52,7 +52,7 @@ export default function ProductDetail() {
           canReviewRes.json(),
         ]);
         const UsersResponse = await fetch(
-          "https://localhost:7098/api/UserAPI/getUser"
+          "https://opms1.runasp.net/api/UserAPI/getUser"
         );
         if (!UsersResponse.ok) {
           throw new Error("Failed to fetch categories");
@@ -82,7 +82,7 @@ export default function ProductDetail() {
       if (!userId) return;
 
       try {
-        const response = await fetch(`https://localhost:7098/api/ReviewAPI/canReview?userId=${userId}&plantId=${plantId}`);
+        const response = await fetch(`https://opms1.runasp.net/api/ReviewAPI/canReview?userId=${userId}&plantId=${plantId}`);
         const data = await response.json();
         setCanReview(data.canReview);
       } catch (error) {
