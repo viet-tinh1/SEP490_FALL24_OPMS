@@ -162,7 +162,11 @@ export default function Product() {
       // Tạo query tìm kiếm
       const query = [];
       if (name) query.push(`name=${encodeURIComponent(name)}`);
-      if (!name) { fetchProductsAndCategories(); }
+      if (!name && !selectedCategoryIds.length && !minPrice && !maxPrice && !sortOptionId) {
+        // Nếu không có từ khóa tìm kiếm và không áp dụng bất kỳ bộ lọc nào, tải toàn bộ danh sách
+        fetchProductsAndCategories();
+        return;
+    }
       if (selectedCategoryIds.length)
         query.push(selectedCategoryIds.map(id => `categoryId=${id}`).join("&"));
       if (minPrice) query.push(`minPrice=${minPrice}`);
