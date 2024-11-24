@@ -25,18 +25,33 @@ export default function ProductDetail() {
   const [userData, setUserData] = useState(null); // State to store the notification message
   const [users, setUsers] = useState([]);
   const userIds = localStorage.getItem("userId");
+  const [canReview, setCanReview] = useState(false);
+
   // Fetch product data when the component mounts
- 
-    
-    
-    const fetchProductData = async () => {
+
+
+
+  useEffect(() => {
+    const fetchData = async () => {
       try {
-        // lấy data plants theo plantid
-        const response = await fetch(`https://localhost:7098/api/PlantAPI/getPlantById?id=${plantId}`);
-        if (!response.ok) throw new Error("Không thể lấy dữ liệu sản phẩm");
-        const data = await response.json();
-        setProductData(data);
-        // lấy thông tin user
+        // Kiểm tra userId trước khi sử dụng
+        const localUserId = userIds || null;
+  
+        const [productRes, reviewsRes, ratingRes, canReviewRes] = await Promise.all([
+          fetch(`https://localhost:7098/api/PlantAPI/getPlantById?id=${plantId}`),
+          fetch(`https://localhost:7098/api/ReviewAPI/getReviewsByPlantId?plantId=${plantId}`),
+          fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`),
+          localUserId
+            ? fetch(`https://localhost:7098/api/ReviewAPI/canReview?userId=${localUserId}&plantId=${plantId}`)
+            : Promise.resolve({ json: () => ({ canReview: false }) }),
+        ]);
+  
+        const [productData, reviewsData, ratingData, canReviewData] = await Promise.all([
+          productRes.json(),
+          reviewsRes.json(),
+          ratingRes.json(),
+          canReviewRes.json(),
+        ]);
         const UsersResponse = await fetch(
           "https://localhost:7098/api/UserAPI/getUser"
         );
@@ -46,18 +61,37 @@ export default function ProductDetail() {
         const usersData = await UsersResponse.json();
         console.log(usersData)
         setUsers(usersData);
-        // Fetch rating summary
-        const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
-        const ratingData = await ratingResponse.json();
+        setProductData(productData);
+        setReviews(reviewsData);
         setRatingSummary(ratingData);
-      } catch (error) {
-        setError(error.message);
+        setCanReview(canReviewData.canReview || false);
+      } catch (err) {
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     };
+  
+    fetchData();
+  }, [plantId, userIds]);
+  // check review
+  useEffect(() => {
+    const checkCanReview = async () => {
+      const userId = localStorage.getItem("userId");
+      if (!userId) return;
 
-   
+      try {
+        const response = await fetch(`https://localhost:7098/api/ReviewAPI/canReview?userId=${userId}&plantId=${plantId}`);
+        const data = await response.json();
+        setCanReview(data.canReview);
+      } catch (error) {
+        console.error("Error checking review permission:", error);
+      }
+    };
+
+    checkCanReview();
+  }, [plantId]);
+
   const handleReasonSelect = (reason) => {
     setSelectedReason(reason);
     setIsReasonModalOpen(false);
@@ -68,10 +102,10 @@ export default function ProductDetail() {
     try {
       const reviewResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getReviewsByPlantId?plantId=${plantId}`);
       let reviewData = await reviewResponse.json();
-  
+
       // Ensure reviews is an array
       if (!Array.isArray(reviewData)) reviewData = [];
-  
+
       // Fetch user details for each review
       const updatedReviews = await Promise.all(
         reviewData.map(async (review) => {
@@ -93,17 +127,15 @@ export default function ProductDetail() {
           }
         })
       );
-  
+
       setReviews(updatedReviews);
     } catch (error) {
       console.error("Error fetching reviews:", error);
     }
   };
   useEffect(() => {
-    fetchProductReviews(); 
-  fetchProductData(); // Call the fetch function on mount
-
-}, [plantId]);
+    fetchProductReviews();
+  }, [plantId]);
   // Function to handle increment
   const incrementQuantity = () => {
     setQuantity((prevQuantity) => prevQuantity + 1);
@@ -111,7 +143,7 @@ export default function ProductDetail() {
 
   // Function to handle decrement
 
-  const decrementQuantity  = () => {
+  const decrementQuantity = () => {
     setQuantity((prevQuantity) => (prevQuantity > 0 ? prevQuantity - 1 : 0));
   };
 
@@ -140,41 +172,56 @@ export default function ProductDetail() {
   // Handle review submit
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
-
-    const userId = localStorage.getItem("userId"); // Giả sử bạn lưu userId trong localStorage
+  
+    const userId = localStorage.getItem("userId"); // Lấy userId từ localStorage
     if (!userId) {
       setNotification("Bạn cần đăng nhập để gửi đánh giá.");
       return;
     }
-
-    // Gửi đánh giá đến API
+  
     try {
-      const response = await fetch(`https://localhost:7098/api/ReviewAPI/createReview`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          plantId: plantId,
-          rating: rating,
-          comment: comment,
-          userId: userId,
+      // Kiểm tra quyền đánh giá
+      const checkResponse = await fetch(
+        `https://localhost:7098/api/ReviewAPI/canReview?userId=${userId}&plantId=${plantId}`
+      );
+      const checkData = await checkResponse.json();
+  
+      if (!checkData.canReview) {
+        setNotification("Bạn không thể đánh giá sản phẩm này vì chưa mua.");
+        return;
+      }
+  
+      // Gửi đánh giá và cập nhật dữ liệu liên quan
+      const [createReviewResponse, updatedRatingData] = await Promise.all([
+        fetch(`https://localhost:7098/api/ReviewAPI/createReview`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            plantId: plantId,
+            rating: rating,
+            comment: comment,
+            userId: userId,
+          }),
         }),
-      });
-      if (response.ok) {
+        fetch(
+          `https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`
+        ).then((res) => res.json()),
+      ]);
+  
+      if (createReviewResponse.ok) {
         setNotification("Đánh giá của bạn đã được gửi");
         setRating(0);
         setComment("");
+  
+        // Cập nhật giao diện với dữ liệu mới
+        fetchProductReviews();
+        setRatingSummary(updatedRatingData);
+  
         setTimeout(() => {
           setNotification(""); // Ẩn thông báo sau 3 giây
         }, 3000);
-
-       
-        fetchProductReviews();
-
-        const ratingResponse = await fetch(`https://localhost:7098/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`);
-        const ratingData = await ratingResponse.json();
-        setRatingSummary(ratingData);
       } else {
         setNotification("Có lỗi xảy ra khi gửi đánh giá của bạn");
         setTimeout(() => {
@@ -190,8 +237,8 @@ export default function ProductDetail() {
     }
   };
   const addToCart = async (productId, quantity) => {
-    if(quantity <= 0
-    ){
+    if (quantity <= 0
+    ) {
       alert("Số lượng phải lớn hơn 0")
       return;
     }
@@ -204,7 +251,7 @@ export default function ProductDetail() {
         body: JSON.stringify({
           plantId: productId,
           quantity: quantity,
-          userId : userIds,
+          userId: userIds,
 
         }),
       });
@@ -237,11 +284,11 @@ export default function ProductDetail() {
     return <div>Error: {error}</div>;
   }
 
-  const { plantName, price, description, imageUrl, rating: productRating,userId } = productData || {};
+  const { plantName, price, description, imageUrl, rating: productRating, userId } = productData || {};
 
   // Tính số sao trung bình
   const averageRating = (ratingSummary.totalRating / ratingSummary.totalReviews).toFixed(1);
-  
+
   return (
     <body className="overflow-hidden bg-gray-100">
       <section className="py-10 bg-white shadow-lg shadow-gray-200 rounded-md md:py-10 dark:bg-gray-900 antialiased p-10 m-10">
@@ -285,7 +332,7 @@ export default function ProductDetail() {
                     </svg>
                   </div>
                   <p className="text-sm font-medium leading-none text-gray-500 dark:text-gray-400">
-                    ({averageRating || "5.0"}) {/* Dynamic rating */}
+                    <p>Rating: ({isNaN(averageRating) || !averageRating ? 0 : averageRating})</p> {/* Dynamic rating */}
                   </p>
                   <a
                     href="#"
@@ -415,7 +462,7 @@ export default function ProductDetail() {
 
               <div className="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
 
-                <button 
+                <button
                   onClick={() => addToCart(plantId, quantity)} // Gọi hàm thêm vào giỏ hàng khi nhấn nút
                   className="flex items-center justify-center py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                 >
@@ -494,7 +541,7 @@ export default function ProductDetail() {
                 </p>
               </Link>
               <hr className="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
-              <div className="text-gray-500 dark:text-gray-400"dangerouslySetInnerHTML={{ __html: description }}/>
+              <div className="text-gray-500 dark:text-gray-400" dangerouslySetInnerHTML={{ __html: description }} />
             </div>
           </div>
         </div>
@@ -524,10 +571,24 @@ export default function ProductDetail() {
                   />
                   <div>
                     <div className="flex items-center space-x-2">
-                      <h4 className="font-semibold">{review.username }</h4>
+                      <h4 className="font-semibold">{review.username}</h4>
                       <span className="text-sm text-gray-500">{new Date(review.reviewDate).toLocaleDateString()}</span>
                     </div>
                     <p className="mt-2 text-gray-700">{review.comment}</p>
+                    <div class="flex items-center gap-1 mt-2">
+                      <svg
+                        class="w-4 h-4 text-yellow-300"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z"
+                        />
+                      </svg>
+                      <p class="text-gray-700">4</p>
+                    </div>
 
                     <div className="flex items-center space-x-4 mt-2">
                       {/* Like button */}
@@ -548,30 +609,42 @@ export default function ProductDetail() {
 
         {/* Review Form */}
         <div className="mt-10">
-          <h3 className="text-2xl font-semibold mb-4">Đánh giá sản phẩm</h3>
-          <form onSubmit={handleReviewSubmit} className="space-y-4">
-            {/* Star Rating Component */}
-            <CustomRating
-            count={5}
-            value={rating}
-            onChange={handleRatingChange}
-            size={24}
-            activeColor="#ffd700"
-            />
-            <div>
-              <textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Viết bình luận của bạn"
-                className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:border-blue-500"
-                rows="5"
-              ></textarea>
-            </div>
+          {canReview ? (
+            <>
+              <h3 className="text-2xl font-semibold mb-4">Đánh giá sản phẩm</h3>
+              <form onSubmit={handleReviewSubmit} className="space-y-4">
+                {/* Star Rating Component */}
+                <CustomRating
+                  count={5}
+                  value={rating}
+                  onChange={handleRatingChange}
+                  size={24}
+                  activeColor="#ffd700"
+                />
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Viết bình luận của bạn"
+                  className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:border-blue-500"
+                  rows="5"
 
-            <button type="submit" className="block text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800">
-              Gửi đánh giá
-            </button>
-          </form>
+                ></textarea>
+
+                <button
+                  type="submit"
+                  className={`block text-white font-medium rounded-lg text-sm px-5 py-2.5 ${comment.trim()
+                      ? "bg-red-600 hover:bg-red-700"
+                      : "bg-gray-300 cursor-not-allowed"
+                    }`}
+                  disabled={!comment.trim()} // Vô hiệu hóa nếu không có dữ liệu
+                >
+                  Gửi đánh giá
+                </button>
+              </form>
+            </>
+          ) : (
+            <p className="text-gray-500">Chỉ những người đã mua sản phẩm này mới có thể đánh giá.</p>
+          )}
         </div>
       </div>
     </body>
