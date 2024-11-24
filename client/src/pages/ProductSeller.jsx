@@ -353,7 +353,7 @@ export default function ProductSeller() {
                 </Sidebar.Item>
                 <ul className="ml-6 mt-2 space-y-2">                
                   {categories
-                  .slice(0, showAll ? categories.length : 3)
+                  .slice(0, showAll ? categories.length : 1000000)
                   .map((category) => (
                     <li
                       key={category.categoryId}
@@ -377,14 +377,16 @@ export default function ProductSeller() {
                   ))}
                 </ul>
                 {/* "Xem thêm" button */}
-                <div className="ml-6 mt-2">
-                  <button
-                    onClick={toggleShowAll}
-                    className="text-cyan-700 hover:underline focus:outline-none"
-                  >
-                    {showAll ? "Thu gọn" : "Xem thêm"}
-                  </button>
-                </div>
+                {categories.length > 100 && (
+                  <div className="ml-6 mt-2">
+                    <button
+                      onClick={toggleShowAll}
+                      className="text-cyan-700 hover:underline focus:outline-none"
+                    >
+                      {showAll ? "Thu gọn" : "Xem thêm"}
+                    </button>
+                  </div>
+                )}
               </Sidebar.ItemGroup>
               
             </Sidebar.Items>
@@ -548,18 +550,7 @@ export default function ProductSeller() {
                       <PiShoppingCartLight />
                     </button>
                   </div>
-                  <div className="p-2 flex items-center justify-between">
-                  <Link to={`/producsSeller/${product.userId}`}>
-                      <div className="flex items-center space-x-5">
-                        <img
-                         src={userimg.userImage || "https://via.placeholder.com/40"}
-                          alt={product.name}
-                          className="h-10 w-10 object-cover bg-gray-500 rounded-full"
-                        />
-                        <span>{getUserName(product.userId)}</span>
-                      </div>
-                    </Link>
-                  </div>
+                  
                </div>
                 );
               })
