@@ -35,6 +35,7 @@ export default function Cart() {
       }
 
       try {
+        //lấy sản phẩm của 1 user
         const response = await fetch(
           `https://localhost:7098/api/ShoppingCartAPI/getShoppingCartByUser?userId=${userId}`,
           {
@@ -73,7 +74,7 @@ export default function Cart() {
         setLoading(false);
       }
     };
-
+// lấy chi tiết 1 cây
     const fetchPlantDetailsForCartItems = async (cartItems) => {
       const updatedCartItems = await Promise.all(
         cartItems.map(async (item) => {
@@ -104,7 +105,7 @@ export default function Cart() {
 
     fetchCartData();
   }, []);
-  // Function to reset or clear voucher
+  // hàm check sản phẩm trc khi thah toán
   const handleProceedToCheckout = () => {
     // Save selected shoppingCartItemIds to localStorage
     localStorage.setItem("selectedCartItems", JSON.stringify(selectedItems));
@@ -214,7 +215,7 @@ export default function Cart() {
     });
   };
 
-  // Input field change handler (this will remove applied voucher if the field is empty)
+  // lấy giá trị giảm giá nhập vào
   const handleVoucherInputChange = (e, itemId) => {
     const inputValue = e.target.value;
     setVoucherCodes((prevCodes) => ({
@@ -258,6 +259,7 @@ export default function Cart() {
       return total;
     }, 0).toFixed(3);
   };
+
   useEffect(() => {
     const totalWithVouchers = parseFloat(calculateSelectedTotalWithVouchers());
     if (totalWithVouchers > 0) {
@@ -385,7 +387,6 @@ export default function Cart() {
                 </div>
               ) : (
                 cartItems.map((item) => {
-
                   const discountedProductPrice = item.plantDetails?.price * (1 - (item.plantDetails?.discount / 100 || 0));
                   const originalPrice = discountedProductPrice * (item.quantity || 1);
                   const itemVoucherDiscount = productDiscounts[item.shoppingCartItemId] || 0;
