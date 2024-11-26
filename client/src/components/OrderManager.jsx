@@ -128,7 +128,7 @@ export default function OrderManager() {
           <div className="flex items-center justify-center h-screen w-full">
             <div className="flex flex-col items-center">
               <Spinner aria-label="Loading spinner" size="xl" />
-              <span className="mt-3 text-lg font-semibold">Loading...</span>
+              <span className="mt-3 text-lg font-semibold">Đang tải...</span>
             </div>
           </div>
         );
@@ -184,14 +184,14 @@ export default function OrderManager() {
                                 <Table.Cell className="py-4">
                                     {order.shoppingCartItems.plantId ? (
                                         <Link to={`/productdetail/${order.shoppingCartItems.plantId}`}>
-                                            {order.shoppingCartItems.plantName || "Loading..."}
+                                            {order.shoppingCartItems.plantName || "Đang tải..."}
                                         </Link>
                                     ) : (
-                                        "Loading..."
+                                        "Đang tải..."
                                     )}
                                 </Table.Cell>
                                 <Table.Cell className="py-4">
-                                    {order.shoppingCartItems.quantity || "Loading..."}
+                                    {order.shoppingCartItems.quantity || "Đang tải..."}
                                 </Table.Cell>
                                 <Table.Cell className="py-4">${(order.totalAmount).toFixed(3)}</Table.Cell>
                                 <Table.Cell className="py-4">

@@ -284,7 +284,7 @@ export default function ProductSeller() {
     return (
       <div className="flex items-center justify-center h-screen">
         <Spinner aria-label="Loading spinner" size="xl" />
-        <span className="ml-3 text-lg font-semibold">Loading...</span>
+        <span className="ml-3 text-lg font-semibold">Đang tải...</span>
       </div>
     );
   }

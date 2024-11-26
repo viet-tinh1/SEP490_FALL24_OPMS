@@ -26,6 +26,7 @@ export default function ProductDetail() {
   const [users, setUsers] = useState([]);
   const userIds = localStorage.getItem("userId");
   const [canReview, setCanReview] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   // Fetch product data when the component mounts
  
     
@@ -243,7 +244,8 @@ export default function ProductDetail() {
   const addToCart = async (productId, quantity) => {
     if(quantity <= 0
     ){
-      alert("Số lượng phải lớn hơn 0")
+      setSuccessMessage("Số lượng phải lớn hơn 0")
+      setTimeout(() => setSuccessMessage(''), 2000);
       return;
     }
     try {
@@ -264,11 +266,19 @@ export default function ProductDetail() {
         alert("Sản phẩm đã được thêm vào giỏ hàng!");
       } else {
         const errorResponse = await response.json();
-        alert(`Không thể thêm sản phẩm vào giỏ hàng. ${errorResponse.message}`);
+        setSuccessMessage(`Không thể thêm sản phẩm vào giỏ hàng. ${errorResponse.message}`);
       }
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 2000);
     } catch (err) {
       console.error("Lỗi thêm sản phẩm vào giỏ hàng:", err);
-      alert("Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.");
+      setSuccessMessage("Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.");
+    }
+    finally {
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 2000);
     }
   };
   const getUserName = (userId) => {
@@ -279,7 +289,7 @@ export default function ProductDetail() {
     return (
       <div className="flex items-center justify-center h-screen">
         <Spinner aria-label="Loading spinner" size="xl" />
-        <span className="ml-3 text-lg font-semibold">Loading...</span>
+        <span className="ml-3 text-lg font-semibold">Đang tải...</span>
       </div>
     );
   }
@@ -295,6 +305,13 @@ export default function ProductDetail() {
   
   return (
     <body className="overflow-hidden bg-gray-100">
+      {successMessage && (
+            <div className="fixed inset-0 flex items-center justify-center z-50">
+              <div className="bg-green-500 text-white text-lg font-semibold py-2 px-6 rounded-lg shadow-lg transform -translate-y-60">
+                {successMessage}
+              </div>
+            </div>
+          )}
       <section className="py-10 bg-white shadow-lg shadow-gray-200 rounded-md md:py-10 dark:bg-gray-900 antialiased p-10 m-10">
         <div className="max-w-screen-xl px-4 mx-auto 2xl:px-0">
           <div className="lg:grid lg:grid-cols-2 lg:gap-8 xl:gap-16">

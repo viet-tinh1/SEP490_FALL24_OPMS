@@ -45,9 +45,9 @@ export default function ForgotPassword() {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100 p-4">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
-        <h2 className="text-2xl font-semibold text-center mb-4">Forgot your password?</h2>
+        <h2 className="text-2xl font-semibold text-center mb-4">Quên mật khẩu?</h2>
         <p className="text-center text-sm mb-6">
-          Please enter the email you use to sign in.
+          Vui lòng nhập email đạn đã đăng kí cho tài khoản này.
         </p>
         
         <form onSubmit={handleForgotPassword}>
@@ -55,7 +55,7 @@ export default function ForgotPassword() {
             <Label value="Your email" />
             <TextInput
               type="email"
-              placeholder="name@company.com"
+              placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -72,7 +72,7 @@ export default function ForgotPassword() {
             className="w-full"
             disabled={loading}
           >
-            {loading ? <Spinner /> : "Request password reset"}
+            {loading ? <Spinner /> : "Yêu cầu đặt lại mật khẩu"}
           </Button>
         </form>
 
@@ -81,7 +81,7 @@ export default function ForgotPassword() {
             onClick={() => navigate("/sign-in")}
             className="text-blue-500"
           >
-            Back to Sign in
+            Quay lại trang đăng nhập
           </button>
         </div>
       </div>

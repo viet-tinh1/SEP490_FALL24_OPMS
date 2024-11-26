@@ -44,7 +44,7 @@ export default function Signup() {
     }
     // Kiểm tra mật khẩu có hợp lệ hay không
     else if (!validatePassword(newPassword)) {
-      setPasswordError('Password must be at least 8 characters, contain one uppercase letter, one lowercase letter, one number, and no spaces.');
+      setPasswordError('Mật khẩu phải có ít nhất 8 ký tự, bao gồm một chữ cái viết hoa, một chữ cái viết thường, một số và không có khoảng trắng.');
     } 
     else {
       setPasswordError(''); // Nếu hợp lệ, xóa thông báo lỗi
@@ -61,7 +61,7 @@ export default function Signup() {
     }
     // Kiểm tra username có hợp lệ hay không
     else if (!validateUsername(newUsername)) {
-      setUsernameError('Username must be 1-50 characters and contain only lowercase letters and numbers.');
+      setUsernameError('Tên người dùng phải có từ 1-50 ký tự và chỉ chứa các chữ cái thường và số.');
     } 
     else {
       setUsernameError(''); // Nếu hợp lệ, xóa thông báo lỗi
@@ -78,7 +78,7 @@ export default function Signup() {
     }
     // Kiểm tra mật khẩu có hợp lệ hay không
     else if (!validateEmail(newEmail)) {
-      setEmailError('Email must be a valid format, e.g. example@domain.com.');
+      setEmailError('Email phải có định dạng hợp lệ, ví dụ: example@domain.com.');
     } 
     else {
       setEmailError(''); // Nếu hợp lệ, xóa thông báo lỗi
@@ -111,7 +111,7 @@ export default function Signup() {
       // bạn không cần gọi hàm `checkGoogleLogin()` ngay tại đây nữa.
     } catch (error) {
       console.error("Error initiating Google login:", error);
-      setError("Google login initiation failed. Please try again.");
+      setError("Khởi tạo đăng nhập Google không thành công. Vui lòng thử lại.");
       setLoading(false);
     }
   };
@@ -119,17 +119,17 @@ export default function Signup() {
     e.preventDefault(); // Ngăn không cho form reload lại trang
     // Kiểm tra mật khẩu trước khi gửi
     if (!validatePassword(password)) {
-      setPasswordError('Password must be at least 8 characters, contain one uppercase letter, one lowercase letter, one number, and no spaces.');
+      setPasswordError('Mật khẩu phải có ít nhất 8 ký tự, bao gồm một chữ cái viết hoa, một chữ cái viết thường, một số và không có khoảng trắng.');
       return;
     }
     //kiểm tra username trước khi gửi
     if (!validateUsername(username)) {
-      setUsernameError('Username must be 1-50 characters and contain only lowercase letters and numbers.');
+      setUsernameError('Tên người dùng phải có từ 1-50 ký tự và chỉ chứa các chữ cái thường và số.');
       return;
     }
     //kiểm tra email trước khi gửi
     if (!validateEmail(email)) {
-      setEmailError('Email must be a valid format, e.g. example@domain.com.');
+      setEmailError('Email phải có định dạng hợp lệ, ví dụ: example@domain.com.');
       return;
     }
     setLoading(true); // Bắt đầu hiển thị spinner hoặc trạng thái loading
@@ -154,9 +154,9 @@ export default function Signup() {
       if (!response.ok) {
         // Check if the account has been locked or other errors occurred
         if (response.status === 400 && data.message === "Username or Email already exists") {
-            setError("Username or Email already exists");
+            setError("Tên người dùng hoặc Email đã tồn tại.");
         } else if (response.status === 400 && data.message !== "Username or Email already exists") {
-            setError("Invalid data");
+            setError("Dữ liệu không hợp lệ.");
         } else {
             setError(`API Error: ${response.status}`);
         }
@@ -183,7 +183,7 @@ export default function Signup() {
         const emailData = await emailResponse.json();
   
         if (!emailResponse.ok) {
-          setError("Failed to send OTP email. Please try again.");
+          setError("Gửi email OTP không thành công. Vui lòng thử lại.");
           return;
         }
   
@@ -192,7 +192,7 @@ export default function Signup() {
       }
       
     } catch (error) {
-      setError("API connection failed. Please try again.");
+      setError("Kết nối API không thành công. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
@@ -216,10 +216,10 @@ export default function Signup() {
         <div className="flex-1">
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <div>
-              <Label value="Your username" />
+              <Label value="Tên đăng nhập của bạn " />
               <TextInput
                 type="text"
-                placeholder="Username"
+                placeholder="Tên đăng nhập"
                 id="username"
                 value={username}
                 onChange={handleUsernameChange}             
@@ -229,10 +229,10 @@ export default function Signup() {
               {usernameError && <p style={{ color: 'red' }}>{usernameError}</p>}
             </div>
             <div>
-              <Label value="Your email" />
+              <Label value="Email của bạn " />
               <TextInput
                 type="email"
-                placeholder="name@company.com"
+                placeholder="Email"
                 id="email"
                 value={email}
                 onChange={handleEmailChange}                
@@ -242,10 +242,10 @@ export default function Signup() {
               {emailError && <p style={{ color: 'red' }}>{emailError}</p>}
             </div>
             <div>
-              <Label value="Your password" />
+              <Label value="Mật khẩu của bạn " />
               <TextInput
                 type="password"
-                placeholder="Password"
+                placeholder="Mật khẩu"
                 id="password"
                 value={password}
                 onChange={handlePasswordChange}

@@ -23,7 +23,7 @@ export default function Product() {
   const [notification, setNotification] = useState(null);
   const [name, setName] = useState("");
   const [isPriceDropdownOpen, setIsPriceDropdownOpen] = useState(false);
-
+  const [successMessage, setSuccessMessage] = useState('');
   const userIds = localStorage.getItem("userId");
   const [sortOption, setSortOption] = useState("");
   const [userId, setUserId] = useState(null);
@@ -36,63 +36,63 @@ export default function Product() {
   const closeTimeoutRef = useRef(null);
 
   //lấy session
-    // Lấy thông tin từ URL hoặc localStorage
-    useEffect(() => {
-      const params = new URLSearchParams(location.search);
-  
-      const userIdFromUrl = params.get("userId");
-      const roleFromUrl = params.get("role");
-      const tokenFromUrl = params.get("token");
-      const emailFromUrl = params.get("email");
-      const usernameFromUrl = params.get("username");
-  
-      // Ưu tiên lấy từ URL nếu có, sau đó từ localStorage
-      const userId = userIdFromUrl || localStorage.getItem("userId");
-      const role = roleFromUrl || localStorage.getItem("role");
-      const token = tokenFromUrl || localStorage.getItem("token");
-      const email = emailFromUrl || localStorage.getItem("email");
-      const username = usernameFromUrl || localStorage.getItem("username");
-  
-      // Nếu lấy từ URL, lưu vào localStorage
-      if (userIdFromUrl && roleFromUrl && tokenFromUrl) {
-        localStorage.setItem("userId", userIdFromUrl);
-        localStorage.setItem("role", roleFromUrl);
-        localStorage.setItem("token", tokenFromUrl);
-        localStorage.setItem("email", emailFromUrl);
-        localStorage.setItem("username", usernameFromUrl);
+  // Lấy thông tin từ URL hoặc localStorage
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+
+    const userIdFromUrl = params.get("userId");
+    const roleFromUrl = params.get("role");
+    const tokenFromUrl = params.get("token");
+    const emailFromUrl = params.get("email");
+    const usernameFromUrl = params.get("username");
+
+    // Ưu tiên lấy từ URL nếu có, sau đó từ localStorage
+    const userId = userIdFromUrl || localStorage.getItem("userId");
+    const role = roleFromUrl || localStorage.getItem("role");
+    const token = tokenFromUrl || localStorage.getItem("token");
+    const email = emailFromUrl || localStorage.getItem("email");
+    const username = usernameFromUrl || localStorage.getItem("username");
+
+    // Nếu lấy từ URL, lưu vào localStorage
+    if (userIdFromUrl && roleFromUrl && tokenFromUrl) {
+      localStorage.setItem("userId", userIdFromUrl);
+      localStorage.setItem("role", roleFromUrl);
+      localStorage.setItem("token", tokenFromUrl);
+      localStorage.setItem("email", emailFromUrl);
+      localStorage.setItem("username", usernameFromUrl);
+    }
+
+    // Cập nhật React state
+    setUserId(userId);
+    setRole(role);
+    setToken(token);
+    setEmail(email);
+    setUserName(username);
+
+    // Điều hướng xóa query parameters sau khi xử lý
+    if (userIdFromUrl && roleFromUrl && tokenFromUrl) {
+      navigate("/product", { replace: true });// Điều hướng tới URL sạch
+      setTimeout(() => {
+        window.location.reload(); // Buộc tải lại trang sau điều hướng
+      }, 100);
+    }
+
+  }, [location, navigate]);
+
+  // Kiểm tra lại userId khi state hoặc localStorage thay đổi
+  useEffect(() => {
+    if (!userId) {
+      const userIdFromStorage = localStorage.getItem("userId");
+      if (userIdFromStorage) {
+        setUserId(userIdFromStorage);
       }
-  
-      // Cập nhật React state
-      setUserId(userId);
-      setRole(role);
-      setToken(token);
-      setEmail(email);
-      setUserName(username);
-  
-      // Điều hướng xóa query parameters sau khi xử lý
-      if (userIdFromUrl && roleFromUrl && tokenFromUrl) {
-        navigate("/product", { replace: true });// Điều hướng tới URL sạch
-        setTimeout(() => {
-          window.location.reload(); // Buộc tải lại trang sau điều hướng
-        }, 100); 
-      }
-      
-    }, [location, navigate]);
-  
-    // Kiểm tra lại userId khi state hoặc localStorage thay đổi
-    useEffect(() => {
-      if (!userId) {
-        const userIdFromStorage = localStorage.getItem("userId");
-        if (userIdFromStorage) {
-          setUserId(userIdFromStorage);
-        }
-      }
-    }, [userId]);
-  
-    // Debug: Kiểm tra giá trị userId
-    useEffect(() => {
-      console.log("UserId:", userId);
-    }, [userId]);
+    }
+  }, [userId]);
+
+  // Debug: Kiểm tra giá trị userId
+  useEffect(() => {
+    console.log("UserId:", userId);
+  }, [userId]);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -166,7 +166,7 @@ export default function Product() {
         // Nếu không có từ khóa tìm kiếm và không áp dụng bất kỳ bộ lọc nào, tải toàn bộ danh sách
         fetchProductsAndCategories();
         return;
-    }
+      }
       if (selectedCategoryIds.length)
         query.push(selectedCategoryIds.map(id => `categoryId=${id}`).join("&"));
       if (minPrice) query.push(`minPrice=${minPrice}`);
@@ -216,7 +216,7 @@ export default function Product() {
     } else {
       updatedCategories = updatedCategories.filter((id) => id !== categoryId);
     }
-    console.log("Updated Categories:", updatedCategories); 
+    console.log("Updated Categories:", updatedCategories);
     setSelectedCategories(updatedCategories);
     searchPlants(name, updatedCategories, minPrice, maxPrice, sortOption); // Tìm kiếm sau khi cập nhật
   };
@@ -285,14 +285,22 @@ export default function Product() {
       });
 
       if (response.ok) {
-        alert("Sản phẩm đã được thêm vào giỏ hàng!");
+
+        setSuccessMessage('Sản phẩm đã được thêm vào giỏ hàng!');
       } else {
         const errorResponse = await response.json();
-        alert(`Không thể thêm sản phẩm vào giỏ hàng. ${errorResponse.message}`);
+        setSuccessMessage(`Không thể thêm sản phẩm vào giỏ hàng. ${errorResponse.message}`);
       }
+
     } catch (err) {
       console.error("Lỗi thêm sản phẩm vào giỏ hàng:", err);
-      alert("Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.");
+      setSuccessMessage("Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.");
+    }
+    finally {
+
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 2000);
     }
   };
 
@@ -301,10 +309,11 @@ export default function Product() {
     return (
       <div className="flex items-center justify-center h-screen">
         <Spinner aria-label="Loading spinner" size="xl" />
-        <span className="ml-3 text-lg font-semibold">Loading...</span>
+        <span className="ml-3 text-lg font-semibold">Đang tải...</span>
       </div>
     );
   }
+
   if (error) {
     return <div>Error: {error}</div>;
   }
@@ -429,13 +438,22 @@ export default function Product() {
               )}
             </div>
           </div>
+          {successMessage && (
+            <div className="fixed inset-0 flex items-center justify-center z-50">
+              <div className="bg-green-500 text-white text-lg font-semibold py-2 px-6 rounded-lg shadow-lg transform -translate-y-60">
+                {successMessage}
+              </div>
+            </div>
+          )}
           <div className="flex flex-wrap justify-center gap-3 p-4">
             {productsToDisplay.length === 0 ? (
               <div className="text-center text-green-600 font-semibold">
                 {notification || "Không có sản phẩm nào có sẵn."}
               </div>
             ) : (
+
               productsToDisplay.map((product) => {
+
                 return (
                   <div
                     key={product.plantId}

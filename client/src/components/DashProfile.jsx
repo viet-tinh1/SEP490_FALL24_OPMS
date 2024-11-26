@@ -357,7 +357,7 @@ export default function DashProfile() {
 
       if (response.ok) {
         const data = await response.json();
-        alert("Image updated successfully!");
+        alert("Ảnh đc thêm thành công!");
         console.log("Updated image URL:", data.imageUrl);
         setUserData((prevUser) => ({
           ...prevUser,
@@ -378,7 +378,7 @@ export default function DashProfile() {
       <div className="flex items-center justify-center h-screen w-full">
         <div className="flex flex-col items-center">
           <Spinner aria-label="Loading spinner" size="xl" />
-          <span className="mt-3 text-lg font-semibold">Loading...</span>
+          <span className="mt-3 text-lg font-semibold">Đang tải...</span>
         </div>
       </div>
     );
