@@ -71,7 +71,7 @@ export default function PlantItem() {
       <div className="flex items-center justify-center h-screen w-full">
         <div className="flex flex-col items-center">
           <Spinner aria-label="Loading spinner" size="xl" />
-          <span className="mt-3 text-lg font-semibold">Loading...</span>
+          <span className="mt-3 text-lg font-semibold">Đang tải...</span>
         </div>
       </div>
     );

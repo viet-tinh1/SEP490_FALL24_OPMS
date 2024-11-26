@@ -44,7 +44,7 @@ export default function SignIn() {
       // bạn không cần gọi hàm `checkGoogleLogin()` ngay tại đây nữa.
     } catch (error) {
       console.error("Error initiating Google login:", error);
-      setError("Google login initiation failed. Please try again.");
+      setError("Khởi tạo đăng nhập Google không thành công. Vui lòng thử lại.");
       setLoading(false);
     }
   };
@@ -67,11 +67,11 @@ export default function SignIn() {
       if (!response.ok) {
         // Check if the account has been locked or other errors occurred
         if (response.status === 401 && data.message === "Your account has been locked ") {
-            setError("Your account has been locked. Please contact support.");
+            setError("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ bộ phận hỗ trợ.");
         } else if (response.status === 401 && data.message !== "Your account has been locked ") {
-            setError("Invalid email or password");
+            setError("Email hoặc mật khẩu không hợp lệ.");
         } else {
-            setError(`API Error: ${response.status}`);
+            setError(`Lỗi API:  ${response.status}`);
         }
         
         return;
@@ -96,11 +96,11 @@ export default function SignIn() {
         } else if (data.role === 3) {
           navigate("/dashboard?tab=dash");
         } else {
-          setError("Unknown role. Please contact support.");
+          setError("Vai trò không xác định. Vui lòng liên hệ bộ phận hỗ trợ.");
         }
       }
     } catch (error) {
-      setError("API connection failed. Please try again.");
+      setError("Kết nối API không thành công. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
@@ -121,10 +121,10 @@ export default function SignIn() {
           
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <div>
-              <Label value="Your email" />
+              <Label value="Email của bạn" />
               <TextInput
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Nhập Email của bạn"
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -132,7 +132,7 @@ export default function SignIn() {
               />
             </div>
             <div>
-              <Label value="Your password" />
+              <Label value="Mật khẩu của bạn" />
               <TextInput
                 type="password"
                 placeholder="**********"
@@ -143,12 +143,12 @@ export default function SignIn() {
               />
             </div>
             <Button gradientDuoTone="greenToBlue" type="submit" disabled={loading}>
-              {loading ? <Spinner size="sm" /> : "Sign In"}
+              {loading ? <Spinner size="sm" /> : "Đăng nhập"}
             </Button>
             {error && <Alert color="failure">{error}</Alert>}
             <div className="flex justify-between mt-2">
               <Link to="/forgot-password" className="text-blue-500">
-              Forgot Password?
+              Quên mật khẩu?
               </Link>
             </div>
             <Button 

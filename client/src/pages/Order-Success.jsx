@@ -141,10 +141,7 @@ export default function OrderSuccess() {
                 }
                 throw new Error("Failed to update order status");
             }
-
-
-            console.log("Order status updated successfully");
-
+           
             // Update the orders state with the new status for the specific order
             setOrders((prevOrders) =>
                 prevOrders
@@ -181,7 +178,7 @@ export default function OrderSuccess() {
             <div className="flex items-center justify-center h-screen w-full">
                 <div className="flex flex-col items-center">
                     <Spinner aria-label="Loading spinner" size="xl" />
-                    <span className="mt-3 text-lg font-semibold">Loading...</span>
+                    <span className="mt-3 text-lg font-semibold">Đang tải...</span>
                 </div>
             </div>
         );
@@ -241,14 +238,14 @@ export default function OrderSuccess() {
                                             {plantNames[cartDetails[order.shoppingCartItemId].plantId]}
                                         </Link>
                                     ) : (
-                                        "Loading..."
+                                        "Đang tải..."
                                     )}
                                 </Table.Cell>
                                 <Table.Cell className="py-4">
                                     {cartDetails[order.shoppingCartItemId] ? (
                                         <p>{cartDetails[order.shoppingCartItemId].quantity}</p>
                                     ) : (
-                                        "Loading..."
+                                        "Đang tải..."
                                     )}
                                 </Table.Cell>
                                 <Table.Cell className="py-4">${(order.totalAmount).toFixed(3)}</Table.Cell>
