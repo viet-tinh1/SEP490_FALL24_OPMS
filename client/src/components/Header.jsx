@@ -226,9 +226,7 @@ const handleAvatarUpdate = (newImageUrl) => {
     }
   }, []);
   return (
-    <Navbar className={`sticky top-0 z-50 transition-all duration-300 ${
-      isScrolled ? "bg-white shadow-lg h-12" : "bg-transparent h-16"
-    }`} >
+    <Navbar class="border-b-2 fixed top-0 z-50" >
      
       <Link
         to="/"
