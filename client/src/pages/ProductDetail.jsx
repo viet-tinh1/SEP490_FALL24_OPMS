@@ -263,7 +263,7 @@ export default function ProductDetail() {
       });
 
       if (response.ok) {
-        alert("Sản phẩm đã được thêm vào giỏ hàng!");
+        setSuccessMessage("Sản phẩm đã được thêm vào giỏ hàng!");
       } else {
         const errorResponse = await response.json();
         setSuccessMessage(`Không thể thêm sản phẩm vào giỏ hàng. ${errorResponse.message}`);
@@ -295,7 +295,7 @@ export default function ProductDetail() {
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div>Lỗi: {error}</div>;
   }
 
   const { plantName, price, description, imageUrl, rating: productRating,userId } = productData || {};
@@ -335,7 +335,7 @@ export default function ProductDetail() {
 
               <div className="mt-4 sm:items-center sm:gap-4 sm:flex">
                 <p className="text-2xl font-extrabold text-gray-900 sm:text-3xl dark:text-white">
-                  ${(price || 0).toFixed(3)} {/* Dynamic price */}
+                  ₫{(price || 0).toFixed(3)} {/* Dynamic price */}
                 </p>
 
                 <div className="flex items-center gap-2 mt-2 sm:mt-0">
@@ -353,13 +353,13 @@ export default function ProductDetail() {
                     </svg>
                   </div>
                   <p className="text-sm font-medium leading-none text-gray-500 dark:text-gray-400">
-                  <p>Rating: ({isNaN(averageRating) || !averageRating ? 0 : averageRating})</p> {/* Dynamic rating */}
+                  <p>({isNaN(averageRating) || !averageRating ? 0 : averageRating})</p> {/* Dynamic rating */}
                   </p>
                   <a
                     href="#"
                     className="text-sm font-medium leading-none text-gray-900 underline hover:no-underline dark:text-white"
                   >
-                    {ratingSummary.totalReviews} Reviews {/* Show total reviews */}
+                    {ratingSummary.totalReviews} Đánh giá {/* Show total reviews */}
                   </a>
                 </div>
 
@@ -381,7 +381,7 @@ export default function ProductDetail() {
                     >
                       <div className="flex items-center justify-between p-4 border-b rounded-t dark:border-gray-600">
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                          Select reason for complaint
+                          Chọn lý do phản hồi
                         </h3>
                         <button
                           className="text-2xl"
@@ -395,25 +395,25 @@ export default function ProductDetail() {
                           <li>
                             <button
                               className="block w-full text-left text-gray-900 hover:underline dark:text-white"
-                              onClick={() => handleReasonSelect("Lý do A")}
+                              onClick={() => handleReasonSelect("Cây không đúng với mô tả")}
                             >
-                              reason A
+                              Cây không đúng với mô tả
                             </button>
                           </li>
                           <li>
                             <button
                               className="block w-full text-left text-gray-900 hover:underline dark:text-white"
-                              onClick={() => handleReasonSelect("Lý do B")}
+                              onClick={() => handleReasonSelect("Cây bị hư hại trong quá trình vận chuyển")}
                             >
-                              reason B
+                              Cây bị hư hại trong quá trình vận chuyển
                             </button>
                           </li>
                           <li>
                             <button
                               className="block w-full text-left text-gray-900 hover:underline dark:text-white"
-                              onClick={() => handleReasonSelect("Lý do C")}
+                              onClick={() => handleReasonSelect("Cây không phù hợp với yêu cầu của tôi")}
                             >
-                              reason C
+                              Cây không phù hợp với yêu cầu của tôi
                             </button>
                           </li>
                         </ul>
@@ -431,7 +431,7 @@ export default function ProductDetail() {
                     >
                       <div className="flex items-center justify-between p-4 border-b rounded-t dark:border-gray-600">
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                          Reason
+                          Lý do
                         </h3>
                         <button
                           className="text-2xl"
@@ -442,7 +442,7 @@ export default function ProductDetail() {
                       </div>
                       <div className="p-4 space-y-4">
                         <p className="text-sm text-gray-700 dark:text-white">
-                          Reason you selected: {selectedReason}
+                          Lý do bạn đã chọn: {selectedReason}
                         </p>
                         <form>
                           <div className="mb-4">
@@ -450,7 +450,7 @@ export default function ProductDetail() {
                               htmlFor="complaintDetails"
                               className="block text-sm font-medium text-gray-700 dark:text-gray-200"
                             >
-                              Details of the reason for the complaint
+                              Chi tiết
                             </label>
                             <textarea
                               id="complaintDetails"
@@ -465,13 +465,13 @@ export default function ProductDetail() {
                               type="submit"
                               className="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700"
                             >
-                              Summit
+                              Gửi
                             </button>
                             <button
                               className="ml-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:bg-gray-500 dark:hover:bg-gray-600"
                               onClick={() => setIsFormModalOpen(false)}
                             >
-                              Cancel
+                              Hủy
                             </button>
                           </div>
                         </form>
@@ -558,7 +558,7 @@ export default function ProductDetail() {
               <br></br>
               <Link to={`/producsSeller/${userId}`}>
                 <p className="ml-3 mt-2 text-sm font-medium text-gray-900 dark:text-white hover:underline">
-                  Người bán: {getUserName(userId)}
+                  Nhà vườn: {getUserName(userId)}
                 </p>
               </Link>
               <hr className="my-6 md:my-8 border-gray-200 dark:border-gray-800" />

@@ -1,11 +1,13 @@
 import { Avatar, Button, Dropdown, Navbar, TextInput } from "flowbite-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaLeaf } from "react-icons/fa";
+import React, { useContext } from "react";
 import { FaMoon, FaSun } from "react-icons/fa";
 import { AiOutlineSearch } from "react-icons/ai";
 import { MdOutlineShoppingCart } from "react-icons/md";
 import { useState, useEffect, useRef } from "react";
 import ConfirmationDialog from "../components/ConfirmationDialog";
+
 export default function Header() {
 
   const path = useLocation().pathname;
@@ -19,7 +21,8 @@ export default function Header() {
   const timeoutRef = useRef(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [users, setUsers] = useState([]);
-
+ 
+  const [isScrolled, setIsScrolled] = useState(false); // Truy cập vào context
   const INACTIVITY_LIMIT = 1440 * 60 * 1000;
 
   const resetInactivityTimeout = () => {
@@ -111,34 +114,40 @@ export default function Header() {
   };
   useEffect(() => {
     const fetchUserData = async () => {
-      try {
-        // Lấy `userId` từ `localStorage`
-        const storedUserId = localStorage.getItem("userId");
-        if (!storedUserId) {
-          console.error("No userId found in session");
-          return;
+        try {
+            // Lấy `userId` từ `localStorage`
+            const storedUserId = localStorage.getItem("userId");
+            if (!storedUserId) {
+                console.error("No userId found in session");
+                return;
+            }
+
+            // Gọi API để lấy thông tin người dùng
+            const response = await fetch(`https://opms1.runasp.net/api/UserAPI/getUserById?userId=${storedUserId}`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch user data");
+            }
+
+            const userData = await response.json();
+
+            // Cập nhật state người dùng và ảnh
+            setUsers(userData);
+            if (userData.userImage) {
+              localStorage.setItem("userImage", userData.userImage);
+            } // Cập nhật ảnh từ dữ liệu người dùng
+        } catch (error) {
+            console.error("Error fetching user data:", error);
         }
-
-        // Gọi API để lấy thông tin người dùng
-        const response = await fetch(`https://opms1.runasp.net/api/UserAPI/getUserById?userId=${storedUserId}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch user data");
-        }
-
-        const userData = await response.json();
-
-        // Cập nhật state người dùng
-        setUsers(userData);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
     };
 
     // Nếu `userId` tồn tại, gọi API để lấy dữ liệu
     if (userId) {
-      fetchUserData();
+        fetchUserData();
     }
-  }, [userId]);
+}, [userId]);
+const handleAvatarUpdate = (newImageUrl) => {
+  setUserImage(newImageUrl);
+};
   const handleSearch = async () => {
     try {
       if (searchQuery.trim()) {
@@ -195,8 +204,32 @@ export default function Header() {
       setSearchResults([]); // Xóa kết quả tìm kiếm cũ
     }
   }, [path]);
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+  useEffect(() => {
+    const storedUserImage = localStorage.getItem("userImage");
+    if (storedUserImage) {
+      setUsers((prevUser) => ({
+        ...prevUser,
+        userImage: storedUserImage,
+      }));
+    }
+  }, []);
   return (
-    <Navbar className="border-b-2">
+    <Navbar className={`sticky top-0 z-50 transition-all duration-300 ${
+      isScrolled ? "bg-white shadow-lg h-12" : "bg-transparent h-16"
+    }`} >
+     
       <Link
         to="/"
         className="self-center text-sm sm:text-xl font-semibold dark:text-white"
@@ -240,7 +273,7 @@ export default function Header() {
           <Dropdown
             arrowIcon={false}
             inline
-            label={<Avatar alt="user" img={users.userImage} rounded />}
+            label={<Avatar alt="user" img={localStorage.getItem("userImage")} rounded />}
           >
             <Dropdown.Header>
               <span className="block text-sm font-medium truncate">

@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
+
 import { FaCloudArrowUp } from 'react-icons/fa6';
 import { MdOutlineSell } from 'react-icons/md';
 import { Spinner } from "flowbite-react";
 import { useRef } from "react";
 
 export default function DashProfile() {
-  // Khởi tạo state `user`, `error` và `loading`
+  // Khởi tạo state `user`, `error` và `loading` 
   const [user, setUserData] = useState({});
   const [role, setURoles] = useState(null);
   const [error, setError] = useState(null);
@@ -113,7 +114,8 @@ export default function DashProfile() {
       return true;
     } catch (error) {
       console.error('Error updating shop name:', error);
-      alert('Error updating shop name');
+      setSuccessMessage('Lỗi cập nhật tên nhà vườn');
+      setTimeout(() => setSuccessMessage(''), 2000);
       return false;
     }
   };
@@ -142,7 +144,8 @@ export default function DashProfile() {
       return true;
     } catch (error) {
       console.error('Error updating email:', error);
-      alert('Error updating email');
+      setSuccessMessage('Lỗi cập nhật email');
+      setTimeout(() => setSuccessMessage(''), 2000);
       return false;
     }
   };
@@ -166,7 +169,8 @@ export default function DashProfile() {
       return true;
     } catch (error) {
       console.error('Error sending OTP:', error);
-      alert('Error sending OTP');
+      setSuccessMessage('Lỗi gửi OTP');
+      setTimeout(() => setSuccessMessage(''), 2000);
       return false;
     }
   };
@@ -191,7 +195,9 @@ export default function DashProfile() {
       return true; // Return success
     } catch (error) {
       console.error('Error verifying OTP:', error);
-      alert('Lỗi xác thực OTP. Vui lòng thử lại!');
+      setSuccessMessage('Lỗi xác thực OTP. Vui lòng thử lại!');
+      setTimeout(() => setSuccessMessage(''), 2000);
+      
       return false; // Return failure
     }
   };
@@ -209,7 +215,8 @@ export default function DashProfile() {
       return true; // Success
     } catch (error) {
       console.error('Error requesting seller:', error);
-      alert('Lỗi gửi yêu cầu trở thành người bán!');
+      setSuccessMessage('Lỗi gửi yêu cầu trở thành người bán!');
+      setTimeout(() => setSuccessMessage(''), 2000);
       return false; // Failure
     }
   };
@@ -246,7 +253,9 @@ export default function DashProfile() {
         throw new Error('Failed to update user');
       }
 
-      alert("User information updated successfully!");
+      setSuccessMessage("Thông tin người dùng được cập nhật!");
+      setTimeout(() => setSuccessMessage(''), 2000);
+      return;
     } catch (error) {
       console.error("Error updating user:", error);
     }
@@ -298,12 +307,13 @@ export default function DashProfile() {
         if (response.status === 400) {
           setPasswordError("Mật khẩu hiện tại không đúng.");
         } else {
-          throw new Error('Failed to update password');
+          throw new Error('Lỗi cập nhật mật khẩu');
         }
         return;
       }
 
-      alert("Password updated successfully!");
+      setSuccessMessage("Mật khẩu thay đổi thành công!");
+      setTimeout(() => setSuccessMessage(''), 2000);
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -342,7 +352,8 @@ export default function DashProfile() {
     const userId = localStorage.getItem("userId");
     const file = event.target.files[0];
     if (!file || !userId) {
-      alert("User ID is missing or no file selected.");
+      setSuccessMessage("User ID is missing or no file selected.");
+      setTimeout(() => setSuccessMessage(''), 2000);
       return;
     }
 
@@ -357,19 +368,24 @@ export default function DashProfile() {
 
       if (response.ok) {
         const data = await response.json();
-        alert("Ảnh đc thêm thành công!");
+        setSuccessMessage("Ảnh đc thêm thành công!");
+        setTimeout(() => setSuccessMessage(''), 2000);
         console.log("Updated image URL:", data.imageUrl);
         setUserData((prevUser) => ({
           ...prevUser,
           userImage: data.imageUrl, // Assuming `data.imageUrl` is the new image URL
         }));
+        localStorage.setItem("userImage", data.imageUrl);       
       } else {
         const errorData = await response.json();
-        alert("Image update failed: " + errorData.message);
+        setSuccessMessage("Ảnh cập nhật không thành công: " + errorData.message);
+        setTimeout(() => setSuccessMessage(''), 2000);
+        return;
       }
     } catch (error) {
       console.error("Error uploading image:", error);
-      alert("Error uploading image");
+      setSuccessMessage("Error uploading image");
+      setTimeout(() => setSuccessMessage(''), 2000);
     }
   };
 
@@ -397,7 +413,8 @@ export default function DashProfile() {
       !user.address ||
       !user.createdDate
     ) {
-      alert("Vui lòng điền đầy đủ thông tin trước khi tiếp tục.");
+      setSuccessMessage("Vui lòng điền đầy đủ thông tin trước khi tiếp tục.");
+      setTimeout(() => setSuccessMessage(''), 2000);
       return;
     }
 
@@ -439,11 +456,11 @@ export default function DashProfile() {
                     ) : user.status === 0 ? (
                       <span className="text-red-500">Khóa</span>
                     ) : (
-                      'Status not available'
+                      'Trạng thái không tồn tại'
                     )}
                   </div>
                   <div className="mb-4 text-base font-normal text-gray-500">
-                    Role: {getRoleDescription(user.roles)}  {/* Hiển thị mô tả vai trò */}
+                    Chức vụ: {getRoleDescription(user.roles)}  {/* Hiển thị mô tả vai trò */}
                   </div>
                   {/* Automatically trigger file input onChange */}
                   <input
@@ -458,7 +475,7 @@ export default function DashProfile() {
                     className="inline-flex items-center py-2 px-3 text-sm font-medium text-center text-white bg-gradient-to-br from-pink-500 to-purple-500 rounded-lg shadow-md shadow-gray-300 hover:scale-[1.02] transition-transform"
                   >
                     <FaCloudArrowUp className="mr-2 -ml-1 w-4 h-4" />
-                    Change picture
+                    Thay đổi ảnh
                   </button>
                 </div>
               </div>
@@ -507,8 +524,7 @@ export default function DashProfile() {
                   </div>
                   <div className="col-span-6 sm:col-span-3">
                     <label className="block mb-2 text-sm font-medium text-gray-900">
-                      Tên Của Bạn
-
+                      Họ và tên
                     </label>
                     <input
                       type="text"

@@ -463,7 +463,7 @@ export default function Cart() {
                           </div>
                           <div className="text-end md:order-4 md:w-32">
                             <p className="text-base font-bold text-gray-900 dark:text-white">
-                              ${finalPrice.toFixed(3)}
+                            ₫{finalPrice.toFixed(3)}
                             </p>
                           </div>
                         </div>
@@ -546,7 +546,7 @@ export default function Cart() {
                       Giá gốc
                     </dt>
                     <dd className="text-base font-medium text-gray-900 dark:text-white">
-                      ${calculateSelectedTotalOriginalPriceWithoutDiscount().toFixed(3)}
+                    ₫{calculateSelectedTotalOriginalPriceWithoutDiscount().toFixed(3)}
                     </dd>
                   </dl>
                   <dl className="flex items-center justify-between gap-4">
@@ -555,7 +555,7 @@ export default function Cart() {
                     </dt>
                     <dd className="text-base font-medium text-green-600">
 
-                      -${((calculateSelectedTotalOriginalPriceWithoutDiscount() - calculateSelectedTotalOriginalPrice()).toFixed(3) || savings.toFixed(3))}
+                      -₫{((calculateSelectedTotalOriginalPriceWithoutDiscount() - calculateSelectedTotalOriginalPrice()).toFixed(3) || savings.toFixed(3))}
 
                     </dd>
                   </dl>
@@ -576,7 +576,7 @@ export default function Cart() {
                     Tổng cộng sau khi áp dụng mã giảm giá
                   </dt>
                   <dd className="text-base font-bold text-gray-900 dark:text-white">
-                    ${calculateSelectedTotalWithVouchers()}
+                  ₫{calculateSelectedTotalWithVouchers()}
                   </dd>
                 </dl>
 

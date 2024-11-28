@@ -47,7 +47,7 @@ export default function ForgotPassword() {
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
         <h2 className="text-2xl font-semibold text-center mb-4">Quên mật khẩu?</h2>
         <p className="text-center text-sm mb-6">
-          Vui lòng nhập email đạn đã đăng kí cho tài khoản này.
+          Vui lòng nhập email bạn đã đăng kí cho tài khoản này.
         </p>
         
         <form onSubmit={handleForgotPassword}>

@@ -226,8 +226,8 @@ export default function OrderManager() {
             {/* Pagination Component */}
             <div className="mt-4">
                 <ReactPaginate
-                    previousLabel={"← Previous"}
-                    nextLabel={"Next →"}
+                    previousLabel={"← Trước"}
+                    nextLabel={"Sau →"}
                     pageCount={pageCount}
                     onPageChange={handlePageClick}
                     containerClassName={"flex justify-center space-x-4"}
