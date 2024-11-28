@@ -15,7 +15,7 @@ export default function PaymentSuccess(){
             try {
                 const response = await fetch(`https://opms1.runasp.net/api/PaymentAPI/order/${orderId}`);
                 if (!response.ok) {
-                    throw new Error("Failed to fetch order data.");
+                    throw new Error("Lỗi ");
                 }
 
                 const data = await response.json();

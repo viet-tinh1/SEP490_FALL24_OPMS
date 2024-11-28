@@ -8,6 +8,7 @@ export default function Payment() {
   const selectedCartItems = JSON.parse(localStorage.getItem("selectedCartItems")) || [];
   const totalWithVouchers = parseFloat(localStorage.getItem("totalWithVouchers") || 0);
   const navigate = useNavigate();
+  const [successMessage, setSuccessMessage] = useState('');
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -97,6 +98,30 @@ export default function Payment() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isSubmitting) return; // Prevent additional submissions
+    const showErrorMessage = (message) => {
+      setSuccessMessage(message);
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 2000);
+    };
+    // Validate if the required fields contain data
+    if (!formData.city || formData.city.trim() === "") {
+      showErrorMessage("Vui lòng chọn Tỉnh/Thành.");
+      return;
+    }
+    if (!formData.district || formData.district.trim() === "") {
+      showErrorMessage("Vui lòng chọn Quận/Huyện.");
+      return;
+    }
+    if (!formData.ward || formData.ward.trim() === "") {
+      showErrorMessage("Vui lòng chọn Phường/Xã.");
+      return;
+    }
+    if (!formData.address || formData.address.trim() === "") {
+      showErrorMessage("Vui lòng nhập địa chỉ cụ thể.");
+      return;
+    }
+  
     setIsSubmitting(true);
     // Construct the full address
     const city = cities.find((city) => city.Id === formData.city)?.Name || "";
@@ -145,8 +170,7 @@ export default function Payment() {
       if (!orderId) {
         throw new Error("Missing orderId in order creation response.");
       }
-      console.log("Order created successfully:", orderResult);
-      console.log("Current payment method at submit:", paymentMethod);
+     
       // Check if payment method is payOS to initiate online payment
       if (paymentMethod === "payOS") {
         // Ensure orderResult contains the expected orderId
@@ -166,7 +190,7 @@ export default function Payment() {
         if (!paymentResponse.ok) throw new Error("Failed to create payment link.");
 
         const paymentLinkData = await paymentResponse.json();
-        console.log("Payment link created successfully:", paymentLinkData);
+       
         const checkoutUrl = paymentLinkData.data.checkoutUrl;
         if (checkoutUrl) {
           window.location.href = checkoutUrl; // Direct browser redirect
@@ -175,19 +199,21 @@ export default function Payment() {
         }
       } else {
         // For other payment methods, navigate to the success page or show a success message
-        alert("Order created successfully!");
+        setSuccessMessage("Đặt hàng thành công!");
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 2000);
         navigate("/order-success");
       }
+
     } catch (error) {
       console.error("Error:", error);
-      alert("Error creating order or payment link. Please try again.");
-    }
+      showErrorMessage("Lỗi khi tạo đơn hàng hoặc liên kết thanh toán. Vui lòng thử lại.");
+    }   
     setIsSubmitting(false);
   };
 
-  useEffect(() => {
-    console.log("Selected Cart Items:", selectedCartItems);
-    console.log("totalWithVouchers Cart Items:", totalWithVouchers);
+  useEffect(() => {    
   }, [selectedCartItems]);
   if (loading) {
     return (
@@ -200,10 +226,18 @@ export default function Payment() {
     );
   }
   return (
+    
     <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 m-24">
       <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
         Thông tin giao hàng
       </h2>
+      {successMessage && (
+            <div className="fixed inset-0 flex items-center justify-center z-50">
+              <div className="bg-green-500 text-white text-lg font-semibold py-2 px-6 rounded-lg shadow-lg transform -translate-y-60">
+                {successMessage}
+              </div>
+            </div>
+          )}
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Name Input */}
         <div>

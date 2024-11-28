@@ -50,30 +50,30 @@ export default function OrderSuccess() {
                     throw new Error("Failed to fetch orders");
                 }
                 const data = await response.json();
-
-                // Filter out orders with status "Cancel"
-                const filteredOrders = data.filter(order => order.status !== "Cancel");
-                setOrders(filteredOrders);
-
+        
+                // Lấy tất cả đơn hàng, bao gồm cả đơn hàng "Cancel"
+                setOrders(data);
+        
+                // Thiết lập trạng thái ban đầu cho tất cả đơn hàng
                 const initialStatuses = {};
-                filteredOrders.forEach(order => {
+                data.forEach(order => {
                     initialStatuses[order.orderId] = order.status;
                 });
                 setOrderStatuses(initialStatuses);
-
-                // Collect unique cart item IDs
-                const uniqueCartItemIds = [...new Set(filteredOrders.map(order => order.shoppingCartItemId))];
-
-                // Fetch cart details with limited concurrency
+        
+                // Lấy các ID giỏ hàng duy nhất
+                const uniqueCartItemIds = [...new Set(data.map(order => order.shoppingCartItemId))];
+        
+                // Lấy chi tiết giỏ hàng với giới hạn số lượng request đồng thời
                 await limitConcurrency(
                     uniqueCartItemIds.map(id => () => fetchCartDetails(id)),
-                    5 // Adjust concurrency limit as needed
+                    5 // Điều chỉnh giới hạn request đồng thời nếu cần
                 );
-
-                // Collect unique plant IDs from cart details
+        
+                // Lấy các ID cây duy nhất từ chi tiết giỏ hàng
                 const uniquePlantIds = [...new Set(Object.values(cartDetails).map(item => item.plantId))];
-
-                // Fetch plant names for unique plant IDs
+        
+                // Lấy tên cây cho các ID cây duy nhất
                 await Promise.all(uniquePlantIds.map(id => fetchPlantName(id)));
             } catch (error) {
                 console.error("Error fetching orders:", error);
@@ -134,22 +134,20 @@ export default function OrderSuccess() {
                     status: newStatus,
                 }),
             });
-            const data = await response.json();
+
             if (!response.ok) {
-                if (response.status === 400 && data.message === "Cannot cancel a successful order.") {
-                    alert(`Không thể hủy sản phẩm đã thanh toán.`);
-                }
                 throw new Error("Failed to update order status");
             }
-           
+
+            console.log("Order status updated successfully");
+
             // Update the orders state with the new status for the specific order
             setOrders((prevOrders) =>
-                prevOrders
-                    .map((order) =>
-                        order.orderId === orderId ? { ...order, status: newStatus } : order
-                    )
-                    .filter((order) => order.status !== "Cancel") // Filter out canceled orders
+                prevOrders.map((order) =>
+                    order.orderId === orderId ? { ...order, status: newStatus } : order
+                )
             );
+        fetchOrders();
         } catch (error) {
             console.error("Error updating order status:", error);
             // Revert the status in case of an error
@@ -159,7 +157,7 @@ export default function OrderSuccess() {
             }));
         }
     };
-
+   
     // Pagination: Calculate the number of pages
     const pageCount = Math.ceil(orders.length / ordersPerPage);
 
@@ -260,7 +258,7 @@ export default function OrderSuccess() {
                                     {order.paymentMethod === "1" ? "Thanh toán khi nhận hàng" : order.paymentMethod || "Thanh toán khi nhận hàng"}
                                 </Table.Cell>
                                 <Table.Cell className="py-4">
-                                    {order.status === "Success" ? (
+                                    {(order.status === "Success"||order.status === "Cancel" )? (
                                         <span></span>
                                     ) : (
                                         <select

@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { Spinner } from "flowbite-react";
 
 export default function ProductCreate() {
+  const userId = localStorage.getItem("userId");
   const [formData, setFormData] = useState({
     plantId: 0,
     plantName: "",
@@ -13,15 +14,16 @@ export default function ProductCreate() {
     description: "",
     price: "",
     image: null, // For file upload
-    imageUrl: "", // Base64 encoded image string
+    imageUrl: "a", // Base64 encoded image string
     stock: "",
     status: 1,
     isVerified: 0,
-    userId: 0,
+    userId: userId,
     discount: "",
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
   const [categories, setCategories] = useState([]);
   const [imagePreviewUrl, setImagePreviewUrl] = useState("");
   const navigate = useNavigate();
@@ -32,7 +34,7 @@ export default function ProductCreate() {
       [name]: value,
     }));
   };
-  const userId = localStorage.getItem("userId");
+ 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -88,29 +90,26 @@ export default function ProductCreate() {
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    if (!validateForm()) {
-      return;
-    }
+    
   
     const formDataToSend = new FormData();
+    formDataToSend.append("plantId", formData.plantId);
     formDataToSend.append("userId", formData.userId);
-    formDataToSend.append("username", formData.username);
-    formDataToSend.append("password", formData.password);
-    formDataToSend.append("email", formData.email);
-    formDataToSend.append("phoneNumber", formData.phoneNumber);
-    formDataToSend.append("roles", formData.roles);
-    formDataToSend.append("fullName", formData.fullName);
-    formDataToSend.append("address", formData.address);
-    formDataToSend.append("status", formData.status);
-    formDataToSend.append("shopName", formData.shopName);
+    formDataToSend.append("plantName", formData.plantName || "");
+    formDataToSend.append("imageUrl", formData.imageUrl || "");
+    formDataToSend.append("categoryId", formData.categoryId || "");
+    formDataToSend.append("description", formData.description || "");
+    formDataToSend.append("price", parseFloat(formData.price));
+    formDataToSend.append("stock", parseInt(formData.stock));
+    formDataToSend.append("status", formData.status || 1); // Set default status if not provided
+    formDataToSend.append("discount", parseFloat(formData.discount) || 0);
     
-    // Append the image if available
-    if (formData.uploadedImage) {
-      formDataToSend.append("uploadedImage", formData.uploadedImage);
-    }
-  
+    if (formData.image) {
+      // If there's a file uploaded, append it
+      formDataToSend.append("uploadedImage", formData.image);
+    }    
     try {
-      const response = await fetch("https://opms1.runasp.net/api/UserAPI/createUser", {
+      const response = await fetch("https://opms1.runasp.net/api/PlantAPI/createPlant", {
         method: "POST",
         body: formDataToSend,
       });
@@ -118,13 +117,13 @@ export default function ProductCreate() {
       if (!response.ok) {
         // Try to read as text instead of JSON to capture plain text error message
         const errorText = await response.text();
-        console.error("Failed to create user:", errorText);
-        alert("Error: " + errorText);
+        console.error("Lôi:", errorText);
+        alert("Lỗi: " + errorText);
       } else {
         setShowPopup(true);
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Lỗi:", error);
     }
   };
 
@@ -136,10 +135,26 @@ export default function ProductCreate() {
       </div>
     );
   }
-  
+  const closePopup = () => {
+    setShowPopup(false);
+    navigate("/dashboard?tab=product");
+  };
 
   return (
     <div className="max-w-7xl mx-auto p-6 sm:p-8 rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+     {showPopup && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-4 rounded shadow-md text-center">
+            <p className="text-lg font-medium">Tạo Sản phẩm thành công!</p>
+            <button
+              onClick={closePopup}
+              className="mt-4 px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-700"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Left Section */}

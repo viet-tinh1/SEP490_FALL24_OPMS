@@ -24,10 +24,11 @@ import UserEdit from "./pages/UserEdit";
 import PaymentFailure from "./pages/PaymentFailure";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import OrderSuccess from './pages/Order-Success';
-import ProductSeller from './pages/ProductSeller'
+import ProductSeller from './pages/ProductSeller';
+
 
 export default function App() {
-  return (
+  return (   
     <BrowserRouter>
     <Header/>
     <Routes>
@@ -58,6 +59,6 @@ export default function App() {
           <Route path="/order-success" element={<OrderSuccess/>}/>
     </Routes>
     <Footer/>
-   </BrowserRouter>
+   </BrowserRouter>  
   )
 }

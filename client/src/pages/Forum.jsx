@@ -5,6 +5,7 @@ import { FiMoreHorizontal } from "react-icons/fi";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { Dropdown } from "flowbite-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 function formatTimeDifference(timestamp) {
   const now = new Date();
@@ -33,7 +34,7 @@ function formatTimeDifference(timestamp) {
 
 function CommentSection({ postId, userId, refreshPosts }) {
   const [comments, setComments] = useState([]);
-
+  const [visibleReplies, setVisibleReplies] = useState({});
   const [deleteCommentPopup, setDeleteCommentPopup] = useState(false);
   const [updateCommentPopup, setUpdateCommentPopup] = useState(false);
   const [updateContent, setUpdateContent] = useState("");
@@ -46,8 +47,11 @@ function CommentSection({ postId, userId, refreshPosts }) {
   const role = localStorage.getItem("role");
   const [confirmDeleteModal, setConfirmDeleteModal] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState(null);
+  const [replyToDelete, setReplyToDelete] = useState(null);
   const [commentToUpdate, setCommentToUpdate] = useState(null);
+  const [replyToUpdate, setReplyToUpdate] = useState(null);
   const [confirmupdateModal, setConfirmUpdateModal] = useState(false);
+  const [confirmupdateRepyModal, setConfirmUpdateRepyModal] = useState(false);
 
   useEffect(() => {
     const fetchComments = async () => {
@@ -253,6 +257,61 @@ function CommentSection({ postId, userId, refreshPosts }) {
       console.error("Error updating comment:", error);
     }
   };
+  const confirmUpdateReply = (reply) => {
+    setReplyToUpdate(reply); // Đặt comment cần cập nhật
+    setUpdateContent(reply.replyCommentContent); // Lưu nội dung vào state
+    setConfirmUpdateRepyModal(true); // Mở modal
+  };
+  const confirmDeleteReply = (replyCommentId) => {
+    setReplyToDelete(replyCommentId);
+    setConfirmDeleteModal(true);
+  };
+  const handleDeleteReply = async () => {
+    try {
+      const response = await fetch(
+        `https://opms1.runasp.net/api/ReplyCommentAPI/deleteReplyComment?id=${replyToDelete}`,
+        { method: "DELETE" }
+      );
+
+      if (response.ok) {
+        refreshPosts();
+        setConfirmDeleteModal(false);
+        setDeleteCommentPopup(true);
+        setTimeout(() => setDeleteCommentPopup(false), 2000);
+      } else {
+        console.error("Failed to delete post");
+      }
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
+  };
+  const handleUpdateReply = async () => {
+    try {
+      const response = await fetch("https://opms1.runasp.net/api/ReplyCommentAPI/updateReplyComment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          replyCommentId: replyToUpdate.replyCommentId,
+          userId: replyToUpdate.userId,
+          commentId: replyToUpdate.commentId,
+          replyCommentContent: updateContent,
+        }),
+      });
+
+      if (response.ok) {
+        refreshPosts();
+        setConfirmUpdateRepyModal(false);
+        setUpdateCommentPopup(true);
+        setTimeout(() => setUpdateCommentPopup(false), 2000);
+      } else {
+        console.error("Failed to update comment");
+      }
+    } catch (error) {
+      console.error("Error updating comment:", error);
+    }
+  };
   const handleLikeComment = async (comment) => {
     if (!userId) {
       window.location.href = "/sign-in";
@@ -277,7 +336,12 @@ function CommentSection({ postId, userId, refreshPosts }) {
       console.error("Error updating like status:", error);
     }
   };
-
+  const handleLoadMoreReplies = (commentId) => {
+    setVisibleReplies((prev) => ({
+      ...prev,
+      [commentId]: (prev[commentId] || 3) + 3, // Default to 3, increase by 3 on each click
+    }));
+  };
   return (
     <div className="mt-4">
       {loadingComments ? (
@@ -429,8 +493,9 @@ function CommentSection({ postId, userId, refreshPosts }) {
                 </Modal.Footer>
               </Modal>
               {/* Replies to the Comment */}
-              {comment.replies && comment.replies.map((reply) => (
-                <div key={reply.replyId} className="ml-12 mt-2 flex items-start space-x-4">
+              {comment.replies  &&
+            comment.replies.slice(0, visibleReplies[comment.commentId] || 3).map((reply) => (
+                <div key={reply.replyCommentId} className="ml-12 mt-2 flex items-start space-x-4">
                   <img
                     src={reply.userImage || "https://via.placeholder.com/40"}
                     alt="Hình đại diện"
@@ -449,8 +514,90 @@ function CommentSection({ postId, userId, refreshPosts }) {
                       <span>{formatTimeDifference(reply.createAt)}</span>
                     </div>
                   </div>
+                  {(reply.userId === userId || role === "1") && (
+                  <Dropdown
+                    arrowIcon={false}
+                    inline
+                    label={<FiMoreHorizontal className="text-gray-500 cursor-pointer" />}
+                  >
+                    {reply.userId === userId && (
+                      <Dropdown.Item onClick={() => confirmUpdateReply(reply)}>Chỉnh sửa phản hồi</Dropdown.Item>
+                    )}
+                    <Dropdown.Item onClick={() => confirmDeleteReply(reply.replyCommentId)}>
+                      Xóa phản hồi
+                    </Dropdown.Item>
+                  </Dropdown>
+                )}
+                {deleteCommentPopup && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                  <div className="bg-white p-6 rounded-lg shadow-md text-center space-y-3">
+                    <p className="text-lg font-semibold text-green-600">
+                      Xóa phản hồi thành công!
+                    </p>
+                  </div>
                 </div>
+              )}
+              <Modal
+                show={confirmupdateRepyModal}
+                onClose={() => setConfirmUpdateRepyModal(false)}
+                size="md"
+                popup={true}
+              >
+                <Modal.Header className="text-lg font-semibold text-red-600">
+                  chỉnh sửa phản hồi
+                </Modal.Header>
+
+                <Modal.Footer>
+                  <input
+                    type="text"
+                    name="reply"
+                    value={updateContent}
+                    onChange={(e) => setUpdateContent(e.target.value)}
+                    placeholder={`Chỉnh sửa phản hồi`}
+                    className="flex-grow p-3 border rounded-full bg-gray-100"
+                  />
+                  <Button
+                    onClick={handleUpdateReply}
+                    className="ml-2 text-lg"
+                    disabled={!updateContent.trim()}
+                  >
+                    Gửi
+                  </Button>
+                </Modal.Footer>
+              </Modal>
+              <Modal
+                show={confirmDeleteModal}
+                onClose={() => setConfirmDeleteModal(false)}
+                size="md"
+                popup={true}
+              >
+                <Modal.Header className="text-lg font-semibold text-red-600">
+                  Xác nhận xóa
+                </Modal.Header>
+                <Modal.Body>
+                  <p className="text-sm text-gray-700">
+                    Bạn có chắc chắn muốn xóa phản hồi này không? Hành động này không thể hoàn tác.
+                  </p>
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button onClick={() => setConfirmDeleteModal(false)} color="gray">
+                    Hủy
+                  </Button>
+                  <Button onClick={handleDeleteReply} color="red">
+                    Xóa
+                  </Button>
+                </Modal.Footer>
+              </Modal>
+                </div>               
               ))}
+              {comment.replies.length > (visibleReplies[comment.commentId] || 3) && (
+            <button
+              onClick={() => handleLoadMoreReplies(comment.commentId)}
+              className="ml-12 text-blue-600 text-sm underline hover:text-blue-800"
+            >
+              Xem thêm phản hồi
+            </button>
+          )}
             </div>
           ))}
           {comments.length > visibleComments && (
@@ -500,7 +647,7 @@ export default function Forum() {
   const [postToDelete, setPostToDelete] = useState(null);
   const [postToUpdate, setPostToUpdate] = useState(null);
   const [userImage, setUserImage] = useState("https://via.placeholder.com/40");
-
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchUserImage = async () => {
       if (userId) {
@@ -570,7 +717,13 @@ export default function Forum() {
     }
   };
 
-  const openModal = () => setIsOpen(true);
+  const openModal = () => {
+    if (userId) {
+        setIsOpen(true);
+    }else{
+      navigate("/sign-in");
+    }
+};
   const closeModal = () => {
     setIsOpen(false);
     setContent("");
@@ -763,7 +916,7 @@ export default function Forum() {
                 onClick={openModal}
                 className="flex-grow bg-gray-100 px-4 py-3 rounded-full text-gray-500 cursor-pointer text-lg"
               >
-                User ơi, bạn đang nghĩ gì thế?
+                 Bạn đang nghĩ gì thế?
               </div>
             </div>
 
