@@ -1,10 +1,16 @@
 {
   "name": "client",
-  "homepage": "https://clientfe.runasp.net/",
+  
   "private": true,
   "version": "0.0.0",
-  
+  "type": "module",
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "//scripts": {
     "start": "react-scripts start",
     "dev": "vite",
     "build": "react-scripts build",
