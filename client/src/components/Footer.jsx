@@ -40,7 +40,7 @@ export default function FooterCom() {
               <Footer.Title title='Theo dõi' />
               <Footer.LinkGroup col>
                 <Footer.Link
-                  href='https://www.github.com/sahandghavidel'
+                  href='https://github.com/viet-tinh1/SEP490_FALL24_OPMS'
                   target='_blank'
                   rel='noopener noreferrer'
                 >
