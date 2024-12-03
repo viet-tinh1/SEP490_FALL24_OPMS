@@ -400,7 +400,7 @@ public partial class Db6213Context : DbContext
         {
             entity.HasKey(e => e.UserId).HasName("PK__Users__1788CCAC5408B395");
 
-            entity.HasIndex(e => e.Username, "UQ__Users__536C85E4501EF946").IsUnique();
+            entity.HasIndex(e => e.Username, "UQ_Users_Username").IsUnique();
 
             entity.Property(e => e.UserId).HasColumnName("UserID");
             entity.Property(e => e.Address).HasMaxLength(255);
@@ -429,9 +429,7 @@ public partial class Db6213Context : DbContext
             //entity.Property(e => e.IsSellerRequest)
             //    .HasColumnName("IsSellerRequest")
             //    .HasDefaultValue(0);
-            entity.Property(e => e.Username)
-                .HasMaxLength(50)
-                .IsUnicode(false);
+            entity.Property(e => e.Username).HasMaxLength(100);
         });
         modelBuilder.Entity<Voucher>(entity =>
         {

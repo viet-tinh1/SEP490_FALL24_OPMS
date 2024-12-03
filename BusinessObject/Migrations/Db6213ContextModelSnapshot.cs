@@ -621,16 +621,15 @@ namespace BusinessObject.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("UserId")
                         .HasName("PK__Users__1788CCAC5408B395");
 
-                    b.HasIndex(new[] { "Username" }, "UQ__Users__536C85E4501EF946")
-                        .IsUnique();
+                    b.HasIndex(new[] { "Username" }, "UQ_Users_Username")
+                        .IsUnique()
+                        .HasFilter("[Username] IS NOT NULL");
 
                     b.ToTable("Users");
                 });

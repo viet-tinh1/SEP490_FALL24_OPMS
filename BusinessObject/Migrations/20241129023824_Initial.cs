@@ -47,7 +47,7 @@ namespace BusinessObject.Migrations
                 {
                     UserID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Username = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: false),
+                    Username = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     Password = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: false),
                     Email = table.Column<string>(type: "varchar(100)", unicode: false, maxLength: 100, nullable: false),
                     PhoneNumber = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: true),
@@ -527,10 +527,11 @@ namespace BusinessObject.Migrations
                 column: "PlantID");
 
             migrationBuilder.CreateIndex(
-                name: "UQ__Users__536C85E4501EF946",
+                name: "UQ_Users_Username",
                 table: "Users",
                 column: "Username",
-                unique: true);
+                unique: true,
+                filter: "[Username] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Voucher_UserID",
