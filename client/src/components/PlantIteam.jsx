@@ -11,6 +11,7 @@ export default function PlantItem() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const [successMessage, setSuccessMessage] = useState('');
+  const [ratingData, setRatingData] = useState({});
   // Gọi API khi component được render
   useEffect(() => {
     const fetchProducts = async () => {
@@ -36,7 +37,8 @@ export default function PlantItem() {
         }
         const categoryData = await categoryResponse.json();
         setCategories(categoryData);
-
+        const ratings = await fetchRatings(data);
+        setRatingData(ratings);
         setLoading(false);// Cập nhật state với dữ liệu nhận được từ API
       } catch (error) {
         setError(error.message);
@@ -52,7 +54,7 @@ export default function PlantItem() {
     return category ? category.categoryName : "Danh mục không xác định";
   };
   const formatNumber = (number) => {
-    if (number >= 100) {
+    if (number >= 1000000) {
       return (number / 1000000).toFixed(1) + "tr"; // Định dạng triệu
     } else if (number >= 1000) {
       return (number / 1000).toFixed(1) + "k"; // Định dạng nghìn
@@ -108,6 +110,23 @@ const addToCart = async (productId, quantity) => {
       }, 2000);
     }
   };
+  const fetchRatings = async (products) => {
+    const ratings = {};
+    try {
+      await Promise.all(
+        products.map(async (product) => {
+          const response = await fetch(
+            `https://opms1.runasp.net/api/ReviewAPI/getProductRatingSummary?plantId=${product.plantId}`
+          );
+          const data = await response.json();
+          ratings[product.plantId] = data; // Gán dữ liệu đánh giá vào object
+        })
+      );
+    } catch (err) {
+      console.error("Lỗi khi lấy dữ liệu đánh giá:", err);
+    }
+    return ratings;
+  };
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen w-full">
@@ -133,7 +152,16 @@ const addToCart = async (productId, quantity) => {
               </div>
             </div>
           )}
-      {products.map((product) => {      
+      {products.map((product) => { 
+        const rating = ratingData[product.plantId] || {
+          totalReviews: 0,
+          totalRating: 0,
+        };
+        const averageRating =
+          rating.totalReviews > 0
+            ? (rating.totalRating / rating.totalReviews).toFixed(1)
+            : "0.0";
+
         return(
         <div
           key={product.plantId}
@@ -177,10 +205,11 @@ const addToCart = async (productId, quantity) => {
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
               <span className="ml-2 rounded bg-cyan-100 px-2 py-0.5 text-xs font-semibold text-cyan-800 dark:bg-cyan-200 dark:text-cyan-800">
-              {product.rating || "4.5"} 
+              {averageRating} ({rating.totalReviews} đánh giá)
               </span>
-              <span className="ml-2 rounded text-gray-600 py-0.5 text-xs font-semibold">Đã bán: {formatNumber(product.totalPurchased)} </span>
+             
             </div>
+            <span className="ml-2 rounded text-gray-600 py-0.5 text-xs font-semibold">Đã bán: {formatNumber(product.totalPurchased)} </span>
             </Link>
             {/*Price*/}
             <div className="p-2 flex items-center justify-between">
