@@ -33,7 +33,18 @@ export default function Header() {
       handleSignOut();
     }, INACTIVITY_LIMIT);
   };
+  const [userImage, setUserImage] = useState(localStorage.getItem('userImage') || '');
 
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setUserImage(localStorage.getItem('userImage'));
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
     const storedRoles = localStorage.getItem("role");
@@ -123,7 +134,7 @@ export default function Header() {
             }
 
             // Gọi API để lấy thông tin người dùng
-            const response = await fetch(`https://opms1.runasp.net/api/UserAPI/getUserById?userId=${storedUserId}`);
+            const response = await fetch(`https://opms1.runasp.net/api/UserAPI/getUserByIds?userId=${storedUserId}`);
             if (!response.ok) {
                 throw new Error("Failed to fetch user data");
             }
@@ -132,8 +143,9 @@ export default function Header() {
 
             // Cập nhật state người dùng và ảnh
             setUsers(userData);
-            if (userData.userImage) {
-              localStorage.setItem("userImage", userData.userImage);
+            if (userData.image) {
+              localStorage.setItem("userImage", userData.image);
+              window.dispatchEvent(new Event('storage'));
             } // Cập nhật ảnh từ dữ liệu người dùng
         } catch (error) {
             console.error("Error fetching user data:", error);
@@ -226,7 +238,7 @@ const handleAvatarUpdate = (newImageUrl) => {
     }
   }, []);
   return (
-    <Navbar class="border-b-2 fixed top-0 z-50" >
+    <Navbar className="border-b-2 sticky top-0 left-0 w-full bg-white dark:bg-gray-900 shadow-md z-50">
      
       <Link
         to="/"
@@ -271,7 +283,7 @@ const handleAvatarUpdate = (newImageUrl) => {
           <Dropdown
             arrowIcon={false}
             inline
-            label={<Avatar alt="user" img={localStorage.getItem("userImage")} rounded />}
+            label={<Avatar alt="user" img={userImage} rounded />}
           >
             <Dropdown.Header>
               <span className="block text-sm font-medium truncate">

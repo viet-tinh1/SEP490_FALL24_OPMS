@@ -5,6 +5,31 @@ import { MdOutlineSell } from 'react-icons/md';
 import { Spinner } from "flowbite-react";
 import { useRef } from "react";
 
+function formatTimeDifference(timestamp) {
+  const now = new Date();
+  const time = new Date(timestamp);
+  const differenceInSeconds = Math.floor((now - time) / 1000);
+
+  if (differenceInSeconds < 60) {
+    return `${differenceInSeconds} giây trước`;
+  } else if (differenceInSeconds < 3600) {
+    const minutes = Math.floor(differenceInSeconds / 60);
+    return `${minutes} phút trước`;
+  } else if (differenceInSeconds < 86400) {
+    const hours = Math.floor(differenceInSeconds / 3600);
+    return `${hours} giờ trước`;
+  } else if (differenceInSeconds < 2592000) {
+    const days = Math.floor(differenceInSeconds / 86400);
+    return `${days} ngày trước`;
+  } else if (differenceInSeconds < 31104000) {
+    const months = Math.floor(differenceInSeconds / 2592000);
+    return `${months} tháng trước`;
+  } else {
+    const years = Math.floor(differenceInSeconds / 31104000);
+    return `${years} năm trước`;
+  }
+}
+
 export default function DashProfile() {
   // Khởi tạo state `user`, `error` và `loading` 
   const [user, setUserData] = useState({});
@@ -22,6 +47,7 @@ export default function DashProfile() {
   const [currentStep, setCurrentStep] = useState(1);
   const steps = ["Thông tin Shop", "Xác thực Email", "Xác thực OTP", "Thông tin cửa hàng"];
   const [successMessage, setSuccessMessage] = useState('');
+  const [successMessagep, setSuccessMessageP] = useState('');
   const [otp, setOtp] = useState('');
   // Hàm lấy dữ liệu người dùng từ API
   useEffect(() => {
@@ -107,14 +133,18 @@ export default function DashProfile() {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to update shop name');
+      if (!response.ok) {
+        if(response.status ===400 && data.message =="ShopName already exists"){
+          setSuccessMessage("Tên cửa hàng đã tồn tại đã tồn tại.");
+        }
+        throw new Error('Failed to update shop name');}
       const data = await response.json();
       setSuccessMessage('Tên shop và địa chỉ đã được cập nhật thành công!'); // Set success message
       setTimeout(() => setSuccessMessage(''), 2000);
       return true;
     } catch (error) {
       console.error('Error updating shop name:', error);
-      setSuccessMessage('Lỗi cập nhật tên nhà vườn');
+      setSuccessMessage('Tên cửa hàng đã tồn tại đã tồn tại.');
       setTimeout(() => setSuccessMessage(''), 2000);
       return false;
     }
@@ -136,9 +166,10 @@ export default function DashProfile() {
           password: user.password,
         }),
       });
-
-      if (!response.ok) throw new Error('Failed to update email');
       const data = await response.json();
+      if (!response.ok) 
+       throw new Error('Failed to update email');
+      
       setSuccessMessage('Email đã được cập nhật thành công!'); // Set success message
       setTimeout(() => setSuccessMessage(''), 2000);
       return true;
@@ -253,8 +284,8 @@ export default function DashProfile() {
         throw new Error('Failed to update user');
       }
 
-      setSuccessMessage("Thông tin người dùng được cập nhật!");
-      setTimeout(() => setSuccessMessage(''), 2000);
+      setSuccessMessageP("Thông tin người dùng được cập nhật!");
+      setTimeout(() => setSuccessMessageP(''), 2000);
       return;
     } catch (error) {
       console.error("Error updating user:", error);
@@ -312,8 +343,8 @@ export default function DashProfile() {
         return;
       }
 
-      setSuccessMessage("Mật khẩu thay đổi thành công!");
-      setTimeout(() => setSuccessMessage(''), 2000);
+      setSuccessMessageP("Mật khẩu thay đổi thành công!");
+      setTimeout(() => setSuccessMessageP(''), 2000);
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -352,8 +383,8 @@ export default function DashProfile() {
     const userId = localStorage.getItem("userId");
     const file = event.target.files[0];
     if (!file || !userId) {
-      setSuccessMessage("User ID is missing or no file selected.");
-      setTimeout(() => setSuccessMessage(''), 2000);
+      setSuccessMessageP("ID người dùng bị thiếu hoặc chưa chọn tệp.");
+      setTimeout(() => setSuccessMessageP(''), 2000);
       return;
     }
 
@@ -368,24 +399,25 @@ export default function DashProfile() {
 
       if (response.ok) {
         const data = await response.json();
-        setSuccessMessage("Ảnh đc thêm thành công!");
-        setTimeout(() => setSuccessMessage(''), 2000);
+        setSuccessMessageP("Ảnh đc thêm thành công!");
+        setTimeout(() => setSuccessMessageP(''), 2000);
         console.log("Updated image URL:", data.imageUrl);
         setUserData((prevUser) => ({
           ...prevUser,
           userImage: data.imageUrl, // Assuming `data.imageUrl` is the new image URL
         }));
-        localStorage.setItem("userImage", data.imageUrl);       
+        localStorage.setItem("userImage", data.imageUrl); 
+        window.dispatchEvent(new Event('storage'));      
       } else {
         const errorData = await response.json();
-        setSuccessMessage("Ảnh cập nhật không thành công: " + errorData.message);
-        setTimeout(() => setSuccessMessage(''), 2000);
+        setSuccessMessageP("Ảnh cập nhật không thành công: " + errorData.message);
+        setTimeout(() => setSuccessMessageP(''), 2000);
         return;
       }
     } catch (error) {
       console.error("Error uploading image:", error);
-      setSuccessMessage("Error uploading image");
-      setTimeout(() => setSuccessMessage(''), 2000);
+      setSuccessMessageP("Lỗi Cập nhật ảnh");
+      setTimeout(() => setSuccessMessageP(''), 2000);
     }
   };
 
@@ -413,8 +445,8 @@ export default function DashProfile() {
       !user.address ||
       !user.createdDate
     ) {
-      setSuccessMessage("Vui lòng điền đầy đủ thông tin trước khi tiếp tục.");
-      setTimeout(() => setSuccessMessage(''), 2000);
+      setSuccessMessageP("Vui lòng điền đầy đủ thông tin trước khi tiếp tục.");
+      setTimeout(() => setSuccessMessageP(''), 2000);
       return;
     }
 
@@ -502,7 +534,11 @@ export default function DashProfile() {
               )}
 
           </div>
-
+          {successMessagep && (
+                <div className="fixed left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg z-[9999]">
+                  {successMessagep}
+                </div>
+              )}
           {/* General Information Form */}
           <div className="col-span-2">
             <div className="bg-white shadow-lg shadow-gray-200 rounded-2xl p-4 mb-6">
@@ -622,10 +658,10 @@ export default function DashProfile() {
                     <input
                       type="text"
                       name="createdDate"
-                      value={user.createdDate || ''}  // Created Date
+                      value={ formatTimeDifference(user.createdDate) || ''}  // Created Date
                       onChange={handleChange}
                       className="shadow-lg-sm border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-2 focus:ring-pink-100 focus:border-pink-300 block w-full p-2.5"
-                      required
+                      readOnly
                     />
                   </div>
 

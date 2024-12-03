@@ -2,13 +2,12 @@ import { useState, useEffect } from "react";
 import { TiShoppingCart } from "react-icons/ti";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import { AiFillLike } from "react-icons/ai";
-import { useParams } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { Spinner } from "flowbite-react";
 import Rating from 'react-rating-stars-component';
-import { Link } from "react-router-dom";
 import CustomRating from "../components/CustomRating";
 export default function ProductDetail() {
-
+  const navigate = useNavigate();
   const { plantId } = useParams();// Get the plantId from the URL
   const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -28,15 +27,15 @@ export default function ProductDetail() {
   const [canReview, setCanReview] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   // Fetch product data when the component mounts
- 
-    
-    
+
+
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Kiểm tra userId trước khi sử dụng
         const localUserId = userIds || null;
-  
+
         const [productRes, reviewsRes, ratingRes, canReviewRes] = await Promise.all([
           fetch(`https://opms1.runasp.net/api/PlantAPI/getPlantById?id=${plantId}`),
           fetch(`https://opms1.runasp.net/api/ReviewAPI/getReviewsByPlantId?plantId=${plantId}`),
@@ -45,7 +44,7 @@ export default function ProductDetail() {
             ? fetch(`https://opms1.runasp.net/api/ReviewAPI/canReview?userId=${localUserId}&plantId=${plantId}`)
             : Promise.resolve({ json: () => ({ canReview: false }) }),
         ]);
-  
+
         const [productData, reviewsData, ratingData, canReviewData] = await Promise.all([
           productRes.json(),
           reviewsRes.json(),
@@ -61,7 +60,7 @@ export default function ProductDetail() {
         const usersData = await UsersResponse.json();
         console.log(usersData)
         setUsers(usersData);
-  
+
         setProductData(productData);
         setReviews(reviewsData);
         setRatingSummary(ratingData);
@@ -72,11 +71,11 @@ export default function ProductDetail() {
         setLoading(false);
       }
     };
-  
+
     fetchData();
   }, [plantId, userIds]);
 
-   // check review
+  // check review
   useEffect(() => {
     const checkCanReview = async () => {
       const userId = localStorage.getItem("userId");
@@ -104,10 +103,10 @@ export default function ProductDetail() {
     try {
       const reviewResponse = await fetch(`https://opms1.runasp.net/api/ReviewAPI/getReviewsByPlantId?plantId=${plantId}`);
       let reviewData = await reviewResponse.json();
-  
+
       // Ensure reviews is an array
       if (!Array.isArray(reviewData)) reviewData = [];
-  
+
       // Fetch user details for each review
       const updatedReviews = await Promise.all(
         reviewData.map(async (review) => {
@@ -129,17 +128,17 @@ export default function ProductDetail() {
           }
         })
       );
-  
+
       setReviews(updatedReviews);
     } catch (error) {
       console.error("Error fetching reviews:", error);
     }
   };
   useEffect(() => {
-    fetchProductReviews(); 
-  // Call the fetch function on mount
+    fetchProductReviews();
+    // Call the fetch function on mount
 
-}, [plantId]);
+  }, [plantId]);
   // Function to handle increment
   const incrementQuantity = () => {
     setQuantity((prevQuantity) => prevQuantity + 1);
@@ -147,7 +146,7 @@ export default function ProductDetail() {
 
   // Function to handle decrement
 
-  const decrementQuantity  = () => {
+  const decrementQuantity = () => {
     setQuantity((prevQuantity) => (prevQuantity > 0 ? prevQuantity - 1 : 0));
   };
 
@@ -176,25 +175,25 @@ export default function ProductDetail() {
   // Handle review submit
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
-  
+
     const userId = localStorage.getItem("userId"); // Lấy userId từ localStorage
     if (!userId) {
       setNotification("Bạn cần đăng nhập để gửi đánh giá.");
       return;
     }
-  
+
     try {
       // Kiểm tra quyền đánh giá
       const checkResponse = await fetch(
         `https://opms1.runasp.net/api/ReviewAPI/canReview?userId=${userId}&plantId=${plantId}`
       );
       const checkData = await checkResponse.json();
-  
+
       if (!checkData.canReview) {
         setNotification("Bạn không thể đánh giá sản phẩm này vì chưa mua.");
         return;
       }
-  
+
       // Gửi đánh giá và cập nhật dữ liệu liên quan
       const [createReviewResponse, updatedRatingData] = await Promise.all([
         fetch(`https://opms1.runasp.net/api/ReviewAPI/createReview`, {
@@ -213,16 +212,16 @@ export default function ProductDetail() {
           `https://opms1.runasp.net/api/ReviewAPI/getProductRatingSummary?plantId=${plantId}`
         ).then((res) => res.json()),
       ]);
-  
+
       if (createReviewResponse.ok) {
         setNotification("Đánh giá của bạn đã được gửi");
         setRating(0);
         setComment("");
-  
+
         // Cập nhật giao diện với dữ liệu mới
         fetchProductReviews();
         setRatingSummary(updatedRatingData);
-  
+
         setTimeout(() => {
           setNotification(""); // Ẩn thông báo sau 3 giây
         }, 3000);
@@ -240,10 +239,15 @@ export default function ProductDetail() {
       }, 3000);
     }
   };
-  
+
   const addToCart = async (productId, quantity) => {
-    if(quantity <= 0
-    ){
+    const userId = localStorage.getItem("userId");
+    if (!userId || userId === "undefined") {
+      navigate("/sign-in");
+      return;
+    }
+    if (quantity <= 0
+    ) {
       setSuccessMessage("Số lượng phải lớn hơn 0")
       setTimeout(() => setSuccessMessage(''), 2000);
       return;
@@ -257,7 +261,7 @@ export default function ProductDetail() {
         body: JSON.stringify({
           plantId: productId,
           quantity: quantity,
-          userId : userIds,
+          userId: userIds,
 
         }),
       });
@@ -265,9 +269,13 @@ export default function ProductDetail() {
       if (response.ok) {
         setSuccessMessage("Sản phẩm đã được thêm vào giỏ hàng!");
       } else {
-        const errorResponse = await response.json();
-        setSuccessMessage(`Không thể thêm sản phẩm vào giỏ hàng. ${errorResponse.message}`);
-      }
+        const errorData = await response.json(); // Lấy dữ liệu phản hồi lỗi từ server
+        if (response.status === 404 && errorData.message === "Not enough stock available.") {
+          setSuccessMessage("Không đủ hàng trong kho.");
+        } else {
+          setSuccessMessage("Đã xảy ra lỗi. Vui lòng thử lại.");
+        }
+      }   
       setTimeout(() => {
         setSuccessMessage('');
       }, 2000);
@@ -298,20 +306,20 @@ export default function ProductDetail() {
     return <div>Lỗi: {error}</div>;
   }
 
-  const { plantName, price, description, imageUrl, rating: productRating,userId } = productData || {};
+  const { plantName, price, discount, description, imageUrl, rating: productRating, userId } = productData || {};
 
   // Tính số sao trung bình
   const averageRating = (ratingSummary.totalRating / ratingSummary.totalReviews).toFixed(1);
-  
+
   return (
     <body className="overflow-hidden bg-gray-100">
       {successMessage && (
-            <div className="fixed inset-0 flex items-center justify-center z-50">
-              <div className="bg-green-500 text-white text-lg font-semibold py-2 px-6 rounded-lg shadow-lg transform -translate-y-60">
-                {successMessage}
-              </div>
-            </div>
-          )}
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-green-500 text-white text-lg font-semibold py-2 px-6 rounded-lg shadow-lg transform -translate-y-60">
+            {successMessage}
+          </div>
+        </div>
+      )}
       <section className="py-10 bg-white shadow-lg shadow-gray-200 rounded-md md:py-10 dark:bg-gray-900 antialiased p-10 m-10">
         <div className="max-w-screen-xl px-4 mx-auto 2xl:px-0">
           <div className="lg:grid lg:grid-cols-2 lg:gap-8 xl:gap-16">
@@ -335,7 +343,9 @@ export default function ProductDetail() {
 
               <div className="mt-4 sm:items-center sm:gap-4 sm:flex">
                 <p className="text-2xl font-extrabold text-gray-900 sm:text-3xl dark:text-white">
-                  ₫{(price || 0).toFixed(3)} {/* Dynamic price */}
+                  ₫{new Intl.NumberFormat("en-US").format(
+                    price - (price * (discount / 100)) || 0
+                  )} {/* Dynamic price */}
                 </p>
 
                 <div className="flex items-center gap-2 mt-2 sm:mt-0">
@@ -353,7 +363,7 @@ export default function ProductDetail() {
                     </svg>
                   </div>
                   <p className="text-sm font-medium leading-none text-gray-500 dark:text-gray-400">
-                  <p>({isNaN(averageRating) || !averageRating ? 0 : averageRating})</p> {/* Dynamic rating */}
+                    <p>({isNaN(averageRating) || !averageRating ? 0 : averageRating})</p> {/* Dynamic rating */}
                   </p>
                   <a
                     href="#"
@@ -366,10 +376,14 @@ export default function ProductDetail() {
                 <div className="ml-auto">
                   {/* Button to open reason modal */}
                   <button
-                    onClick={() => setIsReasonModalOpen(true)}
-                    className="block text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800"
+                    onClick={() => userIds && setIsReasonModalOpen(true)} // Chỉ mở modal khi đã đăng nhập
+                    className={`block font-medium rounded-lg text-sm px-5 py-2.5 text-center ${userIds
+                        ? "text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800"
+                        : "text-gray-400 bg-gray-300 cursor-not-allowed"
+                      }`}
+                    disabled={!userIds} // Disabled nếu userid là null
                   >
-                    Phản hổi
+                    Tố cáo
                   </button>
                 </div>
                 {/* Reason Modal */}
@@ -381,7 +395,7 @@ export default function ProductDetail() {
                     >
                       <div className="flex items-center justify-between p-4 border-b rounded-t dark:border-gray-600">
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                          Chọn lý do phản hồi
+                          Chọn lý do tố cáo
                         </h3>
                         <button
                           className="text-2xl"
@@ -483,7 +497,7 @@ export default function ProductDetail() {
 
               <div className="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
 
-                <button 
+                <button
                   onClick={() => addToCart(plantId, quantity)} // Gọi hàm thêm vào giỏ hàng khi nhấn nút
                   className="flex items-center justify-center py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                 >
@@ -562,7 +576,7 @@ export default function ProductDetail() {
                 </p>
               </Link>
               <hr className="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
-              <div className="text-gray-500 dark:text-gray-400"dangerouslySetInnerHTML={{ __html: description }}/>
+              <div className="text-gray-500 dark:text-gray-400" dangerouslySetInnerHTML={{ __html: description }} />
             </div>
           </div>
         </div>
@@ -592,7 +606,7 @@ export default function ProductDetail() {
                   />
                   <div>
                     <div className="flex items-center space-x-2">
-                      <h4 className="font-semibold">{review.username }</h4>
+                      <h4 className="font-semibold">{review.username}</h4>
                       <span className="text-sm text-gray-500">{new Date(review.reviewDate).toLocaleDateString()}</span>
                     </div>
                     <p className="mt-2 text-gray-700">{review.comment}</p>
@@ -630,7 +644,7 @@ export default function ProductDetail() {
 
         {/* Review Form */}
         <div className="mt-10">
-        {canReview ? (
+          {canReview ? (
             <>
               <h3 className="text-2xl font-semibold mb-4">Đánh giá sản phẩm</h3>
               <form onSubmit={handleReviewSubmit} className="space-y-4">
@@ -652,8 +666,8 @@ export default function ProductDetail() {
                 <button
                   type="submit"
                   className={`block text-white font-medium rounded-lg text-sm px-5 py-2.5 ${comment.trim()
-                      ? "bg-red-600 hover:bg-red-700"
-                      : "bg-gray-300 cursor-not-allowed"
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "bg-gray-300 cursor-not-allowed"
                     }`}
                   disabled={!comment.trim()} // Vô hiệu hóa nếu không có dữ liệu
                 >

@@ -101,12 +101,7 @@ export default function DashDiscount() {
           </h1>
           <div className="flex flex-wrap gap-4 justify-between mt-4">
             <form className="flex-grow max-w-xs w-full md:w-1/2">
-              <TextInput
-                type="text"
-                placeholder="Tìm kiếm..."
-                rightIcon={AiOutlineSearch}
-                className="w-full"
-              />
+              
             </form>
             <Link to="/DiscountUpdate">
               <Button className="w-full md:w-auto">Thêm mã giảm giá</Button>

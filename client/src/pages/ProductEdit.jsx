@@ -3,7 +3,8 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { Spinner } from "flowbite-react";
-
+import { useRef } from "react";
+import { FaCloudArrowUp } from 'react-icons/fa6';
 export default function ProductEdit() {
   const { plantId } = useParams();
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ export default function ProductEdit() {
     quantity: "",
     discountCode: "",
   });
+  const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
@@ -23,12 +25,38 @@ export default function ProductEdit() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+  
+    if (name === "price" || name === "discount") {
+      // Loại bỏ tất cả dấu . khỏi chuỗi nhập
+      const numericValue = value.replace(/\./g, "").replace(/,/g, "");
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: numericValue,
+      }));
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    }
   };
 
+  const handleBlur = () => {
+    const priceValue = formData.price || "";
+    const numericValue = parseFloat(priceValue.toString().replace(/\./g, "").replace(/,/g, ""));
+    if(priceValue ===""){ setError("");}
+    else if (isNaN(numericValue) || numericValue === 0) {
+      setError("Giá sản phẩm không hợp lệ.");
+    } else if (numericValue < 10000) {
+      setError("Giá sản phẩm phải lớn hơn hoặc bằng 10.000");
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        price: new Intl.NumberFormat("en-US").format(numericValue), // Định dạng giá trị với dấu phẩy
+      }));
+      setError("");
+    }
+  };
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -48,6 +76,7 @@ export default function ProductEdit() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const numericPrice = parseFloat(formData.price.replace(/,/g, "").replace(/\./g, ""));
     console.log("FormData before sending:", formData);
     const formDataToSend = new FormData();
     formDataToSend.append("plantId", plantId);
@@ -55,11 +84,11 @@ export default function ProductEdit() {
     formDataToSend.append("plantName", formData.plantName || "");
     formDataToSend.append("categoryId", formData.categoryId || "");
     formDataToSend.append("description", formData.description || "");
-    formDataToSend.append("price", parseFloat(formData.price));
+    formDataToSend.append("price", numericPrice);
     formDataToSend.append("stock", parseInt(formData.stock));
     formDataToSend.append("status", formData.status || 1); // Set default status if not provided
     formDataToSend.append("discount", parseFloat(formData.discount) || 0);
-    
+
     // Check if an image is provided in Base64 or file format
     if (formData.imageFile) {
       // If there's a file uploaded, append it
@@ -71,7 +100,7 @@ export default function ProductEdit() {
 
     try {
       const response = await fetch("https://opms1.runasp.net/api/PlantAPI/updatePlant", {
-        method: "POST",       
+        method: "POST",
         body: formDataToSend,
       });
 
@@ -102,7 +131,7 @@ export default function ProductEdit() {
           categoryId: data.categoryId || "",
           plantName: data.plantName || "",
           description: data.description || "",
-          price: data.price || "",
+          price: new Intl.NumberFormat("en-US").format(data.price || 0),
           stock: data.stock || "",
           discount: data.discount || "",
           userId: data.userId || "",
@@ -152,8 +181,7 @@ export default function ProductEdit() {
       </div>
     );
   }
-  if (error) return <div>Error: {error}</div>;
-
+  
   return (
     <div className="max-w-7xl mx-auto p-6 sm:p-8 rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -165,9 +193,21 @@ export default function ProductEdit() {
               </label>
               <input
                 type="file"
+                accept="image/*"
+                ref={fileInputRef}
                 onChange={handleImageChange}
+                style={{ display: "none" }} // Ẩn input file
                 className="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
               />
+              {/* Nút thay đổi ảnh */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current.click()} // Kích hoạt click trên input file
+                className="inline-flex items-center py-2 px-3 text-sm font-medium text-center text-white bg-gradient-to-br from-pink-500 to-purple-500 rounded-lg shadow-md shadow-gray-300 hover:scale-[1.02] transition-transform"
+              >
+                <FaCloudArrowUp className="mr-2 -ml-1 w-4 h-4" />
+                Tải ảnh cây của bạn lên tại đây
+              </button>
               {imagePreviewUrl && (
                 <img
                   src={imagePreviewUrl}
@@ -211,12 +251,18 @@ export default function ProductEdit() {
                 Giá
               </label>
               <input
-                type="number"
+                type="text"
                 name="price"
                 value={formData.price}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                onBlur={handleBlur}
+                className={`mt-1 block w-full rounded-md shadow-sm sm:text-sm focus:ring-indigo-500 ${error ? "border-red-500 focus:border-red-500" : "border-gray-300"
+                  }`}
+                
               />
+              {error && (
+                <p className="mt-2 text-sm text-red-600">{error}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">

@@ -94,10 +94,71 @@ export default function Payment() {
   useEffect(() => {
     console.log("Payment method updated to:", paymentMethod);
   }, [paymentMethod]);
+
+  // lấy lại địa chỉ đặt hàng cũ theo đơn hàng gần nhất
+  useEffect(() => {
+  const fetchLatestShippingAddress = async () => {
+    const userId = localStorage.getItem("userId");
+    if (!userId || userId === "undefined") {
+      navigate("/sign-in");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://opms1.runasp.net/api/OrderAPI/getOrdersByUserId?userId=${userId}`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch orders");
+      }
+
+      const orders = await response.json();
+
+      // Lọc đơn hàng không bị hủy và sắp xếp theo ngày
+      const sortedOrders = orders
+        .filter((order) => order.status !== "Cancel")
+        .sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+
+      // Lấy địa chỉ giao hàng từ đơn hàng mới nhất
+      const latestOrder = sortedOrders[0];
+      if (latestOrder && latestOrder.shippingAddress) {
+        const addressParts = latestOrder.shippingAddress.split(",").map((part) => part.trim());
+        const cityName = addressParts.pop();
+        const districtName = addressParts.pop();
+        const wardName = addressParts.pop();
+        const specificAddress = addressParts.join(", ");
+
+        const fullAddress = `${specificAddress}, ${wardName}, ${districtName}, ${cityName}`;
+
+        // Tìm ID của Tỉnh, Quận, Phường tương ứng
+        const selectedCity = cities.find((city) => city.Name === cityName);
+        const selectedDistrict = selectedCity?.Districts.find((district) => district.Name === districtName);
+        const selectedWard = selectedDistrict?.Wards.find((ward) => ward.Name === wardName);
+
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          city: selectedCity?.Id || "",
+          district: selectedDistrict?.Id || "",
+          ward: selectedWard?.Id || "",
+          address: fullAddress, // Đặt địa chỉ đầy đủ
+        }));
+
+        // Cập nhật dropdown
+        setDistricts(selectedCity?.Districts || []);
+        setWards(selectedDistrict?.Wards || []);
+      }
+    } catch (error) {
+      console.error("Error fetching latest shipping address:", error);
+    }
+  };
+
+  fetchLatestShippingAddress();
+}, [cities]);
   // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isSubmitting) return; // Prevent additional submissions
+    if (isSubmitting) return;
+     // Prevent additional submissions
     const showErrorMessage = (message) => {
       setSuccessMessage(message);
       setTimeout(() => {
@@ -121,7 +182,7 @@ export default function Payment() {
       showErrorMessage("Vui lòng nhập địa chỉ cụ thể.");
       return;
     }
-  
+
     setIsSubmitting(true);
     // Construct the full address
     const city = cities.find((city) => city.Id === formData.city)?.Name || "";
@@ -170,7 +231,7 @@ export default function Payment() {
       if (!orderId) {
         throw new Error("Missing orderId in order creation response.");
       }
-     
+
       // Check if payment method is payOS to initiate online payment
       if (paymentMethod === "payOS") {
         // Ensure orderResult contains the expected orderId
@@ -190,7 +251,7 @@ export default function Payment() {
         if (!paymentResponse.ok) throw new Error("Failed to create payment link.");
 
         const paymentLinkData = await paymentResponse.json();
-       
+
         const checkoutUrl = paymentLinkData.data.checkoutUrl;
         if (checkoutUrl) {
           window.location.href = checkoutUrl; // Direct browser redirect
@@ -200,20 +261,20 @@ export default function Payment() {
       } else {
         // For other payment methods, navigate to the success page or show a success message
         setSuccessMessage("Đặt hàng thành công!");
-      setTimeout(() => {
-        setSuccessMessage("");
-      }, 2000);
+        setTimeout(() => {
+          setSuccessMessage("");
+        }, 2000);
         navigate("/order-success");
       }
 
     } catch (error) {
       console.error("Error:", error);
       showErrorMessage("Lỗi khi tạo đơn hàng hoặc liên kết thanh toán. Vui lòng thử lại.");
-    }   
+    }
     setIsSubmitting(false);
   };
 
-  useEffect(() => {    
+  useEffect(() => {
   }, [selectedCartItems]);
   if (loading) {
     return (
@@ -226,18 +287,18 @@ export default function Payment() {
     );
   }
   return (
-    
+
     <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 m-24">
       <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
         Thông tin giao hàng
       </h2>
       {successMessage && (
-            <div className="fixed inset-0 flex items-center justify-center z-50">
-              <div className="bg-green-500 text-white text-lg font-semibold py-2 px-6 rounded-lg shadow-lg transform -translate-y-60">
-                {successMessage}
-              </div>
-            </div>
-          )}
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-green-500 text-white text-lg font-semibold py-2 px-6 rounded-lg shadow-lg transform -translate-y-60">
+            {successMessage}
+          </div>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Name Input */}
         <div>
@@ -384,7 +445,7 @@ export default function Payment() {
               <option value="payOS">payOS</option>
               <option value="Visa"><FaCcVisa />
                 Visa</option>
-              <option value="Cash on Delivery">Thanh toán khi nhận hàng </option>
+              <option value="Thanh toán khi nhận hàng">Thanh toán khi nhận hàng </option>
             </select>
             {/* Dropdown arrow */}
             <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
@@ -435,9 +496,13 @@ export default function Payment() {
           {/* Submit Button */}
           <button
             type="submit"
-            className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+            className={`px-4 py-2 text-white rounded-lg ${isSubmitting
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+              }`}
+            disabled={isSubmitting}
           >
-            Đặt hàng
+            {isSubmitting ? "Đang xử lý..." : "Đặt hàng"}
           </button>
         </div>
       </form>

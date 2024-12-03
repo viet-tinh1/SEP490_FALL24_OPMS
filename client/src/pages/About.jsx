@@ -3,6 +3,7 @@ import { useState } from "react";
 export default function About() {
   const email = localStorage.getItem("email");
   const username = localStorage.getItem("username");
+  const userid = localStorage.getItem("userId");
   const [formData, setFormData] = useState({
     name: username || "",
     email: email || "",
@@ -223,11 +224,16 @@ export default function About() {
 
               {/* Nút Gửi */}
               <button
-                type="submit"
-                className="w-full bg-green-600 text-white py-3 rounded font-medium hover:bg-green-700 transition duration-300"
-              >
-                Gửi Phản Hồi
-              </button>
+  type="submit"
+  className={`w-full py-3 rounded font-medium transition duration-300 ${
+    userid
+      ? "bg-green-600 text-white hover:bg-green-700"
+      : "bg-gray-400 text-gray-600 cursor-not-allowed"
+  }`}
+  disabled={!userid} // Nếu userid là null, nút sẽ bị disabled
+>
+  Gửi Phản Hồi
+</button>
             </form>
 
             {/* Map Section */}

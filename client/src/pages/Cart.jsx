@@ -1,8 +1,8 @@
-import { Checkbox } from "flowbite-react";
 import { useState, useEffect } from "react";
 import { Spinner } from "flowbite-react";
 import { Link, useNavigate } from "react-router-dom";
-
+import { Modal, Table, Button, TextInput, Checkbox } from "flowbite-react";
+import { HiOutlineExclamationCircle } from "react-icons/hi";
 export default function Cart() {
   const [cartItems, setCartItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
@@ -22,7 +22,8 @@ export default function Cart() {
   const savings = 0; // Fixed savings
   const storePickup = 0; // Fixed store pickup fee
   const taxRate = 0; // Tax rate of 10%
-
+  const [showModal, setShowModal] = useState(false);
+  const [selectedCartId, setSelectedCartId] = useState(null);
 
   useEffect(() => {
     const fetchCartData = async () => {
@@ -256,14 +257,14 @@ export default function Cart() {
         return total + finalPrice;
       }
       return total;
-    }, 0).toFixed(3);
+    }, 0);
   };
   useEffect(() => {
     const totalWithVouchers = parseFloat(calculateSelectedTotalWithVouchers());
     if (totalWithVouchers > 0) {
       localStorage.setItem("totalWithVouchers", totalWithVouchers);
     }
-  }, [cartItems, selectedItems, productDiscounts]); 
+  }, [cartItems, selectedItems, productDiscounts]);
 
   if (loading) {
     return (
@@ -322,7 +323,44 @@ export default function Cart() {
       )
     );
   };
+  const handleShowDeleteModal = (cartId) => {
+    setSelectedCartId(cartId); // Lưu lại ID giỏ hàng cần xóa
+    setShowModal(true); // Hiển thị modal
+  };
+  const handleConfirmDelete = async () => {
+    if (!selectedCartId) return;
 
+    try {
+      const response = await fetch(
+        `https://opms1.runasp.net/api/ShoppingCartAPI/deleteShoppingCart?CartId=${selectedCartId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Không thể xóa sản phẩm khỏi giỏ hàng. Vui lòng thử lại.");
+      }
+
+      setCartItems((prevItems) =>
+        prevItems.filter((item) => item.shoppingCartItemId !== selectedCartId)
+      );
+
+      setShowModal(false); // Đóng modal sau khi xóa thành công
+      setSelectedCartId(null); // Reset ID giỏ hàng
+    } catch (error) {
+      console.error("Lỗi khi xóa sản phẩm khỏi giỏ hàng:", error.message);
+      setShowModal(false);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowModal(false); // Đóng modal
+    setSelectedCartId(null); // Reset ID giỏ hàng
+  };
   const handleCheckboxChange = (itemId) => {
     setSelectedItems((prevSelectedItems) => {
       if (prevSelectedItems.includes(itemId)) {
@@ -356,7 +394,7 @@ export default function Cart() {
       return total;
     }, 0);
   };
- 
+
   const handleBlur = (itemId, quantity) => {
     if (!quantity || quantity < 1) {
       setCartItems((prevItems) =>
@@ -381,7 +419,7 @@ export default function Cart() {
             <div className="space-y-6">
               {cartItems.length === 0 ? (
                 <div className="text-center text-green-600 font-semibold">
-                  {notification || "Your cart is currently empty."}
+                  {notification || "Giỏ hàng của bạn hiện đang trống."}
                 </div>
               ) : (
                 cartItems.map((item) => {
@@ -393,7 +431,8 @@ export default function Cart() {
                   return (
                     <div
                       key={item.shoppingCartItemId}
-                      className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:p-6"
+                      className={`rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:p-6 ${(item.plantDetails?.stock === 0 || item.plantDetails?.isVerfied === 0) ? "opacity-50 pointer-events-none" : ""
+                        }`}
                     >
                       <div className="space-y-4 md:flex md:items-center md:justify-between md:gap-6 md:space-y-0">
                         <input
@@ -401,6 +440,7 @@ export default function Cart() {
                           className="form-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded"
                           checked={selectedItems.includes(item.shoppingCartItemId)}
                           onChange={() => handleCheckboxChange(item.shoppingCartItemId)}
+                          disabled={item.plantDetails?.stock === 0} // Vô hiệu hóa nếu hết hàng
                         />
                         <a href="#" className="shrink-0 md:order-1">
                           <img
@@ -463,7 +503,9 @@ export default function Cart() {
                           </div>
                           <div className="text-end md:order-4 md:w-32">
                             <p className="text-base font-bold text-gray-900 dark:text-white">
-                            ₫{finalPrice.toFixed(3)}
+                              ₫{new Intl.NumberFormat("en-US").format(
+                                finalPrice
+                              )}
                             </p>
                           </div>
                         </div>
@@ -475,10 +517,23 @@ export default function Cart() {
                           >
                             {item.plantDetails?.plantName || item.plantId}
                           </a>
+                          {/* Hiển thị trạng thái hết hàng */}
+                          {item.plantDetails?.stock === 0 && (
+                            <p className="text-sm font-semibold text-red-500">
+                              Sản phẩm này đã hết hàng
+                            </p>
+                          )}
+                          {item.plantDetails?.isVerfied === 0 && (
+                            <p className="text-sm font-semibold text-yellow-500">
+                              Sản phẩm này chưa được xác minh
+                            </p>
+                          )}
+
                           <div className="flex items-center gap-4">
                             <button
                               type="button"
                               className="inline-flex items-center text-sm font-medium text-red-600 hover:underline dark:text-red-500"
+                              onClick={() => handleShowDeleteModal(item.shoppingCartItemId)}
                             >
                               <svg
                                 className="me-1.5 h-5 w-5"
@@ -533,7 +588,26 @@ export default function Cart() {
               )}
             </div>
           </div>
-
+          {/*Modal xóa giỏ hàng*/}
+          <Modal show={showModal} onClose={handleCancelDelete}>
+            <Modal.Header>Xác nhận xóa</Modal.Header>
+            <Modal.Body>
+              <div className="text-center">
+                <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
+                <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
+                  Bạn có chắc chắn muốn xóa sản phẩm khỏi giỏ hàng?
+                </h3>
+                <div className="flex justify-center gap-4">
+                  <Button color="failure" onClick={handleConfirmDelete}>
+                    Có
+                  </Button>
+                  <Button color="gray" onClick={handleCancelDelete}>
+                    Không
+                  </Button>
+                </div>
+              </div>
+            </Modal.Body>
+          </Modal>
           <div className="mx-auto mt-6 max-w-4xl flex-1 space-y-6 lg:mt-0 lg:w-full">
             <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
               <p className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -546,7 +620,9 @@ export default function Cart() {
                       Giá gốc
                     </dt>
                     <dd className="text-base font-medium text-gray-900 dark:text-white">
-                    ₫{calculateSelectedTotalOriginalPriceWithoutDiscount().toFixed(3)}
+                      ₫{new Intl.NumberFormat("en-US").format(
+                        calculateSelectedTotalOriginalPriceWithoutDiscount()
+                      )}
                     </dd>
                   </dl>
                   <dl className="flex items-center justify-between gap-4">
@@ -555,7 +631,7 @@ export default function Cart() {
                     </dt>
                     <dd className="text-base font-medium text-green-600">
 
-                      -₫{((calculateSelectedTotalOriginalPriceWithoutDiscount() - calculateSelectedTotalOriginalPrice()).toFixed(3) || savings.toFixed(3))}
+                      -₫{new Intl.NumberFormat("en-US").format(((calculateSelectedTotalOriginalPriceWithoutDiscount() - calculateSelectedTotalOriginalPrice()) || savings))}
 
                     </dd>
                   </dl>
@@ -576,7 +652,7 @@ export default function Cart() {
                     Tổng cộng sau khi áp dụng mã giảm giá
                   </dt>
                   <dd className="text-base font-bold text-gray-900 dark:text-white">
-                  ₫{calculateSelectedTotalWithVouchers()}
+                    ₫{new Intl.NumberFormat("en-US").format(calculateSelectedTotalWithVouchers())}
                   </dd>
                 </dl>
 
@@ -586,8 +662,8 @@ export default function Cart() {
                 onClick={handleProceedToCheckout}
                 disabled={calculateSelectedTotalWithVouchers() <= 0}
                 className={`flex w-full items-center justify-center rounded-lg px-5 py-2.5 text-sm font-medium text-white focus:outline-none focus:ring-4 ${calculateSelectedTotalWithVouchers() > 0
-                    ? "bg-emerald-700 hover:bg-emerald-800 focus:ring-emerald-300 dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:focus:ring-emerald-800"
-                    : "bg-gray-400 cursor-not-allowed"
+                  ? "bg-emerald-700 hover:bg-emerald-800 focus:ring-emerald-300 dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:focus:ring-emerald-800"
+                  : "bg-gray-400 cursor-not-allowed"
                   }`}
               >
                 Tiến hành thanh toán

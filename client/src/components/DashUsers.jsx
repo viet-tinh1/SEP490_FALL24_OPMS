@@ -194,12 +194,7 @@ export default function DashUsers() {
             Tất cả người dùng
           </h1>
           <div className="flex flex-wrap gap-4 justify-between mt-4">
-            <form className="flex-grow max-w-xs w-full md:w-1/2">
-              <TextInput
-                type="text"
-                placeholder="Tìm kiếm  ..."
-                rightIcon={AiOutlineSearch}
-                className="w-full" />
+            <form className="flex-grow max-w-xs w-full md:w-1/2">              
             </form>
             <Link to="/UserCreate">
               <Button className="flex items-center ml-auto space-x-2 sm:space-x-3">Thêm người dùng</Button>
