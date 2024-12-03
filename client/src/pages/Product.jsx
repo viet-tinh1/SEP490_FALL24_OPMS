@@ -473,7 +473,7 @@ export default function Product() {
               </div>
             </div>
           )}
-          <div className="flex flex-wrap justify-center gap-3 p-4 ">
+          <div className="flex flex-wrap justify-center gap-3 p-5 ">
             {productsToDisplay.length === 0 ? (
               <div className="text-center text-green-600 font-semibold">
                 {notification || "Không có sản phẩm nào có sẵn."}
