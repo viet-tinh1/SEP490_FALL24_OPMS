@@ -13,7 +13,7 @@ export default function Product() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
-  const usersPerPage = 5;
+  const usersPerPage = 20;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -34,7 +34,7 @@ export default function Product() {
   const location = useLocation();
   const navigate = useNavigate();
   const closeTimeoutRef = useRef(null);
-
+  const [ratingData, setRatingData] = useState({});
   //lấy session
   // Lấy thông tin từ URL hoặc localStorage
   useEffect(() => {
@@ -149,6 +149,9 @@ export default function Product() {
       const categoryData = await categoryResponse.json();
       setCategories(categoryData);
 
+      // Lấy dữ liệu đánh giá
+      const ratings = await fetchRatings(productsData);
+      setRatingData(ratings);
       setLoading(false);
     } catch (err) {
       setError(err.message);
@@ -271,6 +274,11 @@ export default function Product() {
   };
   // thêm sản phẩm vào giỏ hàng 
   const addToCart = async (productId, quantity) => {
+    const userId = localStorage.getItem("userId");
+    if (!userId || userId === "undefined") {
+      navigate("/sign-in");
+      return;
+    }
     try {
       const response = await fetch('https://opms1.runasp.net/api/ShoppingCartAPI/createShoppingCart', {
         method: "POST",
@@ -288,11 +296,14 @@ export default function Product() {
 
         setSuccessMessage('Sản phẩm đã được thêm vào giỏ hàng!');
       } else {
-        const errorResponse = await response.json();
-        setSuccessMessage(`Không thể thêm sản phẩm vào giỏ hàng. ${errorResponse.message}`);
+        const errorData = await response.json(); // Lấy dữ liệu phản hồi lỗi từ server
+        if (response.status === 404 && errorData.message === "Not enough stock available.") {
+          setSuccessMessage("Không đủ hàng trong kho.");
+        } else {
+          setSuccessMessage("Đã xảy ra lỗi. Vui lòng thử lại.");
+        }
       }
-
-    } catch (err) {
+    }catch (err) {
       console.error("Lỗi thêm sản phẩm vào giỏ hàng:", err);
       setSuccessMessage("Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.");
     }
@@ -303,8 +314,25 @@ export default function Product() {
       }, 2000);
     }
   };
-
-
+  const fetchRatings = async (products) => {
+    const ratings = {};
+    try {
+      await Promise.all(
+        products.map(async (product) => {
+          const response = await fetch(
+            `https://opms1.runasp.net/api/ReviewAPI/getProductRatingSummary?plantId=${product.plantId}`
+          );
+          const data = await response.json();
+          ratings[product.plantId] = data; // Gán dữ liệu đánh giá vào object
+        })
+      );
+    } catch (err) {
+      console.error("Lỗi khi lấy dữ liệu đánh giá:", err);
+    }
+    return ratings;
+  };
+  // Tính rating trung bình
+ 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -445,7 +473,7 @@ export default function Product() {
               </div>
             </div>
           )}
-          <div className="flex flex-wrap justify-center gap-3 p-4">
+          <div className="flex flex-wrap justify-center gap-3 p-4 ">
             {productsToDisplay.length === 0 ? (
               <div className="text-center text-green-600 font-semibold">
                 {notification || "Không có sản phẩm nào có sẵn."}
@@ -453,11 +481,20 @@ export default function Product() {
             ) : (
 
               productsToDisplay.map((product) => {
+                const rating = ratingData[product.plantId] || {
+                  totalReviews: 0,
+                  totalRating: 0,
+                };
+                const averageRating =
+                  rating.totalReviews > 0
+                    ? (rating.totalRating / rating.totalReviews).toFixed(1)
+                    : "0.0";
+  
 
                 return (
                   <div
                     key={product.plantId}
-                    className={`relative bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto ${product.stock === 0 ? "opacity-98" : ""
+                    className={` mb-4 relative bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto ${product.stock === 0 ? "opacity-98" : ""
                       }`}
                   >
                     {/* Hiển thị chữ "Hết hàng" khi stock === 0 */}
@@ -508,7 +545,7 @@ export default function Product() {
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
                         <span className="ml-2 rounded bg-cyan-100 px-2 py-0.5 text-xs font-semibold text-cyan-800 dark:bg-cyan-200 dark:text-cyan-800">
-                          {product.rating || "4.5"}
+                        {averageRating} ({rating.totalReviews} đánh giá)
                         </span>
                       </div>
                     </Link>
@@ -518,10 +555,9 @@ export default function Product() {
                           ₫
                         </span>
                         <span className="font-medium text-xl truncate">
-                          {(
-                            product.price -
-                            product.price * (product.discount / 100 || 0)
-                          ).toFixed(3)}
+                          {new Intl.NumberFormat("en-US").format(
+                            product.price - product.price * (product.discount / 100 || 0)
+                          )}
                         </span>
                       </div>
                       <div className="rounded bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800 dark:bg-red-200 dark:text-red-800">

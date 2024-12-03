@@ -6,7 +6,8 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { Dropdown } from "flowbite-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-
+import { useRef } from "react";
+import { FaCloudArrowUp } from 'react-icons/fa6';
 function formatTimeDifference(timestamp) {
   const now = new Date();
   const time = new Date(timestamp);
@@ -34,6 +35,7 @@ function formatTimeDifference(timestamp) {
 
 function CommentSection({ postId, userId, refreshPosts }) {
   const [comments, setComments] = useState([]);
+  const fileInputRef = useRef(null);
   const [visibleReplies, setVisibleReplies] = useState({});
   const [deleteCommentPopup, setDeleteCommentPopup] = useState(false);
   const [updateCommentPopup, setUpdateCommentPopup] = useState(false);
@@ -493,111 +495,111 @@ function CommentSection({ postId, userId, refreshPosts }) {
                 </Modal.Footer>
               </Modal>
               {/* Replies to the Comment */}
-              {comment.replies  &&
-            comment.replies.slice(0, visibleReplies[comment.commentId] || 3).map((reply) => (
-                <div key={reply.replyCommentId} className="ml-12 mt-2 flex items-start space-x-4">
-                  <img
-                    src={reply.userImage || "https://via.placeholder.com/40"}
-                    alt="Hình đại diện"
-                    className="w-10 h-10 rounded-full"
-                    onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/40"; }}
-                  />
-                  <div className="flex flex-col flex-1">
-                    <div className="bg-gray-100 p-2 rounded-lg">
-                      <span className="font-semibold text-sm mr-1">
-                        {reply.username}
-                      </span>
-                      <br />
-                      <span className="text-sm">{reply.replyCommentContent}</span>
+              {comment.replies &&
+                comment.replies.slice(0, visibleReplies[comment.commentId] || 3).map((reply) => (
+                  <div key={reply.replyCommentId} className="ml-12 mt-2 flex items-start space-x-4">
+                    <img
+                      src={reply.userImage || "https://via.placeholder.com/40"}
+                      alt="Hình đại diện"
+                      className="w-10 h-10 rounded-full"
+                      onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/40"; }}
+                    />
+                    <div className="flex flex-col flex-1">
+                      <div className="bg-gray-100 p-2 rounded-lg">
+                        <span className="font-semibold text-sm mr-1">
+                          {reply.username}
+                        </span>
+                        <br />
+                        <span className="text-sm">{reply.replyCommentContent}</span>
+                      </div>
+                      <div className="mt-1 text-xs text-gray-500">
+                        <span>{formatTimeDifference(reply.createAt)}</span>
+                      </div>
                     </div>
-                    <div className="mt-1 text-xs text-gray-500">
-                      <span>{formatTimeDifference(reply.createAt)}</span>
-                    </div>
-                  </div>
-                  {(reply.userId === userId || role === "1") && (
-                  <Dropdown
-                    arrowIcon={false}
-                    inline
-                    label={<FiMoreHorizontal className="text-gray-500 cursor-pointer" />}
-                  >
-                    {reply.userId === userId && (
-                      <Dropdown.Item onClick={() => confirmUpdateReply(reply)}>Chỉnh sửa phản hồi</Dropdown.Item>
+                    {(reply.userId === userId || role === "1") && (
+                      <Dropdown
+                        arrowIcon={false}
+                        inline
+                        label={<FiMoreHorizontal className="text-gray-500 cursor-pointer" />}
+                      >
+                        {reply.userId === userId && (
+                          <Dropdown.Item onClick={() => confirmUpdateReply(reply)}>Chỉnh sửa phản hồi</Dropdown.Item>
+                        )}
+                        <Dropdown.Item onClick={() => confirmDeleteReply(reply.replyCommentId)}>
+                          Xóa phản hồi
+                        </Dropdown.Item>
+                      </Dropdown>
                     )}
-                    <Dropdown.Item onClick={() => confirmDeleteReply(reply.replyCommentId)}>
-                      Xóa phản hồi
-                    </Dropdown.Item>
-                  </Dropdown>
-                )}
-                {deleteCommentPopup && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                  <div className="bg-white p-6 rounded-lg shadow-md text-center space-y-3">
-                    <p className="text-lg font-semibold text-green-600">
-                      Xóa phản hồi thành công!
-                    </p>
-                  </div>
-                </div>
-              )}
-              <Modal
-                show={confirmupdateRepyModal}
-                onClose={() => setConfirmUpdateRepyModal(false)}
-                size="md"
-                popup={true}
-              >
-                <Modal.Header className="text-lg font-semibold text-red-600">
-                  chỉnh sửa phản hồi
-                </Modal.Header>
+                    {deleteCommentPopup && (
+                      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                        <div className="bg-white p-6 rounded-lg shadow-md text-center space-y-3">
+                          <p className="text-lg font-semibold text-green-600">
+                            Xóa phản hồi thành công!
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    <Modal
+                      show={confirmupdateRepyModal}
+                      onClose={() => setConfirmUpdateRepyModal(false)}
+                      size="md"
+                      popup={true}
+                    >
+                      <Modal.Header className="text-lg font-semibold text-red-600">
+                        chỉnh sửa phản hồi
+                      </Modal.Header>
 
-                <Modal.Footer>
-                  <input
-                    type="text"
-                    name="reply"
-                    value={updateContent}
-                    onChange={(e) => setUpdateContent(e.target.value)}
-                    placeholder={`Chỉnh sửa phản hồi`}
-                    className="flex-grow p-3 border rounded-full bg-gray-100"
-                  />
-                  <Button
-                    onClick={handleUpdateReply}
-                    className="ml-2 text-lg"
-                    disabled={!updateContent.trim()}
-                  >
-                    Gửi
-                  </Button>
-                </Modal.Footer>
-              </Modal>
-              <Modal
-                show={confirmDeleteModal}
-                onClose={() => setConfirmDeleteModal(false)}
-                size="md"
-                popup={true}
-              >
-                <Modal.Header className="text-lg font-semibold text-red-600">
-                  Xác nhận xóa
-                </Modal.Header>
-                <Modal.Body>
-                  <p className="text-sm text-gray-700">
-                    Bạn có chắc chắn muốn xóa phản hồi này không? Hành động này không thể hoàn tác.
-                  </p>
-                </Modal.Body>
-                <Modal.Footer>
-                  <Button onClick={() => setConfirmDeleteModal(false)} color="gray">
-                    Hủy
-                  </Button>
-                  <Button onClick={handleDeleteReply} color="red">
-                    Xóa
-                  </Button>
-                </Modal.Footer>
-              </Modal>
-                </div>               
-              ))}
+                      <Modal.Footer>
+                        <input
+                          type="text"
+                          name="reply"
+                          value={updateContent}
+                          onChange={(e) => setUpdateContent(e.target.value)}
+                          placeholder={`Chỉnh sửa phản hồi`}
+                          className="flex-grow p-3 border rounded-full bg-gray-100"
+                        />
+                        <Button
+                          onClick={handleUpdateReply}
+                          className="ml-2 text-lg"
+                          disabled={!updateContent.trim()}
+                        >
+                          Gửi
+                        </Button>
+                      </Modal.Footer>
+                    </Modal>
+                    <Modal
+                      show={confirmDeleteModal}
+                      onClose={() => setConfirmDeleteModal(false)}
+                      size="md"
+                      popup={true}
+                    >
+                      <Modal.Header className="text-lg font-semibold text-red-600">
+                        Xác nhận xóa
+                      </Modal.Header>
+                      <Modal.Body>
+                        <p className="text-sm text-gray-700">
+                          Bạn có chắc chắn muốn xóa phản hồi này không? Hành động này không thể hoàn tác.
+                        </p>
+                      </Modal.Body>
+                      <Modal.Footer>
+                        <Button onClick={() => setConfirmDeleteModal(false)} color="gray">
+                          Hủy
+                        </Button>
+                        <Button onClick={handleDeleteReply} color="red">
+                          Xóa
+                        </Button>
+                      </Modal.Footer>
+                    </Modal>
+                  </div>
+                ))}
               {comment.replies.length > (visibleReplies[comment.commentId] || 3) && (
-            <button
-              onClick={() => handleLoadMoreReplies(comment.commentId)}
-              className="ml-12 text-blue-600 text-sm underline hover:text-blue-800"
-            >
-              Xem thêm phản hồi
-            </button>
-          )}
+                <button
+                  onClick={() => handleLoadMoreReplies(comment.commentId)}
+                  className="ml-12 text-blue-600 text-sm underline hover:text-blue-800"
+                >
+                  Xem thêm phản hồi
+                </button>
+              )}
             </div>
           ))}
           {comments.length > visibleComments && (
@@ -635,7 +637,7 @@ function CommentSection({ postId, userId, refreshPosts }) {
 export default function Forum() {
   const userId = parseInt(localStorage.getItem("userId"), 10);
   const role = localStorage.getItem("role");
-
+  const fileInputRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [deletePopup, setDeletePopup] = useState(false);
@@ -719,11 +721,11 @@ export default function Forum() {
 
   const openModal = () => {
     if (userId) {
-        setIsOpen(true);
-    }else{
+      setIsOpen(true);
+    } else {
       navigate("/sign-in");
     }
-};
+  };
   const closeModal = () => {
     setIsOpen(false);
     setContent("");
@@ -916,7 +918,7 @@ export default function Forum() {
                 onClick={openModal}
                 className="flex-grow bg-gray-100 px-4 py-3 rounded-full text-gray-500 cursor-pointer text-lg"
               >
-                 Bạn đang nghĩ gì thế?
+                Bạn đang nghĩ gì thế?
               </div>
             </div>
 
@@ -931,14 +933,23 @@ export default function Forum() {
                     className="h-60"
                   />
                 </div>
-
+                <br></br>
                 <input
                   type="file"
                   accept="image/*"
+                  ref={fileInputRef}
                   onChange={handleImageUpload}
                   className="mt-4 mb-2 block"
+                  style={{ display: "none" }} // Ẩn input file
                 />
-
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current.click()} // Kích hoạt click trên input file
+                  className="inline-flex items-center py-2 px-3 text-sm font-medium text-center text-white bg-gradient-to-br from-pink-500 to-purple-500 rounded-lg shadow-md shadow-gray-300 hover:scale-[1.02] transition-transform"
+                >
+                  <FaCloudArrowUp className="mr-2 -ml-1 w-4 h-4" />
+                  Tải ảnh của bạn lên tại đây
+                </button>
                 {imagePreviewUrl && (
                   <div className="mt-2 flex flex-col items-center">
                     <img

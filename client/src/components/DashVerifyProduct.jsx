@@ -177,12 +177,7 @@ export default function DashVerifyProduct() {
           </h1>
           <div className="flex justify-between items-center mb-6">
             <form className="flex-grow max-w-xs">
-              <TextInput
-                type="text"
-                placeholder="Tìm kiếm  ..."
-                rightIcon={AiOutlineSearch}
-                className="hidden lg:inline w-full"
-              />
+              
             </form>
           </div>
           <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0 mt-4">
@@ -242,7 +237,7 @@ export default function DashVerifyProduct() {
                   <Table.Cell className="p-4">{getCategoryName(plant.categoryId)}</Table.Cell>
                   <Table.Cell className="p-4">{plant.plantName}</Table.Cell>
                   <Table.Cell className="p-4 line-clamp-2" dangerouslySetInnerHTML={{ __html: plant.description }} />
-                  <Table.Cell className="p-4 text-center">{plant.price.toFixed(3)}</Table.Cell>
+                  <Table.Cell className="p-4 text-center">{new Intl.NumberFormat("en-US").format(plant.price)}</Table.Cell>
                   <Table.Cell className="p-4 text-center">{plant.stock}</Table.Cell>
                   <Table.Cell className="p-4 text-center">{plant.discount || 0}%</Table.Cell>
                   <Table.Cell className="p-4 text-center">{plant.status === 1 ? "Còn hàng" : "Hết hàng"}</Table.Cell>

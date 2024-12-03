@@ -50,19 +50,20 @@ export default function OrderSuccess() {
                     throw new Error("Failed to fetch orders");
                 }
                 const data = await response.json();
-        
-                // Lấy tất cả đơn hàng, bao gồm cả đơn hàng "Cancel"
-                setOrders(data);
+                const sortedOrders = sortOrdersByDate(data);
+                const filteredOrders = sortedOrders.filter(order => order.status !== "Cancel");
+                setOrders(filteredOrders);
+                // Lấy tất cả đơn hàng, bao gồm cả đơn hàng "Cancel"                
         
                 // Thiết lập trạng thái ban đầu cho tất cả đơn hàng
                 const initialStatuses = {};
-                data.forEach(order => {
+                filteredOrders.forEach(order => {
                     initialStatuses[order.orderId] = order.status;
                 });
                 setOrderStatuses(initialStatuses);
         
                 // Lấy các ID giỏ hàng duy nhất
-                const uniqueCartItemIds = [...new Set(data.map(order => order.shoppingCartItemId))];
+                const uniqueCartItemIds = [...new Set(filteredOrders.map(order => order.shoppingCartItemId))];
         
                 // Lấy chi tiết giỏ hàng với giới hạn số lượng request đồng thời
                 await limitConcurrency(
@@ -84,6 +85,9 @@ export default function OrderSuccess() {
 
         fetchOrders();
     }, [navigate]);
+    const sortOrdersByDate = (orders) => {
+        return [...orders].sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+    };
     const fetchCartDetails = async (id) => {
         try {
             const response = await fetch(`https://opms1.runasp.net/api/ShoppingCartAPI/getShoppingCartById?id=${id}`);
@@ -146,6 +150,7 @@ export default function OrderSuccess() {
                 prevOrders.map((order) =>
                     order.orderId === orderId ? { ...order, status: newStatus } : order
                 )
+                .filter(order => order.status !== "Cancel") // Lọc trực tiếp
             );
         fetchOrders();
         } catch (error) {
@@ -167,10 +172,12 @@ export default function OrderSuccess() {
     };
 
     // Get users to display on the current page
-    const ordersToDisplay = orders.slice(
-        currentPage * ordersPerPage,
-        (currentPage + 1) * ordersPerPage
+    const ordersToDisplay = sortOrdersByDate(
+        orders
+            .filter(order => order.status !== "Cancel") // Lọc đơn hàng có trạng thái khác "Cancel"
+            .slice(currentPage * ordersPerPage, (currentPage + 1) * ordersPerPage) // Phân trang
     );
+    
     if (loading) {
         return (
             <div className="flex items-center justify-center h-screen w-full">
@@ -218,6 +225,7 @@ export default function OrderSuccess() {
                         <Table.HeadCell>Trạng Thái đơn hàng</Table.HeadCell>
                         <Table.HeadCell>Trạng Thái Thanh toán</Table.HeadCell>
                         <Table.HeadCell>Phương Thức Thanh Toán</Table.HeadCell>
+                        <Table.HeadCell>Địa chỉ nhận hàng</Table.HeadCell>
                         <Table.HeadCell>Hủy đơn hàng</Table.HeadCell>
                     </Table.Head>
                     <Table.Body className="divide-y">
@@ -246,7 +254,7 @@ export default function OrderSuccess() {
                                         "Đang tải..."
                                     )}
                                 </Table.Cell>
-                                <Table.Cell className="py-4">${(order.totalAmount).toFixed(3)}</Table.Cell>
+                                <Table.Cell className="py-4">₫{new Intl.NumberFormat("en-US").format((order.totalAmount))}</Table.Cell>
                                 <Table.Cell className="py-4">
                                     {order.status === "Pending" ? "Đang xử lý"
                                         : order.status === "Success" ? "Thành công"
@@ -256,6 +264,9 @@ export default function OrderSuccess() {
                                 <Table.Cell className="py-4">{order.isSuccess ? "Đã thanh toán" : "Chưa thanh toán"}</Table.Cell>
                                 <Table.Cell className="py-4">
                                     {order.paymentMethod === "1" ? "Thanh toán khi nhận hàng" : order.paymentMethod || "Thanh toán khi nhận hàng"}
+                                </Table.Cell>
+                                <Table.Cell className="py-4">
+                                    {order.shippingAddress }
                                 </Table.Cell>
                                 <Table.Cell className="py-4">
                                     {(order.status === "Success"||order.status === "Cancel" )? (

@@ -1,6 +1,6 @@
 import { Sidebar } from "flowbite-react";
 import { TbShoppingBagSearch } from "react-icons/tb";
-import { Link, useNavigate, useLocation  } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { PiShoppingCartLight } from "react-icons/pi";
 import ReactPaginate from "react-paginate";
 import { useState, useEffect, useRef } from "react";
@@ -9,14 +9,38 @@ import { Spinner } from "flowbite-react";
 import { IoArrowBackCircle, IoArrowForwardCircle } from "react-icons/io5";
 import { IoChevronDown } from "react-icons/io5";
 
+function formatTimeDifference(timestamp) {
+  const now = new Date();
+  const time = new Date(timestamp);
+  const differenceInSeconds = Math.floor((now - time) / 1000);
+
+  if (differenceInSeconds < 60) {
+    return `${differenceInSeconds} giây trước`;
+  } else if (differenceInSeconds < 3600) {
+    const minutes = Math.floor(differenceInSeconds / 60);
+    return `${minutes} phút trước`;
+  } else if (differenceInSeconds < 86400) {
+    const hours = Math.floor(differenceInSeconds / 3600);
+    return `${hours} giờ trước`;
+  } else if (differenceInSeconds < 2592000) {
+    const days = Math.floor(differenceInSeconds / 86400);
+    return `${days} ngày trước`;
+  } else if (differenceInSeconds < 31104000) {
+    const months = Math.floor(differenceInSeconds / 2592000);
+    return `${months} tháng trước`;
+  } else {
+    const years = Math.floor(differenceInSeconds / 31104000);
+    return `${years} năm trước`;
+  }
+}
 export default function ProductSeller() {
-  const {userIdPlant } = useParams();
+  const { userIdPlant } = useParams();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [users, setUsers] = useState([]);
-  const [ userimg,setUserImg] = useState([]);
+  const [userimg, setUserImg] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
-  const usersPerPage = 5;
+  const usersPerPage = 20;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -36,7 +60,9 @@ export default function ProductSeller() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sortOption, setSortOption] = useState("");
-  
+  const [ratingData, setRatingData] = useState({});
+  const [totalReviews, setTotalReviews] = useState(0);
+  const [totalRating, setTotalRating] = useState(0);
   //lấy session
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -69,14 +95,14 @@ export default function ProductSeller() {
   // lấy sản phẩm 
   useEffect(() => {
     if (!userIdPlant) return;
-    
+
     const fetchProductsAndCategories = async () => {
       try {
         //lấy plants
         const productResponses = await fetch(
           `https://opms1.runasp.net/api/PlantAPI/getPlantByUserIsVerify?UserId=${userIdPlant}`);
         const productsDatas = await productResponses.json();
-            
+
         if (!productResponses.ok) {
           throw new Error("Không thể lấy dữ liệu ");
         }
@@ -101,7 +127,8 @@ export default function ProductSeller() {
         }
         const categoryData = await categoryResponse.json();
         setCategories(categoryData);
-        
+        const ratings = await fetchRatings(productsDatas);
+        setRatingData(ratings);
         //lấy tên users
         const UsersResponse = await fetch(
           "https://opms1.runasp.net/api/UserAPI/getUser"
@@ -110,8 +137,9 @@ export default function ProductSeller() {
           throw new Error("Failed to fetch categories");
         }
         const usersData = await UsersResponse.json();
-        
+
         setUsers(usersData);
+
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -125,19 +153,19 @@ export default function ProductSeller() {
   //handle tìm kiếm
   const handleSortClick = async (label, id) => {
     if (id === 2) {
-        setSortOption("most-purchased"); // Unique value for "Most Purchased"
-        try {
-            const response = await fetch(`https://opms1.runasp.net/api/PlantAPI/most-purchased-by-shop?limit=7&userId=${userIdPlant}`);
-            const data = await response.json();
-            if (!response.ok) throw new Error("Unable to fetch best-selling products");
+      setSortOption("most-purchased"); // Unique value for "Most Purchased"
+      try {
+        const response = await fetch(`https://opms1.runasp.net/api/PlantAPI/most-purchased-by-shop?limit=7&userId=${userIdPlant}`);
+        const data = await response.json();
+        if (!response.ok) throw new Error("Unable to fetch best-selling products");
 
-            setProducts(data); // Update the product list directly for "Most Purchased"
-        } catch (err) {
-            setError(err.message);
-        }
+        setProducts(data); // Update the product list directly for "Most Purchased"
+      } catch (err) {
+        setError(err.message);
+      }
     } else {
-        setSortOption(id); // For other cases, set `sortOption` to the id
-        await searchPlants(selectedCategories, id); // Trigger search with sort option id
+      setSortOption(id); // For other cases, set `sortOption` to the id
+      await searchPlants(selectedCategories, id); // Trigger search with sort option id
     }
   };
 
@@ -146,38 +174,38 @@ export default function ProductSeller() {
     try {
       // Construct the category query part
       const categoryIdsQuery = selectedCategoryIds
-          .map((id) => `categoryId=${id}`)
-          .join("&");
+        .map((id) => `categoryId=${id}`)
+        .join("&");
 
       // Initialize the query string with category filters if any
       let query = categoryIdsQuery ? `${categoryIdsQuery}` : '';
 
       // Add min and max price to the query if they are set
       if (minPrice && maxPrice) {
-          query += `&minPrice=${minPrice}&maxPrice=${maxPrice}`;
+        query += `&minPrice=${minPrice}&maxPrice=${maxPrice}`;
       }
 
       // Add userId if available
       if (userIdPlant) {
-          query += `&userId=${userIdPlant}`;
+        query += `&userId=${userIdPlant}`;
       }
 
       // Add sort option if it exists
       if (sortOptionId) {
-          query += `&sortOption=${sortOptionId}`;
+        query += `&sortOption=${sortOptionId}`;
       }
 
       // Fetch the products with the constructed query
       const productResponses = await fetch(
-          `https://opms1.runasp.net/api/PlantAPI/searchPlantsByShop?${query}`
+        `https://opms1.runasp.net/api/PlantAPI/searchPlantsByShop?${query}`
       );
       const productsData = await productResponses.json();
 
       if (!productResponses.ok) {
-          if (productResponses.status === 404 && productsData.message === "Không có kết quả theo yêu cầu.") {
-              setError("Cây trồng không được tìm thấy hoặc chưa được xác minh.");
-          }
-          throw new Error("Không thể lấy cây trồng đã được lọc");
+        if (productResponses.status === 404 && productsData.message === "Không có kết quả theo yêu cầu.") {
+          setError("Cây trồng không được tìm thấy hoặc chưa được xác minh.");
+        }
+        throw new Error("Không thể lấy cây trồng đã được lọc");
       }
 
       setProducts(productsData); // Update products state with the fetched data
@@ -197,9 +225,9 @@ export default function ProductSeller() {
     }
 
     setSelectedCategories(updatedCategories);
-    
+
   };
-  
+
   //mở dropdown tự động
   const openDropdown = () => {
     // Cancel any pending close timeout if it exists
@@ -216,15 +244,15 @@ export default function ProductSeller() {
     }, 200); // Adjust the delay as needed
   };
 
-  
+
   // Automatically search when price or categories change
   useEffect(() => {
     if (sortOption !== "most-purchased" && !priceError) {
-        searchPlants(selectedCategories, sortOption); // Only pass selectedCategories and sortOption
+      searchPlants(selectedCategories, sortOption); // Only pass selectedCategories and sortOption
     }
-}, [selectedCategories, minPrice, maxPrice, priceError, userIdPlant, sortOption]);
+  }, [selectedCategories, minPrice, maxPrice, priceError, userIdPlant, sortOption]);
 
-//phân trang
+  //phân trang
   const pageCount = Math.ceil(products.length / usersPerPage);
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
@@ -246,7 +274,14 @@ export default function ProductSeller() {
     const user = users.find((u) => u.userId === userId);
     return user ? user.shopName : "Không tìm thấy người dùng";
   };
+  const getCreate = (userId) => {
+    if (!Array.isArray(users) || users.length === 0) {
+      return "Không xác định"; // Fallback if users is invalid or empty
+    }
 
+    const user = users.find((u) => u.userId === userId);
+    return user && user.createdDate ? user.createdDate : "Không xác định";
+  };
   const [showAll, setShowAll] = useState(false); // State to track whether to show all flowers
 
   const toggleShowAll = () => {
@@ -255,8 +290,13 @@ export default function ProductSeller() {
 
   // thêm vào giỏ hàng
   const addToCart = async (productId, quantity) => {
+    const userId = localStorage.getItem("userId");
+    if (!userId || userId === "undefined") {
+      navigate("/sign-in");
+      return;
+    }
     try {
-        const response = await fetch('https://opms1.runasp.net/api/ShoppingCartAPI/createShoppingCart', {
+      const response = await fetch('https://opms1.runasp.net/api/ShoppingCartAPI/createShoppingCart', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -264,7 +304,7 @@ export default function ProductSeller() {
         body: JSON.stringify({
           plantId: productId,
           quantity: quantity,
-          userId : userIds,
+          userId: userIds,
         }),
       });
 
@@ -279,6 +319,29 @@ export default function ProductSeller() {
       alert("Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.");
     }
   };
+  const fetchRatings = async (products) => {
+    const ratings = {};
+    try {
+      await Promise.all(
+        products.map(async (product) => {
+          const response = await fetch(
+            `https://opms1.runasp.net/api/ReviewAPI/getProductRatingSummary?plantId=${product.plantId}`
+          );
+          const data = await response.json();
+          ratings[product.plantId] = data;
+          return {
+            ...product,
+            totalReviews: data.totalReviews || 0,
+            totalRating: data.totalRating || 0,
+          };// Gán dữ liệu đánh giá vào object
+        })
+      );
+      return updatedProducts;
+    } catch (err) {
+      console.error("Lỗi khi lấy dữ liệu đánh giá:", err);
+    }
+    return ratings;
+  };
 
   if (loading) {
     return (
@@ -291,9 +354,37 @@ export default function ProductSeller() {
   if (error) {
     return <div>Error: {error}</div>;
   }
-  
 
-  
+
+  (async () => {
+    const rating = await Promise.all(
+      products.map(async (product) => {
+        return ratingData[product.plantId] || {
+          totalReviews: 0,
+          totalRating: 0,
+        };
+      })
+    );
+
+    // Log the totalReviews for each resolved rating
+    rating.forEach((data) => {
+      console.log("q", data.totalReviews);
+    });
+
+    // Calculate and log total reviews
+    const totalReviews = rating.reduce(
+      (sum, data) => sum + (data.totalReviews || 0),
+      0
+    );
+    const totalRating = rating.reduce(
+      (sum, data) => sum + (data.totalRating / totalReviews || 0),
+      0
+    );
+    setTotalReviews(totalReviews)
+    setTotalRating(totalRating)
+    console.log("Total Reviews:", totalRating);
+  })();
+
   return (
     <main>
       <div className="p-6 bg-white shadow-lg rounded-md md:py-10 dark:bg-gray-900 shadow-gray-200 antialiased">
@@ -303,21 +394,21 @@ export default function ProductSeller() {
             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
               {/* Placeholder for Profile Image */}
               <img
-                  src={userimg.userImage || "https://via.placeholder.com/64"}
-                  alt="Profile"
-                  className="w-full h-full object-cover rounded-full"
-              />  
+                src={userimg.userImage || "https://via.placeholder.com/64"}
+                alt="Profile"
+                className="w-full h-full object-cover rounded-full"
+              />
             </div>
             {productsToDisplay.slice(0, 1).map((product) => (
-            <div key={product.plantId} className="product-card p-2  rounded-lg ">
-              <h2 className="text-white font-semibold ">
-                {getUserName(product.userId)}
-              </h2>
-            </div>
+              <div key={product.plantId} className="product-card p-2  rounded-lg ">
+                <h2 className="text-white font-semibold ">
+                  {getUserName(product.userId)}
+                </h2>
+              </div>
             ))}
-            
 
-       
+
+
           </div>
 
         </div>
@@ -333,13 +424,17 @@ export default function ProductSeller() {
             <span className="ml-1 text-red-500">3,3tr</span>
           </p>
           <p className="flex items-center">
-            <span className="mr-2">⭐</span> Đánh Giá:{" "}
-            <span className="ml-1 text-red-500">4.7 (3,2tr Đánh Giá)</span>
+            <span className="mr-2">⭐</span> Đánh Giá:
+            <span class="ml-1 text-red-500">{totalRating.toFixed(1)} ({totalReviews.toLocaleString("vi-VN")} Đánh Giá)</span>
           </p>
           <p className="flex items-center">
-            <span className="mr-2">⏳</span> Tham Gia:{" "}
-            <span className="ml-1 text-red-500">5 Năm Trước</span>
-          </p>
+  <span className="mr-2">⏳</span> Tham Gia:{" "}
+  <span className="ml-1 text-red-500">
+    {productsToDisplay.length > 0 && getCreate(productsToDisplay[0].userId) !== "Không xác định"
+      ? formatTimeDifference(getCreate(productsToDisplay[0].userId))
+      : "Không xác định"}
+  </span>
+</p>
         </div>
       </div>
 
@@ -349,32 +444,32 @@ export default function ProductSeller() {
             <Sidebar.Items>
               <Sidebar.ItemGroup>
                 <Sidebar.Item icon={TbShoppingBagSearch} as="div">
-                   Tìm kiếm theo danh mục
+                  Tìm kiếm theo danh mục
                 </Sidebar.Item>
-                <ul className="ml-6 mt-2 space-y-2">                
+                <ul className="ml-6 mt-2 space-y-2">
                   {categories
-                  .slice(0, showAll ? categories.length : 1000000)
-                  .map((category) => (
-                    <li
-                      key={category.categoryId}
-                      className="flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          className="form-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded"
-                          value={category.categoryId}
-                          checked={selectedCategories.includes(
-                            category.categoryId
-                          )}
-                          onChange={(e) =>
-                            handleCheckboxChange(e, category.categoryId)
-                          }
-                        />
-                        <span>{category.categoryName}</span>
-                      </div>
-                    </li>
-                  ))}
+                    .slice(0, showAll ? categories.length : 1000000)
+                    .map((category) => (
+                      <li
+                        key={category.categoryId}
+                        className="flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            className="form-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                            value={category.categoryId}
+                            checked={selectedCategories.includes(
+                              category.categoryId
+                            )}
+                            onChange={(e) =>
+                              handleCheckboxChange(e, category.categoryId)
+                            }
+                          />
+                          <span>{category.categoryName}</span>
+                        </div>
+                      </li>
+                    ))}
                 </ul>
                 {/* "Xem thêm" button */}
                 {categories.length > 100 && (
@@ -388,175 +483,179 @@ export default function ProductSeller() {
                   </div>
                 )}
               </Sidebar.ItemGroup>
-              
+
             </Sidebar.Items>
           </Sidebar>
         </div>
-        <div className=" flex-wrap gap-4">       
-         {/* sắp xếp theo */}
-         <div className="bg-white shadow-lg shadow-gray-200  dark:bg-gray-900 antialiased p-2 flex items-center gap-5 w-full sm:max-w-[580px]  ">
+        <div className=" flex-wrap gap-4">
+          {/* sắp xếp theo */}
+          <div className="bg-white shadow-lg shadow-gray-200  dark:bg-gray-900 antialiased p-2 flex items-center gap-5 w-full sm:max-w-[580px]  ">
 
             <span className="text-gray-500">Sắp xếp theo</span>
             <button
-            onClick={() => handleSortClick(5)}
-              className={`px-4 py-2 rounded-md font-medium ${
-                sortOption === 5
-                  ? "bg-red-500 text-white"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-              
+              onClick={() => handleSortClick(5)}
+              className={`px-4 py-2 rounded-md font-medium ${sortOption === 5
+                ? "bg-red-500 text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+
             >
               Tất Cả
             </button>
-            <button 
-              onClick={() => handleSortClick("Mới Nhất", 1)} 
-              className={`px-4 py-2 rounded-md font-medium ${
-              sortOption === 1 ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>
+            <button
+              onClick={() => handleSortClick("Mới Nhất", 1)}
+              className={`px-4 py-2 rounded-md font-medium ${sortOption === 1 ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>
               Mới Nhất
             </button>
-            <button 
-            onClick={() => handleSortClick("Bán Chạy", 2)} 
-              className={`px-4 py-2 rounded-md font-medium ${
-              sortOption === "most-purchased" ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>
+            <button
+              onClick={() => handleSortClick("Bán Chạy", 2)}
+              className={`px-4 py-2 rounded-md font-medium ${sortOption === "most-purchased" ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>
               Bán Chạy
             </button>
             <div
               className="relative"
               onMouseEnter={openDropdown} // Keeps dropdown open if hovering over it
               onMouseLeave={closeDropdown} // Closes dropdown if leaving dropdown area
-             >
+            >
               <button
-              className={`px-4 py-2 flex items-center rounded-md font-medium ${
-                sortOption === 3 || sortOption === 4 ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-               }`}
-               >
-                 Giá
-              <IoChevronDown className="ml-1" />
+                className={`px-4 py-2 flex items-center rounded-md font-medium ${sortOption === 3 || sortOption === 4 ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+              >
+                Giá
+                <IoChevronDown className="ml-1" />
               </button>
 
-             {isPriceDropdownOpen && (
-              <div className="absolute top-full mt-1 min-w-[150px] bg-white shadow-md border rounded-md z-10"
-              onMouseEnter={openDropdown} // Keeps dropdown open if hovering over it
-              onMouseLeave={closeDropdown} // Closes dropdown if leaving dropdown area
-               >
-                <button
-                  onClick={() => {
-                    handleSortClick("Giá: Thấp đến Cao", 3);             
-                    setIsPriceDropdownOpen(false); // Close dropdown after selection
-                  }}
-                  className="block w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
-                 >
-                  Thấp đến Cao
-                </button>
-                <button
-                  onClick={() => {
-                    handleSortClick("Giá: Cao đến Thấp", 4);
-                    setIsPriceDropdownOpen(false); // Close dropdown after selection
-                  }}
-                  className="block w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
-                 >
-                  Cao đến Thấp
-                </button>
-             </div>
-             )}
+              {isPriceDropdownOpen && (
+                <div className="absolute top-full mt-1 min-w-[150px] bg-white shadow-md border rounded-md z-10"
+                  onMouseEnter={openDropdown} // Keeps dropdown open if hovering over it
+                  onMouseLeave={closeDropdown} // Closes dropdown if leaving dropdown area
+                >
+                  <button
+                    onClick={() => {
+                      handleSortClick("Giá: Thấp đến Cao", 3);
+                      setIsPriceDropdownOpen(false); // Close dropdown after selection
+                    }}
+                    className="block w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
+                  >
+                    Thấp đến Cao
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleSortClick("Giá: Cao đến Thấp", 4);
+                      setIsPriceDropdownOpen(false); // Close dropdown after selection
+                    }}
+                    className="block w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
+                  >
+                    Cao đến Thấp
+                  </button>
+                </div>
+              )}
             </div>
           </div>
           <div className="flex flex-wrap justify-center gap-3 p-5">
-          
+
             {productsToDisplay.length === 0 ? (
               <div className="text-center text-green-600 font-semibold">
                 {notification || "Không có sản phẩm nào có sẵn."}
               </div>
             ) : (
-              productsToDisplay.map((product) => {              
-                return(
+              productsToDisplay.map((product) => {
+                const rating = ratingData[product.plantId] || {
+                  totalReviews: 0,
+                  totalRating: 0,
+                };
+                const averageRating =
+                  rating.totalReviews > 0
+                    ? (rating.totalRating / rating.totalReviews).toFixed(1)
+                    : "0.0";
+                return (
                   <div
-                  key={product.plantId}
-                  className={`relative bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto ${product.stock === 0 ? "opacity-98" : ""
-                    }`}
-                >
-                  {/* Hiển thị chữ "Hết hàng" khi stock === 0 */}
-                  {product.stock === 0 && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-10">
-                      <span className="text-red-400 font-bold text-lg">Hết hàng</span>
-                    </div>
-                  )}
-                  {/* Liên kết đến trang chi tiết sản phẩm */}
-                  <Link
-                    to={product.stock === 0 ? "#" : `/productdetail/${product.plantId}`}
-                    className={`${product.stock === 0 ? "pointer-events-none" : ""}`}
+                    key={product.plantId}
+                    className={`relative bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto ${product.stock === 0 ? "opacity-98" : ""
+                      }`}
                   >
-                    <div className="relative p-2.5 overflow-hidden rounded-xl bg-clip-border">
-                      <img
-                        src={product.imageUrl}
-                        alt={product.plantName}
-                        className="w-[175px] h-[200px] object-cover rounded-md hover:scale-105 transition-scale duration-300 mx-auto"
-                      />
-                    </div>
-
-                    <div className="p-2 flex flex-col gap-2 w-full">
-                      <div className="flex items-center gap-1">
-                        <p className="text-sm font-medium text-gray-600 line-clamp-2 w-full">
-                          {product.plantName}
-                        </p>
+                    {/* Hiển thị chữ "Hết hàng" khi stock === 0 */}
+                    {product.stock === 0 && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-10">
+                        <span className="text-red-400 font-bold text-lg">Hết hàng</span>
                       </div>
-                    </div>
-                    <div className="p-2 flex flex-col gap-2 w-full">
-                      <div className="flex items-center gap-1">
-                        <p className="text-sm text-gray-600 line-clamp-2 w-full">
-                          {getCategoryName(product.categoryId)}
-                        </p>
+                    )}
+                    {/* Liên kết đến trang chi tiết sản phẩm */}
+                    <Link
+                      to={product.stock === 0 ? "#" : `/productdetail/${product.plantId}`}
+                      className={`${product.stock === 0 ? "pointer-events-none" : ""}`}
+                    >
+                      <div className="relative p-2.5 overflow-hidden rounded-xl bg-clip-border">
+                        <img
+                          src={product.imageUrl}
+                          alt={product.plantName}
+                          className="w-[175px] h-[200px] object-cover rounded-md hover:scale-105 transition-scale duration-300 mx-auto"
+                        />
                       </div>
-                    </div>
 
-                   {/*} <div className="rounded bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800 dark:bg-red-200 dark:text-red-800">
+                      <div className="p-2 flex flex-col gap-2 w-full">
+                        <div className="flex items-center gap-1">
+                          <p className="text-sm font-medium text-gray-600 line-clamp-2 w-full">
+                            {product.plantName}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="p-2 flex flex-col gap-2 w-full">
+                        <div className="flex items-center gap-1">
+                          <p className="text-sm text-gray-600 line-clamp-2 w-full">
+                            {getCategoryName(product.categoryId)}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/*} <div className="rounded bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800 dark:bg-red-200 dark:text-red-800">
                       {product.isVerfied === 1 ? "Đã verify" : "Chưa verify"}
                     </div>*/}
 
-                    <div className="p-2 flex items-center">
-                      <svg
-                        className="h-4 w-4 text-yellow-300"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        xmlns="http://www.w3.org/2000/svg"
+                      <div className="p-2 flex items-center">
+                        <svg
+                          className="h-4 w-4 text-yellow-300"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        <span className="ml-2 rounded bg-cyan-100 px-2 py-0.5 text-xs font-semibold text-cyan-800 dark:bg-cyan-200 dark:text-cyan-800">
+                          {averageRating} ({rating.totalReviews} đánh giá)
+                        </span>
+                      </div>
+                    </Link>
+                    <div className="p-2 flex items-center justify-between">
+                      <div className="truncate flex items-baseline text-red-600">
+                        <span className="text-xs font-medium mr-px space-y-14">
+                          ₫
+                        </span>
+                        <span className="font-medium text-xl truncate">
+                          {(
+                            product.price -
+                            product.price * (product.discount / 100 || 0)
+                          )}
+                        </span>
+                      </div>
+                      <div className="rounded bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800 dark:bg-red-200 dark:text-red-800">
+                        {product.discount ? `${product.discount}%` : "0%"}
+                      </div>
+
+                      <button
+                        onClick={() => addToCart(product.plantId, 1)} // Chỉ thêm 1 sản phẩm
+                        className="rounded-lg bg-cyan-700 px-4 py-2 text-center text-sm font-medium text-white hover:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"
                       >
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                      <span className="ml-2 rounded bg-cyan-100 px-2 py-0.5 text-xs font-semibold text-cyan-800 dark:bg-cyan-200 dark:text-cyan-800">
-                        {product.rating || "4.5"}
-                      </span>
-                    </div>
-                  </Link>
-                  <div className="p-2 flex items-center justify-between">
-                    <div className="truncate flex items-baseline text-red-600">
-                      <span className="text-xs font-medium mr-px space-y-14">
-                        ₫
-                      </span>
-                      <span className="font-medium text-xl truncate">
-                        {(
-                          product.price -
-                          product.price * (product.discount / 100 || 0)
-                        ).toFixed(3)}
-                      </span>
-                    </div>
-                    <div className="rounded bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800 dark:bg-red-200 dark:text-red-800">
-                      {product.discount ? `${product.discount}%` : "0%"}
+                        <PiShoppingCartLight />
+                      </button>
                     </div>
 
-                    <button
-                    onClick={() => addToCart(product.plantId, 1)} // Chỉ thêm 1 sản phẩm
-                    className="rounded-lg bg-cyan-700 px-4 py-2 text-center text-sm font-medium text-white hover:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"
-                    >
-                      <PiShoppingCartLight />
-                    </button>
                   </div>
-                  
-               </div>
                 );
               })
-            )}   
+            )}
 
-          <div className="w-full flex justify-center mt-4">
+            <div className="w-full flex justify-center mt-4">
               <ReactPaginate
                 previousLabel={<IoArrowBackCircle />} // Arrow for previous page
                 nextLabel={<IoArrowForwardCircle />} // Arrow for next page
@@ -586,7 +685,7 @@ export default function ProductSeller() {
                 disabledClassName={"opacity-50 cursor-not-allowed"} // Disabled button styling
               />
             </div>
-          </div>                  
+          </div>
         </div>
       </div>
     </main>

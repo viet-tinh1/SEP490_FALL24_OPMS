@@ -1,14 +1,16 @@
-import { Link } from "react-router-dom";
 import { PiShoppingCartLight } from "react-icons/pi";
 import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaShoppingCart } from "react-icons/fa";
 import { Spinner } from "flowbite-react";
 export default function PlantItem() {
+
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const navigate = useNavigate();
+  const [successMessage, setSuccessMessage] = useState('');
   // Gọi API khi component được render
   useEffect(() => {
     const fetchProducts = async () => {
@@ -65,7 +67,47 @@ export default function PlantItem() {
     }
     return number.toString(); // Trả về số gốc nếu nhỏ hơn 1,000
   };*/}
+const addToCart = async (productId, quantity) => {
+    const userId = localStorage.getItem("userId");
+    if (!userId || userId === "undefined") {
+      navigate("/sign-in");
+      return;
+  }
+    try {
+      const response = await fetch('https://opms1.runasp.net/api/ShoppingCartAPI/createShoppingCart', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          plantId: productId,
+          quantity: quantity,
+          userId: userId,
+        }),
+      });
+      
+      if (response.ok) {
 
+        setSuccessMessage('Sản phẩm đã được thêm vào giỏ hàng!');
+      } else {
+        const errorData = await response.json(); // Lấy dữ liệu phản hồi lỗi từ server
+        if (response.status === 404 && errorData.message === "Not enough stock available.") {
+          setSuccessMessage("Không đủ hàng trong kho.");
+        } else {
+          setSuccessMessage("Đã xảy ra lỗi. Vui lòng thử lại.");
+        }
+      }
+    } catch (err) {
+      console.error("Lỗi thêm sản phẩm vào giỏ hàng:", err);
+      setSuccessMessage("Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.");
+    }
+    finally {
+
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 2000);
+    }
+  };
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen w-full">
@@ -84,6 +126,13 @@ export default function PlantItem() {
   return (
     <div className="flex flex-wrap justify-center  gap-9 p-5">
       {/*Card1*/}
+      {successMessage && (
+            <div className="fixed inset-0 flex items-center justify-center z-50">
+              <div className="bg-green-500 text-white text-lg font-semibold py-2 px-6 rounded-lg shadow-lg transform -translate-y-60">
+                {successMessage}
+              </div>
+            </div>
+          )}
       {products.map((product) => {      
         return(
         <div
@@ -132,12 +181,13 @@ export default function PlantItem() {
               </span>
               <span className="ml-2 rounded text-gray-600 py-0.5 text-xs font-semibold">Đã bán: {formatNumber(product.totalPurchased)} </span>
             </div>
+            </Link>
             {/*Price*/}
             <div className="p-2 flex items-center justify-between">
               <div className="truncate flex items-baseline text-red-600">
                 <span className="text-xs font-medium mr-px space-y-14">₫</span>
                 <span className="font-medium text-xl truncate"> 
-                  {(  product.price -product.price * (product.discount / 100 || 0)).toFixed(3)}</span>
+                  {(  product.price -product.price * (product.discount / 100 || 0))}</span>
                 <span className="text-xs space-y-14 font-medium mr-px"></span>
               </div>
               {/*discount*/}
@@ -145,14 +195,14 @@ export default function PlantItem() {
                 <span className="aria-label=-50%">{product.discount ? `${product.discount}%` : "0%"}</span>
               </div>
 
-              <a
-                href="#"
+              <button
+                onClick={() => addToCart(product.plantId, 1)}
                 className="rounded-lg bg-cyan-700 px-4 py-2 text-center text-sm font-medium text-white hover:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"
               >
                 <PiShoppingCartLight />
-              </a>
+              </button>
             </div>
-          </Link>
+          
         </div>
       )}  
     )}  

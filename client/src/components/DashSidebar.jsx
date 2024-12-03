@@ -196,7 +196,7 @@ export default function DashSidebar() {
             {(role === '3') &&(
               <Link to="/dashboard?tab=product">
               <Sidebar.Item active={tab === "product"} icon={HiAnnotation} as="div">
-              Quản Lý Sản phẩm
+              Quản Lý sản phẩm
               </Sidebar.Item>
             </Link>
             )}

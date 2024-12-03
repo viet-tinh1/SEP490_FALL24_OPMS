@@ -55,9 +55,11 @@ export default function DashFeedback() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Spinner aria-label="Loading spinner" size="xl" />
-        <span className="ml-3 text-lg">Đang tải...</span>
+      <div className="flex items-center justify-center h-screen w-screen">
+        <div className="flex flex-col items-center">
+          <Spinner aria-label="Loading spinner" size="xl" />
+          <span className="mt-3 text-lg">Đang tải...</span>
+        </div>
       </div>
     );
   }
@@ -75,16 +77,7 @@ export default function DashFeedback() {
           <div className=" mb-4">
             <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl">Danh Sách Phản Hồi</h1>           
             <div className="sm:flex">
-              <div className="hidden items-center mb-3 sm:flex sm:divide-x sm:divide-gray-100 sm:mb-0">
-                <form>
-                  <TextInput
-                    type="text"
-                    placeholder="Search..."
-                    rightIcon={AiOutlineSearch}
-                    className="hidden lg:inline"
-                  />
-                </form>
-              </div>            
+                         
             </div>
           </div>
         </div>
@@ -118,8 +111,8 @@ export default function DashFeedback() {
         {/* Pagination Component */}
         <div className="mt-4">
           <ReactPaginate
-            previousLabel={"← Previous"}
-            nextLabel={"Next →"}
+            previousLabel={"← Trước"}
+            nextLabel={"Sau →"}
             pageCount={pageCount}
             onPageChange={handlePageClick}
             containerClassName={"flex justify-center space-x-4"}

@@ -39,10 +39,13 @@ export default function OrderManager() {
                 }
                 const data = await response.json();
                 const ordersData = Array.isArray(data.orders) ? data.orders : [];
-                setOrders(ordersData);
-                console.log("Orders data:", ordersData);
+                const sortedOrders = sortOrdersByDate(ordersData);
+                const filteredOrders = sortedOrders.filter(order => order.status !== "Cancel");
+                setOrders(filteredOrders);
+
+                console.log("Orders data:", filteredOrders);
                 const initialStatuses = {};
-                ordersData.forEach(order => {
+                filteredOrders.forEach(order => {
 
                     initialStatuses[order.orderId] = order.status;
                 });
@@ -63,7 +66,9 @@ export default function OrderManager() {
         setSelectedOrder(orders); // Set the current user
         setShowModal(true); // Show the modal
     };
-
+    const sortOrdersByDate = (orders) => {
+        return [...orders].sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+    };
     const handleStatusChange = async (orderId, newStatus) => {
         // Update the local state immediately for a responsive UI
         setOrderStatuses((prevStatuses) => ({
@@ -94,6 +99,7 @@ export default function OrderManager() {
                 prevOrders.map((order) =>
                     order.orderId === orderId ? { ...order, status: newStatus } : order
                 )
+                    .filter(order => order.status !== "Cancel") // Lọc trực tiếp
             );
         } catch (error) {
             console.error("Error updating order status:", error);
@@ -119,24 +125,23 @@ export default function OrderManager() {
     };
 
     // Get users to display on the current page
-    const ordersToDisplay = orders.slice(
-        currentPage * ordersPerPage,
-        (currentPage + 1) * ordersPerPage
+    const ordersToDisplay = sortOrdersByDate(
+        orders
+            .filter(order => order.status !== "Cancel") // Lọc trực tiếp
+            .slice(currentPage * ordersPerPage, (currentPage + 1) * ordersPerPage)
     );
     if (loading) {
         return (
-          <div className="flex items-center justify-center h-screen w-full">
-            <div className="flex flex-col items-center">
-              <Spinner aria-label="Loading spinner" size="xl" />
-              <span className="mt-3 text-lg font-semibold">Đang tải...</span>
+            <div className="flex items-center justify-center h-screen w-full">
+                <div className="flex flex-col items-center">
+                    <Spinner aria-label="Loading spinner" size="xl" />
+                    <span className="mt-3 text-lg font-semibold">Đang tải...</span>
+                </div>
             </div>
-          </div>
         );
-      }
+    }
     return (
-        <main className="overflow-x-auto md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
-            {/*overflow-x-auto :Hide scroll*/}
-            {/*overflow-x-scroll : Open scroll*/}
+        <main className="overflow-x-auto md:mx-auto p-4">
             <div className="shadow-md md:mx-auto p-3  rounded-lg bg-white dark:bg-gray-800 my-4">
                 <div className="mb-1 w-full">
                     <div className=" mb-4">
@@ -144,32 +149,27 @@ export default function OrderManager() {
                         <br></br>
                         <div className="sm:flex">
                             <div className="hidden items-center mb-3 sm:flex sm:divide-x sm:divide-gray-100 sm:mb-0">
-                                <form>
-                                    <TextInput
-                                        type="text"
-                                        placeholder="Search..."
-                                        rightIcon={AiOutlineSearch}
-                                        className="hidden lg:inline"
-                                    />
-                                </form>
+                               
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="table-auto flex-grow min-h-[430px] flex flex-col ">
-                <Table hoverable className="shadow-md">
+            <div className="overflow-x-auto w-full shadow-md rounded-lg">
+                <Table hoverable className="min-w-full">
                     <Table.Head>
-                        <Table.HeadCell>Mã Đơn Hàng</Table.HeadCell>
-                        <Table.HeadCell>Ngày Đặt Hàng</Table.HeadCell>
-                        <Table.HeadCell>Tên Cây</Table.HeadCell>
-                        <Table.HeadCell>Số Lượng</Table.HeadCell>
-                        <Table.HeadCell>Tổng Số Tiền</Table.HeadCell>
-                        <Table.HeadCell>Trạng Thái đơn hàng</Table.HeadCell>
-                        <Table.HeadCell>Trạng Thái Thanh toán</Table.HeadCell>
-                        <Table.HeadCell>Phương Thức Thanh Toán</Table.HeadCell>
-                        <Table.HeadCell>Xác nhận đơn hàng</Table.HeadCell>
+
+                        <Table.HeadCell className="w-20 text-center">Mã Đơn Hàng</Table.HeadCell>
+                        <Table.HeadCell className="w-32 text-center">Ngày Đặt Hàng</Table.HeadCell>
+                        <Table.HeadCell className="w-40 text-center">Tên Cây</Table.HeadCell>
+                        <Table.HeadCell className="w-16 text-center">Số Lượng</Table.HeadCell>
+                        <Table.HeadCell className="w-32 text-center">Tổng Số Tiền</Table.HeadCell>
+                        <Table.HeadCell className="w-32 text-center">Trạng Thái</Table.HeadCell>
+                        <Table.HeadCell className="w-40 text-center">Thanh toán</Table.HeadCell>
+                        <Table.HeadCell className="w-40 text-center">Phương Thức</Table.HeadCell>
+                        <Table.HeadCell className="w-64 text-center">Địa Chỉ</Table.HeadCell>
+                        <Table.HeadCell className="w-32 text-center">Xác Nhận</Table.HeadCell>
                     </Table.Head>
                     <Table.Body className="divide-y">
                         {ordersToDisplay.map((order) => (
@@ -177,11 +177,11 @@ export default function OrderManager() {
                                 className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
                                 key={order.orderId}
                             >
-                                <Table.Cell className="py-4">{order.orderId}</Table.Cell>
-                                <Table.Cell className="py-4">
+                                <Table.Cell className="p-4">{order.orderId}</Table.Cell>
+                                <Table.Cell className="p-4">
                                     {new Date(order.orderDate).toLocaleDateString("en-GB")} {new Date(order.orderDate).toLocaleTimeString("en-GB")}
                                 </Table.Cell>
-                                <Table.Cell className="py-4">
+                                <Table.Cell className="p-4">
                                     {order.shoppingCartItems.plantId ? (
                                         <Link to={`/productdetail/${order.shoppingCartItems.plantId}`}>
                                             {order.shoppingCartItems.plantName || "Đang tải..."}
@@ -193,7 +193,7 @@ export default function OrderManager() {
                                 <Table.Cell className="py-4">
                                     {order.shoppingCartItems.quantity || "Đang tải..."}
                                 </Table.Cell>
-                                <Table.Cell className="py-4">${(order.totalAmount).toFixed(3)}</Table.Cell>
+                                <Table.Cell className="py-4">₫{new Intl.NumberFormat("en-US").format((order.totalAmount))}</Table.Cell>
                                 <Table.Cell className="py-4">
                                     {order.status === "Pending" ? "Đang xử lý"
                                         : order.status === "Success" ? "Thành công"
@@ -203,6 +203,9 @@ export default function OrderManager() {
                                 <Table.Cell className="py-4">{order.isSuccess ? "Đã thanh toán" : "Chưa thanh toán"}</Table.Cell>
                                 <Table.Cell className="py-4">
                                     {order.paymentMethod === "1" ? "Thanh toán khi nhận hàng" : order.paymentMethod || "Thanh toán khi nhận hàng"}
+                                </Table.Cell>
+                                <Table.Cell className="truncate max-w-[200px] text-center" title={order.shippingAddress}>
+                                    {order.shippingAddress}
                                 </Table.Cell>
                                 <Table.Cell className="py-4">
                                     <select
