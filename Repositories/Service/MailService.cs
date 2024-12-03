@@ -25,7 +25,7 @@ namespace Repositories.Service
                 // Lấy thông tin email và mật khẩu từ file cấu hình
                 string senderEmail = _configuration["EmailSettings:SenderEmail"];
                 string senderPassword = _configuration["EmailSettings:SenderPassword"];
-                string displayName = "OPMS - Cửa hàng Bonsai"; // Thay đổi tên hiển thị của bạn tại đây
+                string displayName = "Plant Store"; // Thay đổi tên hiển thị của bạn tại đây
 
                 // Tạo đối tượng MailMessage với tên hiển thị
                 MailMessage message = new MailMessage();

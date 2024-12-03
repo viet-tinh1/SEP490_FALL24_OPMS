@@ -50,12 +50,12 @@ namespace Web_API_OPMS.Controllers
                     var item = new ItemData(
                         orderDetails.ShoppingCartItem.Plant.PlantName,
                         orderDetails.ShoppingCartItem.Quantity,
-                        (int)Math.Round(orderDetails.TotalAmount * 1000)
+                        (int)Math.Round(orderDetails.TotalAmount)
                     );
                     items.Add(item);
 
                     // Accumulate total amount
-                    totalAmount += (int)Math.Round(orderDetails.TotalAmount * 1000);
+                    totalAmount += (int)Math.Round(orderDetails.TotalAmount);
                 }
 
                 // Create payment data with the aggregated items and total amount

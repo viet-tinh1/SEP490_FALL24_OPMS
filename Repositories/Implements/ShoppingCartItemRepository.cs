@@ -61,6 +61,10 @@ namespace Repositories.Implements
         {
             return cartDAO.GetCartById(id); // Trả về Cart có ID tương ứng hoặc null nếu không tìm thấy
         }
+        public ShoppingCartItem GetCartItemByUserAndPlantId(int userId, int plantId)
+        {
+            return cartDAO.GetCartItemByUserAndPlantId(userId, plantId);
+        }
         // Phương thức để lấy một Cart theo ID.
         public List<ShoppingCartItem> GetCartById(List<int?> cartIds)
         {

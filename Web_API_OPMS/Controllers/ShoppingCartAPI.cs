@@ -69,9 +69,9 @@ namespace Web_API_OPMS.Controllers
                 return BadRequest("Invalid Cart data");
             }
 
-
             try
             {
+                // Lấy thông tin cây trồng
                 var plant = PlantRepository.getPlantById(c.PlantId);
 
                 if (plant == null)
@@ -79,30 +79,47 @@ namespace Web_API_OPMS.Controllers
                     return NotFound("Plant not found.");
                 }
 
-                // Check if enough stock is available
+                // Kiểm tra tồn kho
                 if (plant.Stock < c.Quantity)
                 {
-                    return BadRequest("Not enough stock available.");
+                    return NotFound(new { message = "Not enough stock available."});
                 }
 
-                // Create the cart item
-                ShoppingCartItem cart = new ShoppingCartItem()
-                {
-                    ShoppingCartItemId = c.ShoppingCartItemId,
-                    PlantId = c.PlantId,
-                    Quantity = c.Quantity
-                };
-                ShoppingCartItemRepository.CreateCart(cart);
+                // Kiểm tra xem sản phẩm đã có trong giỏ hàng của người dùng chưa
+                var existingCartItem = ShoppingCartItemRepository.GetCartItemByUserAndPlantId(c.UserId, c.PlantId);
 
-                // Create the shopping cart với UserId đã kiểm tra
-                ShoppingCart shoppingCart = new ShoppingCart()
+                if (existingCartItem != null)
                 {
-                    ShoppingCartItemId = cart.ShoppingCartItemId,
-                    UserId = c.UserId // Gán giá trị UserId đã kiểm tra
-                };
-                ShoppingCartRepository.CreateCartUser(shoppingCart);
+                    // Nếu sản phẩm đã tồn tại, tăng số lượng
+                    if (plant.Stock < (existingCartItem.Quantity + c.Quantity))
+                    {
+                        return NotFound(new { message = "Not enough stock available for the updated quantity."});
+                    }
 
-                return CreatedAtAction(nameof(GetShoppingCartById), new { id = cart.ShoppingCartItemId }, cart);
+                    existingCartItem.Quantity += c.Quantity;
+                    ShoppingCartItemRepository.UpdateCart(existingCartItem);
+                }
+                else
+                {
+                    // Nếu sản phẩm chưa có, tạo mục giỏ hàng mới
+                    ShoppingCartItem cart = new ShoppingCartItem()
+                    {
+                        ShoppingCartItemId = c.ShoppingCartItemId,
+                        PlantId = c.PlantId,
+                        Quantity = c.Quantity
+                    };
+                    ShoppingCartItemRepository.CreateCart(cart);
+
+                    // Tạo giỏ hàng với UserId
+                    ShoppingCart shoppingCart = new ShoppingCart()
+                    {
+                        ShoppingCartItemId = cart.ShoppingCartItemId,
+                        UserId = c.UserId
+                    };
+                    ShoppingCartRepository.CreateCartUser(shoppingCart);
+                }
+
+                return Ok(new { message = "Cart updated successfully." });
             }
             catch (Exception ex)
             {

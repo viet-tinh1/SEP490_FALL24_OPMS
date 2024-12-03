@@ -9,7 +9,7 @@ namespace DataAccess.DTO
 {
     public class ShoppingCartItemDTO
     {
-        public int? UserId { get; set; }
+        public int UserId { get; set; }
         public int ShoppingCartItemId { get; set; }
 
         public int PlantId { get; set; }
