@@ -246,9 +246,7 @@ namespace Web_API_OPMS.Controllers
                 existingUser.Roles = u.Roles;
                 existingUser.FullName = u.FullName;
                 existingUser.Address = u.Address;
-
-                // Only hash the password if it’s provided (to avoid re-hashing)
-                if (!string.IsNullOrEmpty(u.Password))
+                if (!string.IsNullOrEmpty(u.Password) && u.Password != existingUser.Password)
                 {
                     existingUser.Password = HashPassword(u.Password);
                 }
@@ -422,7 +420,7 @@ namespace Web_API_OPMS.Controllers
             }
         }
         [HttpPost("updateShopName")]
-        public IActionResult UpdateShopName(UserDTO u)
+        public async Task<IActionResult> UpdateShopName(UserDTO u)
         {
             try
             {
@@ -431,6 +429,16 @@ namespace Web_API_OPMS.Controllers
                 if (existingUser == null)
                 {
                     return NotFound($"User with ID {u.UserId} not found.");
+                }
+                // Check if the new username or email already exists in the database
+                var isDuplicate = await _context.Users.AnyAsync(us =>
+                    us.UserId != u.UserId && // Ensure it's not the current user
+                    (us.ShopName == u.ShopName)
+                );
+
+                if (isDuplicate)
+                {
+                    return BadRequest(new { message = "ShopName already exists" });
                 }
 
                 // Toggle the user's status

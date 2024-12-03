@@ -278,6 +278,7 @@ namespace Web_API_OPMS.Controllers
                 order.Status,
                 order.IsSuccess,
                 order.PaymentMethod,
+                order.ShippingAddress,
                 ShoppingCartItems = new
                 {
                     order.ShoppingCartItem.PlantId,

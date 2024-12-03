@@ -1,4 +1,5 @@
 ﻿using BusinessObject.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,7 +45,14 @@ namespace DataAccess.DAO
             _context.ShoppingCartItems.Add(cart); // Thêm Cart vào database.
             _context.SaveChanges(); // Lưu thay đổi vào cơ sở dữ liệu.
         }
-
+        public ShoppingCartItem GetCartItemByUserAndPlantId(int userId, int plantId)
+        {
+            return _context.ShoppingCarts
+                .Include(sc => sc.ShoppingCartItem)
+                .Where(sc => sc.UserId == userId)
+                .Select(sc => sc.ShoppingCartItem)
+                .FirstOrDefault(item => item.PlantId == plantId);
+        }
         // Phương thức cập nhật một Cart đã có.
         public void UpdateCart(ShoppingCartItem c)
         {

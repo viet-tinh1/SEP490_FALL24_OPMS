@@ -50,12 +50,12 @@ namespace Web_API_OPMS.Controllers
                     var item = new ItemData(
                         orderDetails.ShoppingCartItem.Plant.PlantName,
                         orderDetails.ShoppingCartItem.Quantity,
-                        (int)Math.Round(orderDetails.TotalAmount * 1000)
+                        (int)Math.Round(orderDetails.TotalAmount)
                     );
                     items.Add(item);
 
                     // Accumulate total amount
-                    totalAmount += (int)Math.Round(orderDetails.TotalAmount * 1000);
+                    totalAmount += (int)Math.Round(orderDetails.TotalAmount);
                 }
 
                 // Create payment data with the aggregated items and total amount
@@ -64,8 +64,8 @@ namespace Web_API_OPMS.Controllers
                     totalAmount,
                     "Payment for orders",
                     items,
-                    "http://localhost:5173/PaymentFailure",
-                    "http://localhost:5173/PaymentSuccess"
+                    "https://clientfe.runasp.net/PaymentFailure",
+                    "https://clientfe.runasp.net/PaymentSuccess"
                 );
 
                 var createPayment = await _payOS.createPaymentLink(paymentData);

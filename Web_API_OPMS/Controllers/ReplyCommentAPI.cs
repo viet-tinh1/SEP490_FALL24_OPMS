@@ -90,27 +90,34 @@ namespace Web_API_OPMS.Controllers
 
             try
             {
-                // Lấy giờ hiện tại theo giờ Việt Nam (GMT+7)
+                // Get the current time in Vietnam (GMT+7)
                 TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
                 DateTime utcNow = DateTime.UtcNow;
                 DateTime currentVietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+
+                // Retrieve the existing reply comment
                 var existingReplyComment = _reply.GetReplyCommentById(replycommentDTO.ReplyCommentId);
                 if (existingReplyComment == null)
                 {
                     return NotFound($"Reply with ID {replycommentDTO.ReplyCommentId} not found.");
                 }
 
-                // Cập nhật các thuộc tính của Reply
-                existingReplyComment.ReplyCommentId = replycommentDTO.ReplyCommentId;
-                existingReplyComment.UserId = replycommentDTO.UserId;                
-                existingReplyComment.CommentId = replycommentDTO.CommentId;
-                existingReplyComment.ReplyCommentContent = replycommentDTO.ReplyCommentContent;
-                existingReplyComment.CreateAt = replycommentDTO.CreateAt ?? currentVietnamTime;
+                // Remove the existing reply comment
+                _reply.DeleteReplyComment(existingReplyComment.ReplyCommentId);
 
+                // Create a new reply comment with updated keys
+                var newReplyComment = new ReplyComment
+                {
+                    
+                    UserId = replycommentDTO.UserId,
+                    CommentId = replycommentDTO.CommentId,
+                    ReplyCommentContent = replycommentDTO.ReplyCommentContent,
+                    CreateAt = replycommentDTO.CreateAt ?? currentVietnamTime
+                };
 
-                _reply.UpdateReplyComment(existingReplyComment);
+                _reply.CreateReplyComment(newReplyComment);
 
-                return Ok(new { message = "Reply updated successfully", updatedReplyComment = existingReplyComment });
+                return Ok(new { message = "Reply updated successfully with new ID", updatedReplyComment = newReplyComment });
             }
             catch (Exception ex)
             {

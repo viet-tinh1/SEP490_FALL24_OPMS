@@ -68,10 +68,12 @@ namespace Web_API_OPMS
             {
                 options.AddPolicy("AllowAllOrigins", builder =>
                 {
-                    builder.WithOrigins("http://localhost:5173") // Cho phép nguồn frontend của bạn
-                   .AllowAnyHeader()
-                   .AllowAnyMethod()
-                   .AllowCredentials(); // Cho phép gửi thông tin xác thực
+                    builder
+                    //.WithOrigins("https://clientfe.runasp.net/") // Cho phép nguồn frontend của bạn
+                    .AllowAnyOrigin() // Cho phép mọi nguồn
+                    .AllowAnyHeader()
+                   .AllowAnyMethod();
+                   //.AllowCredentials(); // Cho phép gửi thông tin xác thực
                 });
             });
 
@@ -102,11 +104,12 @@ namespace Web_API_OPMS
             builder.Services.AddSingleton<IGeographyRepository, GeographyRepository>();
             builder.Services.AddTransient<MailService>();
             var app = builder.Build();
-
+            
+            app.UseSwagger();
             // Enable Swagger UI in development mode
             if (app.Environment.IsDevelopment())
             {
-                app.UseSwagger();
+                
                 app.UseSwaggerUI();
             }
             // Enable CORS policy

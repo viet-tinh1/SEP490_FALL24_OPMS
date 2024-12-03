@@ -38,7 +38,7 @@ namespace Web_API_OPMS.Controllers.Authentication
 
             string subject = "Xác thực tài khoản";
             string body = $"<p>Kính gửi: {mailRequest.Username},</p>" +
-                $"<p>Chúng tôi xin thông báo rằng tài khoản của bạn trên trang web OPMS đã được tạo thành công.</p>" +
+                $"<p>Chúng tôi xin thông báo rằng tài khoản của bạn trên trang web Plant Store đã được tạo thành công.</p>" +
                 $"<p>Dưới đây là thông tin chi tiết về tài khoản của bạn:</p>" +
                 $"<ul>" +
                 $"<li><strong>Tên tài khoản:</strong> {mailRequest.Username}</li>" +
@@ -47,9 +47,9 @@ namespace Web_API_OPMS.Controllers.Authentication
                 $"<p>Để bắt đầu sử dụng tài khoản và truy cập vào các sản phẩm bonsai của chúng tôi, vui lòng nhập mã sau để xác thực tài khoản:</p>" +
                 $"<p><strong>Mã xác thực: {passcode}</strong></p>" +
                 $"<p>Mã xác thực có hiệu lực đến: {otpExpiration.ToString("HH:mm:ss")} UTC</p>" +
-                $"<p>Cảm ơn bạn đã đăng ký tại OPMS! Nếu bạn cần hỗ trợ, xin vui lòng liên hệ với chúng tôi qua các thông tin bên dưới.</p>" +
-                $"<p>Trân trọng,<br>Đội ngũ OPMS</p>" +
-                $"<p>Website: <a href='https://www.opms.com'>https://www.opms.com</a></p>" +
+                $"<p>Cảm ơn bạn đã đăng ký tại Plant Store! Nếu bạn cần hỗ trợ, xin vui lòng liên hệ với chúng tôi qua các thông tin bên dưới.</p>" +
+                $"<p>Trân trọng,<br>Đội ngũ Plant Store</p>" +
+                $"<p>Website: <a href='https://clientfe.runasp.net/'>https://clientfe.runasp.net/</a></p>" +
                 $"<p>Facebook: <a href='https://www.facebook.com/opmsbonsai'>https://www.facebook.com/opmsbonsai</a></p>" +
                 $"<p><em>Lưu ý: Đây là email tự động, vui lòng không trả lời email này.</em></p>";
 
@@ -110,7 +110,7 @@ namespace Web_API_OPMS.Controllers.Authentication
             }
             else
             {
-                return BadRequest(new { message = "Invalid OTP." });
+                return BadRequest(new { message = "Invalid OTP. " });
             }
         }
         [HttpPost("sendOtpToEmail")]
