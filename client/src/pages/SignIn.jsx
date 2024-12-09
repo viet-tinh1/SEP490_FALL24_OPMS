@@ -5,7 +5,7 @@ import { AiFillGoogleCircle } from "react-icons/ai";
 import Imgtree from "../assets/img/tree.png";
 
 export default function SignIn() {
-  const [email, setEmail] = useState("");
+  const [account, setAccount] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -36,7 +36,6 @@ export default function SignIn() {
   }, [location]);
   // Check API Connection when component mounts
   const handleGoogleLogin = async () => {
-    setLoading(true);
     try {
       // Thực hiện gọi API Google login và điều hướng người dùng tới trang Google để đăng nhập
       window.location.href = "https://opms1.runasp.net/api/Auth/google-login";
@@ -59,7 +58,7 @@ export default function SignIn() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ account, password }),
       });
   
       const data = await response.json();
@@ -69,16 +68,13 @@ export default function SignIn() {
         if (response.status === 401 && data.message === "Your account has been locked ") {
             setError("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ bộ phận hỗ trợ.");
         } else if (response.status === 401 && data.message !== "Your account has been locked ") {
-            setError("Email hoặc mật khẩu không hợp lệ.");
+            setError("Email, số điện thoại hoặc mật khẩu không hợp lệ.");
         } else {
             setError(`Lỗi API:  ${response.status}`);
         }
         
         return;
-    }
-  
-      
-  
+    } 
       // Role-based redirection
       if (data.message === "Login successful") {
         localStorage.setItem("userId", data.userId);
@@ -105,6 +101,31 @@ export default function SignIn() {
       setLoading(false);
     }
   };
+  const validateInput = (input) => {
+    const isNumeric = /^\d+$/.test(input); // Kiểm tra nếu chỉ chứa số
+    const isEmail = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(input); // Kiểm tra định dạng email
+    const isPhone = /^0\d{9}$/.test(input); // Kiểm tra định dạng số điện thoại (bắt đầu bằng 0 và có 10 chữ số)
+  
+    if (isNumeric && !isPhone) {
+      return "Số điện thoại không hợp lệ.";
+    } else if (!isNumeric && !isEmail) {
+      return "Email không hợp lệ.";
+    }
+  
+    return ""; // Hợp lệ
+  };
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setAccount(value);
+
+    if (!value) {
+      setError("");
+      return;
+    }
+    // Kiểm tra lỗi
+    const errorMessage = validateInput(value);
+    setError(errorMessage);
+  };
   return (
     <div className="min-h-min mt-10 mb-10">
       <div className="flex p-3 max-w-3xl mx-auto flex-col md:flex-row md:items-center gap-5">
@@ -121,13 +142,13 @@ export default function SignIn() {
           
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <div>
-              <Label value="Email của bạn" />
+              <Label value="Email hoặc số điện thoại của bạn" />
               <TextInput
-                type="email"
-                placeholder="Nhập Email của bạn"
+                type="text"
+                placeholder="Email hoặc số điện thoại của bạn"
                 id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={account}
+                onChange={handleInputChange}
                 required
               />
             </div>

@@ -7,10 +7,12 @@ import { useState,useEffect } from "react";
 export default function Signup() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [usernameError, setUsernameError] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [userId, setUserId] = useState(null);
@@ -84,6 +86,29 @@ export default function Signup() {
       setEmailError(''); // Nếu hợp lệ, xóa thông báo lỗi
     }
   };
+  const handlePhoneChange = (e) => {
+    const newPhone = e.target.value;
+    setPhoneNumber(newPhone);
+    console.log(newPhone);
+
+    // Kiểm tra số điện thoại có hợp lệ hay không
+    if (newPhone.length === 0) {
+        setPhoneError(''); // Nếu không nhập gì, không hiện lỗi
+    } 
+    else if (!validatePhone(newPhone)) {
+        setPhoneError('Số điện thoại phải có định dạng hợp lệ, ví dụ: 0123456789.'); // Hiển thị lỗi nếu không hợp lệ
+    } 
+    else {
+        setPhoneError(''); // Nếu hợp lệ, xóa thông báo lỗi
+    }
+};
+
+// Hàm validate số điện thoại
+const validatePhone = (phoneNumber) => {
+    // Điều kiện kiểm tra số điện thoại (chỉ chấp nhận 10 số bắt đầu bằng 0)
+    const phoneRegex = /^0\d{9}$/;
+    return phoneRegex.test(phoneNumber);
+};
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const userId = params.get("userId");
@@ -132,6 +157,10 @@ export default function Signup() {
       setEmailError('Email phải có định dạng hợp lệ, ví dụ: example@domain.com.');
       return;
     }
+    if (!validatePhone(phoneNumber)) {
+      setPhoneError('Số điện thoại phải có định dạng hợp lệ, ví dụ: 0123456789.');
+      return;
+    }
     setLoading(true); // Bắt đầu hiển thị spinner hoặc trạng thái loading
     setError(null); // Reset lỗi trước khi gửi
 
@@ -145,6 +174,7 @@ export default function Signup() {
           username,
           email,
           password,
+          phoneNumber,
           roles: 2, // Giả sử 2 là giá trị mặc định cho role
           status: 1, // Giả sử 1 là giá trị mặc định cho status
         }),
@@ -153,9 +183,13 @@ export default function Signup() {
       const data = await response.json();
       if (!response.ok) {
         // Check if the account has been locked or other errors occurred
-        if (response.status === 400 && data.message === "Username or Email already exists") {
-            setError("Tên người dùng hoặc Email đã tồn tại.");
-        } else if (response.status === 400 && data.message !== "Username or Email already exists") {
+        if (response.status === 400 && data.message === "Username already exists") {
+            setUsernameError("Tên người dùng đã tồn tại.");
+        } else if (response.status === 400 && data.message !== "Username already exists" && data.message === "Email already exists") {
+            setEmailError("Email đã tồn tại.");
+        } else if (response.status === 400 && data.message === "Phone already exists") {
+           setPhoneError("Số điện thoại đã được đăng kí.");
+        } else if (response.status === 400 && data.message !== "Username already exists" && data.message !== "Email already exists" && data.message !== "Phone already exists") {
             setError("Dữ liệu không hợp lệ.");
         } else {
             setError(`API Error: ${response.status}`);
@@ -240,6 +274,19 @@ export default function Signup() {
               />
               {/* Hiển thị lỗi nếu mật khẩu không hợp lệ */}
               {emailError && <p style={{ color: 'red' }}>{emailError}</p>}
+            </div>
+            <div>
+              <Label value="Số diện thoại của bạn " />
+              <TextInput
+                type="text"
+                placeholder="Số điện thoái"
+                id="phoneNumber"
+                value={phoneNumber}
+                onChange={handlePhoneChange}                
+                required
+              />
+              {/* Hiển thị lỗi nếu số điện thoại không hợp lệ */}
+              {phoneError && <p style={{ color: 'red' }}>{phoneError}</p>}
             </div>
             <div>
               <Label value="Mật khẩu của bạn " />

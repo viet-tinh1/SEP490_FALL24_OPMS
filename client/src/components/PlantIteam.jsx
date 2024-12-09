@@ -216,7 +216,9 @@ const addToCart = async (productId, quantity) => {
               <div className="truncate flex items-baseline text-red-600">
                 <span className="text-xs font-medium mr-px space-y-14">₫</span>
                 <span className="font-medium text-xl truncate"> 
-                  {(  product.price -product.price * (product.discount / 100 || 0))}</span>
+                {new Intl.NumberFormat("en-US").format(
+                            product.price - product.price * (product.discount / 100 || 0)
+                          )}</span>
                 <span className="text-xs space-y-14 font-medium mr-px"></span>
               </div>
               {/*discount*/}

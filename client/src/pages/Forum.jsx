@@ -12,7 +12,6 @@ function formatTimeDifference(timestamp) {
   const now = new Date();
   const time = new Date(timestamp);
   const differenceInSeconds = Math.floor((now - time) / 1000);
-
   if (differenceInSeconds < 60) {
     return `${differenceInSeconds} giây trước`;
   } else if (differenceInSeconds < 3600) {
@@ -34,6 +33,7 @@ function formatTimeDifference(timestamp) {
 }
 
 function CommentSection({ postId, userId, refreshPosts }) {
+  const navigate = useNavigate();
   const [comments, setComments] = useState([]);
   const fileInputRef = useRef(null);
   const [visibleReplies, setVisibleReplies] = useState({});
@@ -135,7 +135,7 @@ function CommentSection({ postId, userId, refreshPosts }) {
 
   const handleAddComment = async () => {
     if (!userId) {
-      window.location.href = "/sign-in";
+      navigate("/sign-in");
       return;
     }
     if (!commentContent.trim()) return;
@@ -172,7 +172,7 @@ function CommentSection({ postId, userId, refreshPosts }) {
 
   const handleAddReply = async () => {
     if (!userId) {
-      window.location.href = "/sign-in";
+      navigate("/sign-in");
       return;
     }
     if (!ReplyCommentContent.trim()) return;
@@ -314,9 +314,10 @@ function CommentSection({ postId, userId, refreshPosts }) {
       console.error("Error updating comment:", error);
     }
   };
+
   const handleLikeComment = async (comment) => {
     if (!userId) {
-      window.location.href = "/sign-in";
+      navigate("/sign-in");
       return;
     }
     try {
@@ -329,8 +330,19 @@ function CommentSection({ postId, userId, refreshPosts }) {
         }
       );
 
-      if (response.ok) {
-
+      if (response.ok) { 
+          // Update the local state immediately
+      setComments((prevComments) =>
+        prevComments.map((c) =>
+          c.commentId === comment.commentId
+            ? {
+                ...c,
+                hasLiked: !c.hasLiked, // Toggle the like status
+                likeComment: c.hasLiked ? c.likeComment - 1 : c.likeComment + 1, // Adjust like count
+              }
+            : c
+        )
+      );      
       } else {
         console.error("Failed to update like status");
       }
@@ -401,12 +413,15 @@ function CommentSection({ postId, userId, refreshPosts }) {
                   {/* Reply Input Field */}
                   {replyingTo === comment.commentId && (
                     <div className="flex items-center mt-2">
-                      <input
-                        type="text"
+                      <textarea
                         value={ReplyCommentContent}
                         onChange={(e) => setReplyCommentContent(e.target.value)}
-                        placeholder={`Trả lời bình luận của ${replyingToUsername}`}
-                        className="flex-grow p-3 border rounded-full bg-gray-100"
+                        placeholder={`    Trả lời bình luận của ${replyingToUsername}`}
+                        className="flex-grow p-1.5 border rounded-full bg-gray-100 resize-none overflow-hidden text-sm leading-tight"
+                        onInput={(e) => {
+                          e.target.style.height = "auto"; // Reset chiều cao để tính toán lại
+                          e.target.style.height = `${e.target.scrollHeight}px`; // Điều chỉnh chiều cao theo nội dung
+                        }}
                       />
                       <Button
                         onClick={handleAddReply}
@@ -454,14 +469,18 @@ function CommentSection({ postId, userId, refreshPosts }) {
                 </Modal.Header>
 
                 <Modal.Footer>
-                  <input
-                    type="text"
+                  <textarea
                     name="comment"
                     value={updateContent}
                     onChange={(e) => setUpdateContent(e.target.value)}
-                    placeholder={`Chỉnh sửa bình luận`}
-                    className="flex-grow p-3 border rounded-full bg-gray-100"
+                    placeholder="    Chỉnh sửa bình luận"
+                    className="flex-grow p-1.5 border rounded-full bg-gray-100 resize-none overflow-hidden text-sm leading-tight"
+                    onInput={(e) => {
+                      e.target.style.height = "auto";
+                      e.target.style.height = `${e.target.scrollHeight}px`;
+                    }}
                   />
+
                   <Button
                     onClick={handleUpdateComment}
                     className="ml-2 text-lg"
@@ -550,13 +569,16 @@ function CommentSection({ postId, userId, refreshPosts }) {
                       </Modal.Header>
 
                       <Modal.Footer>
-                        <input
-                          type="text"
+                        <textarea
                           name="reply"
                           value={updateContent}
                           onChange={(e) => setUpdateContent(e.target.value)}
-                          placeholder={`Chỉnh sửa phản hồi`}
-                          className="flex-grow p-3 border rounded-full bg-gray-100"
+                          placeholder="   Chỉnh sửa phản hồi"
+                          className="flex-grow p-1.5 border rounded-full bg-gray-100 resize-none overflow-hidden text-sm leading-tight"
+                          onInput={(e) => {
+                            e.target.style.height = "auto"; // Reset chiều cao để tính toán lại
+                            e.target.style.height = `${e.target.scrollHeight}px`; // Điều chỉnh chiều cao theo nội dung
+                          }}
                         />
                         <Button
                           onClick={handleUpdateReply}
@@ -615,12 +637,15 @@ function CommentSection({ postId, userId, refreshPosts }) {
 
       {/* Add New Comment Section */}
       <div className="flex items-center mt-4">
-        <input
-          type="text"
+        <textarea
           value={commentContent}
           onChange={(e) => setCommentContent(e.target.value)}
-          placeholder={`Bình luận dưới tên ${userId ? "của bạn" : "Khách"}`}
-          className="flex-grow p-3 border rounded-full bg-gray-100"
+          onInput={(e) => {
+            e.target.style.height = "auto"; // Reset chiều cao để tính toán lại
+            e.target.style.height = `${e.target.scrollHeight}px`; // Điều chỉnh chiều cao theo nội dung
+          }}
+          placeholder={`    Bình luận dưới tên ${userId ? "của bạn" : "Khách"}`}
+          className="flex-grow p-1.5 border rounded-full bg-gray-100 resize-none overflow-hidden text-sm leading-tight"
         />
         <Button
           onClick={handleAddComment}
@@ -850,7 +875,7 @@ export default function Forum() {
 
   const handleLikePost = async (post) => {
     if (!userId) {
-      window.location.href = "/sign-in";
+      navigate("/sign-in");
       return;
     }
     try {

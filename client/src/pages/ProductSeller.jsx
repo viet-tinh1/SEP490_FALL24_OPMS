@@ -51,7 +51,6 @@ export default function ProductSeller() {
   const closeTimeoutRef = useRef(null);
   const [isPriceDropdownOpen, setIsPriceDropdownOpen] = useState(false);
   const userIds = localStorage.getItem("userId");
-
   const [userId, setUserId] = useState(null);
   const [role, setRole] = useState(null);
   const [token, setToken] = useState(null);
@@ -63,6 +62,9 @@ export default function ProductSeller() {
   const [ratingData, setRatingData] = useState({});
   const [totalReviews, setTotalReviews] = useState(0);
   const [totalRating, setTotalRating] = useState(0);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0); // State to store follower count
   //lấy session
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -91,7 +93,47 @@ export default function ProductSeller() {
       navigate("/product"); // Điều hướng tới trang product sau khi lưu thông tin
     }
   }, [location, navigate]);
-
+  // Fetch Follow Status
+  useEffect(() => {
+    const fetchFollowStatus = async () => {
+      try {
+        // Lấy số lượng người theo dõi trước
+        const followerCountResponse = await fetch(
+          `https://opms1.runasp.net/api/FollowerAPI/countFollower?followerId=${userIdPlant}`
+        );
+  
+        if (followerCountResponse.ok) {
+          const followerCountData = await followerCountResponse.json();
+          console.log("Count:", followerCountData);
+          setFollowerCount(followerCountData.count || 0); // Cập nhật số lượng người theo dõi
+        } else {
+          console.error("Failed to fetch follower count");
+        }
+  
+        // Sau đó kiểm tra trạng thái người dùng đã đăng nhập
+        const userId = localStorage.getItem("userId");
+        if (!userId) {
+          console.log("User chưa đăng nhập");
+          return;
+        }
+  
+        // Nếu đã login, kiểm tra trạng thái follow
+        const response = await fetch(
+          `https://opms1.runasp.net/api/FollowerAPI/is-following?userId=${userId}&followerId=${userIdPlant}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setIsFollowing(data.isFollowing);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false); // Hoàn thành
+      }
+    };
+  
+    fetchFollowStatus();
+  }, [userIdPlant]);
   // lấy sản phẩm 
   useEffect(() => {
     if (!userIdPlant) return;
@@ -309,14 +351,20 @@ export default function ProductSeller() {
       });
 
       if (response.ok) {
-        alert("Sản phẩm đã được thêm vào giỏ hàng!");
+        setSuccessMessage("Sản phẩm đã được thêm vào giỏ hàng!");
       } else {
         const errorResponse = await response.json();
-        alert(`Không thể thêm sản phẩm vào giỏ hàng. ${errorResponse.message}`);
+        setSuccessMessage(`Không thể thêm sản phẩm vào giỏ hàng. ${errorResponse.message}`);
       }
     } catch (err) {
       console.error("Lỗi thêm sản phẩm vào giỏ hàng:", err);
-      alert("Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.");
+      setSuccessMessage("Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.");
+    }
+    finally {
+
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 2000);
     }
   };
   const fetchRatings = async (products) => {
@@ -385,9 +433,61 @@ export default function ProductSeller() {
     console.log("Total Reviews:", totalRating);
   })();
 
+  const handleFollower = async () => {
+    const userId = localStorage.getItem("userId");
+    const followerId = userIdPlant; // Thay thế bằng giá trị followerId tương ứng
+
+    if (!userId || userId === "undefined") {
+      navigate("/sign-in");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://opms1.runasp.net/api/FollowerAPI/addFollower?userId=${userId}&followerId=${followerId}`,
+        {
+          method: "POST", // Hoặc "GET" tùy vào yêu cầu API
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setIsFollowing(data.isFollowing);
+
+        if (data.isFollowing) {
+          setSuccessMessage(`Bạn đã theo dõi ${getUserName(data.followerId)} thành công !`);
+        } else {
+          setSuccessMessage(`Bạn đã hủy theo dõi ${getUserName(data.followerId)} !`);
+        }
+        // gọi api lấy tổng theo dõi
+        const countResponse = await fetch(
+          `https://opms1.runasp.net/api/FollowerAPI/countFollower?followerId=${userIdPlant}`
+        );
+
+        if (countResponse.ok) {
+          const countData = await countResponse.json();
+          setFollowerCount(countData.count || 0); // Assuming `count` field exists in the response
+        } else {
+          console.error("Failed to fetch follower count.");
+        }
+      } else {
+        setSuccessMessage("Không thể thực hiện thao tác theo dõi. Vui lòng thử lại.");
+      }
+    } catch (error) {
+      setSuccessMessage("Lỗi khi theo dõi");
+    }
+    finally {
+
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 2000);
+    }
+  };
+
+
   return (
     <main>
-      <div className="p-6 bg-white shadow-lg rounded-md md:py-10 dark:bg-gray-900 shadow-gray-200 antialiased">
+      <div className="p-6 h-40 bg-white shadow-lg rounded-md md:py-10 dark:bg-gray-900 shadow-gray-200 antialiased">
         <div className="flex items-center">
           {/* Profile Image and Info Section */}
           <div className="bg-green-500 p-4 rounded-lg flex items-center space-x-4 w-[300px]">
@@ -406,38 +506,41 @@ export default function ProductSeller() {
                 </h2>
               </div>
             ))}
-
-
-
+            <button
+              className={`ml-4 px-3 py-1 rounded text-sm ${isFollowing ? "bg-blue-500" : "bg-red-500"
+                } text-white`}
+              onClick={handleFollower}
+            >
+              {isFollowing ? "Đã theo dõi" : "Theo dõi"}
+            </button>
           </div>
 
-        </div>
-
-        {/* Stats Section */}
-        <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-6 text-gray-900 dark:text-white">
-          <p className="flex items-center">
-            <span className="mr-2">🏪</span> Sản Phẩm:{" "}
-            <span className="ml-1 text-red-500">{productsToDisplay.length}</span>
-          </p>
-          <p className="flex items-center">
-            <span className="mr-2">👤</span> Người Theo Dõi:{" "}
-            <span className="ml-1 text-red-500">3,3tr</span>
-          </p>
-          <p className="flex items-center">
-            <span className="mr-2">⭐</span> Đánh Giá:
-            <span class="ml-1 text-red-500">{totalRating.toFixed(1)} ({totalReviews.toLocaleString("vi-VN")} Đánh Giá)</span>
-          </p>
-          <p className="flex items-center">
-  <span className="mr-2">⏳</span> Tham Gia:{" "}
-  <span className="ml-1 text-red-500">
-    {productsToDisplay.length > 0 && getCreate(productsToDisplay[0].userId) !== "Không xác định"
-      ? formatTimeDifference(getCreate(productsToDisplay[0].userId))
-      : "Không xác định"}
-  </span>
-</p>
+          {/* Stats Section */}
+          <div className="mt-0 relative translate-x-32 grid grid-cols-2 md:grid-cols-4 gap-6 text-gray-900 dark:text-white">
+            <p className="flex items-center">
+              <span className="mr-2">🏪</span> Sản Phẩm:{" "}
+              <span className="ml-1 text-red-500">{productsToDisplay.length}</span>
+            </p>
+            <p className="flex items-center">
+              <span className="mr-2">👤</span> Người Theo Dõi:{" "}
+              <span className="ml-1 text-red-500">{followerCount.toLocaleString()}</span>
+            </p>
+            <p className="flex items-center">
+              <span className="mr-2">⭐</span> Đánh Giá:
+              <span class="ml-1 text-red-500">{totalRating.toFixed(1)} ({totalReviews.toLocaleString("vi-VN")} Đánh Giá)</span>
+            </p>
+            <p className="flex items-center">
+              <span className="mr-2">⏳</span> Tham Gia:{" "}
+              <span className="ml-1 text-red-500">
+                {productsToDisplay.length > 0 && getCreate(productsToDisplay[0].userId) !== "Không xác định"
+                  ? formatTimeDifference(getCreate(productsToDisplay[0].userId))
+                  : "Không xác định"}
+              </span>
+            </p>
+          </div>
         </div>
       </div>
-
+      <div className="h-1"></div>
       <div className="flex flex-col md:flex-row">
         <div className="md:w-56">
           <Sidebar className="w-full md:w-56">
@@ -552,6 +655,13 @@ export default function ProductSeller() {
               )}
             </div>
           </div>
+          {successMessage && (
+            <div className="fixed inset-0 flex items-center justify-center z-50">
+              <div className="bg-green-500 text-white text-lg font-semibold py-2 px-6 rounded-lg shadow-lg transform -translate-y-60">
+                {successMessage}
+              </div>
+            </div>
+          )}
           <div className="flex flex-wrap justify-center gap-3 p-5">
 
             {productsToDisplay.length === 0 ? (
@@ -632,9 +742,8 @@ export default function ProductSeller() {
                           ₫
                         </span>
                         <span className="font-medium text-xl truncate">
-                          {(
-                            product.price -
-                            product.price * (product.discount / 100 || 0)
+                          {new Intl.NumberFormat("en-US").format(
+                            product.price - product.price * (product.discount / 100 || 0)
                           )}
                         </span>
                       </div>
