@@ -6,12 +6,17 @@ import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { Spinner } from "flowbite-react";
 import Rating from 'react-rating-stars-component';
 import CustomRating from "../components/CustomRating";
+import ReactPaginate from "react-paginate";
+import { IoArrowBackCircle, IoArrowForwardCircle } from "react-icons/io5";
 export default function ProductDetail() {
+  const [currentPage, setCurrentPage] = useState(0);
+  const commentsPerPage = 5;
   const navigate = useNavigate();
   const { plantId } = useParams();// Get the plantId from the URL
   const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-  const [selectedReason, setSelectedReason] = useState("");
+  const [selectedReason, setSelectedReasonId] = useState("");
+  const [selectedReasonText, setSelectedReasonText] = useState("");
   const [quantity, setQuantity] = useState(0); // Initial quantity
   const [productData, setProductData] = useState(null); // New state to store product data
   const [loading, setLoading] = useState(true); // Loading state
@@ -26,8 +31,10 @@ export default function ProductDetail() {
   const userIds = localStorage.getItem("userId");
   const [canReview, setCanReview] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [reasons, setReasons] = useState([]);
+  const [complaintDetails, setComplaintDetails] = useState(""); // Chi tiết khi gửi form
   // Fetch product data when the component mounts
-
+ 
 
 
   useEffect(() => {
@@ -92,11 +99,81 @@ export default function ProductDetail() {
 
     checkCanReview();
   }, [plantId]);
+  const handleReason = async () => {
+    const userId = localStorage.getItem("userId");
+    if (!userId || userId === "undefined") {
+      navigate("/sign-in");
+      return;
+    }
 
-  const handleReasonSelect = (reason) => {
-    setSelectedReason(reason);
-    setIsReasonModalOpen(false);
-    setIsFormModalOpen(true);
+    try {
+      const response = await fetch("https://opms1.runasp.net/api/ReasonsAPI/getReasons");
+      if (!response.ok) {
+        throw new Error("Không thể lấy danh sách lý do");
+      }
+      const data = await response.json();
+
+      setReasons(data); // Lưu danh sách lý do vào state
+      setIsReasonModalOpen(true);
+    } catch (err) {
+      console.error(err);
+      alert("Đã xảy ra lỗi khi tải danh sách lý do");
+    }
+  };
+  const handleReasonSelect = (reasonId, reasonText) => {
+    setSelectedReasonId(reasonId); // Lưu ID lý do
+    setSelectedReasonText(reasonText); // Lưu nội dung lý do
+    setIsReasonModalOpen(false); // Đóng Reason Modal
+    setIsFormModalOpen(true); // Mở Form Modal
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const reportData = {
+      reportId: 0, // ID được tự động tạo
+      userId: localStorage.getItem("userId"),
+      plantId: plantId, // Bạn có thể cập nhật giá trị này nếu cần
+      reasonsId: selectedReason, // ID lý do
+      reportContent: complaintDetails, // Nội dung chi tiết
+      createdDate: new Date().toISOString(),
+    };
+    console.log("Dữ liệu gửi đi:", reportData);
+    try {
+      const response = await fetch("https://opms1.runasp.net/api/ReportsAPI/createReport", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(reportData),
+      });
+
+      if (response.ok) {
+        setSuccessMessage("Tạo báo cáo thành công!");
+        resetForm(); // Reset trạng thái form
+      } else {
+        const errorData = await response.json();
+        setSuccessMessage(`Lỗi: ${errorData.message || "Không xác định"}`);
+      }
+    } catch (error) {
+      console.error("Lỗi khi gửi báo cáo:", error);
+      setSuccessMessage("Đã xảy ra lỗi, vui lòng thử lại.");
+    } finally {
+      // Tự động ẩn thông báo sau 2 giây
+      setTimeout(() => setSuccessMessage(""), 2000);
+    }
+  };
+  const handleCancel = () => {
+    setIsFormModalOpen(false);
+    setSelectedReasonId(""); // Reset ID lý do
+    setSelectedReasonText(""); // Reset nội dung lý do
+    setComplaintDetails(""); // Reset chi tiết
+  };
+  const resetForm = () => {
+    setIsFormModalOpen(false); // Đóng modal
+    setSelectedReasonId(""); // Reset lý do
+    setSelectedReasonText(""); // Reset nội dung lý do
+    setComplaintDetails(""); // Reset chi tiết
   };
   // Hàm để lấy tên người dùng dựa trên userId
   const fetchProductReviews = async () => {
@@ -275,7 +352,7 @@ export default function ProductDetail() {
         } else {
           setSuccessMessage("Đã xảy ra lỗi. Vui lòng thử lại.");
         }
-      }   
+      }
       setTimeout(() => {
         setSuccessMessage('');
       }, 2000);
@@ -284,6 +361,61 @@ export default function ProductDetail() {
       setSuccessMessage("Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.");
     }
     finally {
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 2000);
+    }
+  };
+  const buyNow = async (productId, quantity) => {
+    const userId = localStorage.getItem("userId");
+    if (!userId || userId === "undefined") {
+      navigate("/sign-in");
+      return;
+    }
+    if (quantity <= 0) {
+      setSuccessMessage("Số lượng phải lớn hơn 0");
+      setTimeout(() => setSuccessMessage(''), 2000);
+      return;
+    }
+    try {
+      const response = await fetch('https://opms1.runasp.net/api/ShoppingCartAPI/createBuyNowCart', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", 
+        },
+        body: JSON.stringify({
+          plantId: productId,
+          quantity: quantity,
+          userId: userId,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json(); // Lấy dữ liệu phản hồi từ server
+        const shoppingCartId = data.shoppingCartItemId; // Giả sử server trả về "shoppingCartId"
+
+        const selectedCartItems = [shoppingCartId];
+        localStorage.setItem("selectedCartItems", JSON.stringify(selectedCartItems));
+
+        setSuccessMessage("Sản phẩm đã được thêm vào giỏ hàng!");
+
+        // Điều hướng tới trang thanh toán
+        navigate("/payment");
+      } else {
+        const errorData = await response.json();
+        if (response.status === 404 && errorData.message === "Not enough stock available.") {
+          setSuccessMessage("Không đủ hàng trong kho.");
+        } else {
+          setSuccessMessage("Đã xảy ra lỗi. Vui lòng thử lại.");
+        }
+      }
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 2000);
+    } catch (err) {
+      console.error("Lỗi thêm sản phẩm vào giỏ hàng:", err);
+      setSuccessMessage("Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.");
+    } finally {
       setTimeout(() => {
         setSuccessMessage('');
       }, 2000);
@@ -301,6 +433,15 @@ export default function ProductDetail() {
       </div>
     );
   }
+  const pageCount = Math.ceil(reviews.length / commentsPerPage);
+  const displayedReviews = reviews.slice(
+    currentPage * commentsPerPage,
+    (currentPage + 1) * commentsPerPage
+  );
+
+  const handlePageClick = (event) => {
+    setCurrentPage(event.selected);
+  };
 
   if (error) {
     return <div>Lỗi: {error}</div>;
@@ -376,12 +517,9 @@ export default function ProductDetail() {
                 <div className="ml-auto">
                   {/* Button to open reason modal */}
                   <button
-                    onClick={() => userIds && setIsReasonModalOpen(true)} // Chỉ mở modal khi đã đăng nhập
-                    className={`block font-medium rounded-lg text-sm px-5 py-2.5 text-center ${userIds
-                        ? "text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800"
-                        : "text-gray-400 bg-gray-300 cursor-not-allowed"
-                      }`}
-                    disabled={!userIds} // Disabled nếu userid là null
+                    onClick={() => handleReason()} // Chỉ mở modal khi đã đăng nhập
+                    className="block font-medium rounded-lg text-sm px-5 py-2.5 text-center
+                       text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800"
                   >
                     Tố cáo
                   </button>
@@ -391,7 +529,7 @@ export default function ProductDetail() {
                   <div className="fixed inset-0 z-50 flex items-center justify-center w-full h-full bg-gray-900 bg-opacity-50">
                     <div
                       className="relative p-4 bg-white rounded-lg shadow dark:bg-gray-700 max-w-md w-full"
-                      onClick={(e) => e.stopPropagation()} // To prevent closing modal on content click
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <div className="flex items-center justify-between p-4 border-b rounded-t dark:border-gray-600">
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -406,30 +544,16 @@ export default function ProductDetail() {
                       </div>
                       <div className="p-4 space-y-4">
                         <ul className="space-y-2">
-                          <li>
-                            <button
-                              className="block w-full text-left text-gray-900 hover:underline dark:text-white"
-                              onClick={() => handleReasonSelect("Cây không đúng với mô tả")}
-                            >
-                              Cây không đúng với mô tả
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              className="block w-full text-left text-gray-900 hover:underline dark:text-white"
-                              onClick={() => handleReasonSelect("Cây bị hư hại trong quá trình vận chuyển")}
-                            >
-                              Cây bị hư hại trong quá trình vận chuyển
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              className="block w-full text-left text-gray-900 hover:underline dark:text-white"
-                              onClick={() => handleReasonSelect("Cây không phù hợp với yêu cầu của tôi")}
-                            >
-                              Cây không phù hợp với yêu cầu của tôi
-                            </button>
-                          </li>
+                          {reasons.map((reason, index) => (
+                            <li key={reason.reasonsId}>
+                              <button
+                                className="block w-full text-left text-gray-900 hover:underline dark:text-white"
+                                onClick={() => handleReasonSelect(reason.reasonsId, reason.reasons)}
+                              >
+                                {reason.reasons}
+                              </button>
+                            </li>
+                          ))}
                         </ul>
                       </div>
                     </div>
@@ -441,7 +565,7 @@ export default function ProductDetail() {
                   <div className="fixed inset-0 z-50 flex items-center justify-center w-full h-full bg-gray-900 bg-opacity-50">
                     <div
                       className="relative p-4 bg-white rounded-lg shadow dark:bg-gray-700 max-w-md w-full"
-                      onClick={(e) => e.stopPropagation()} // To prevent closing modal on content click
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <div className="flex items-center justify-between p-4 border-b rounded-t dark:border-gray-600">
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -456,9 +580,9 @@ export default function ProductDetail() {
                       </div>
                       <div className="p-4 space-y-4">
                         <p className="text-sm text-gray-700 dark:text-white">
-                          Lý do bạn đã chọn: {selectedReason}
+                          Lý do bạn đã chọn: {selectedReasonText}
                         </p>
-                        <form>
+                        <form onSubmit={handleSubmit}>
                           <div className="mb-4">
                             <label
                               htmlFor="complaintDetails"
@@ -471,6 +595,8 @@ export default function ProductDetail() {
                               name="complaintDetails"
                               rows="4"
                               className="block w-full p-2 mt-1 border rounded-md focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                              value={complaintDetails}
+                              onChange={(e) => setComplaintDetails(e.target.value)}
                               required
                             ></textarea>
                           </div>
@@ -482,8 +608,9 @@ export default function ProductDetail() {
                               Gửi
                             </button>
                             <button
+                              type="button"
                               className="ml-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:bg-gray-500 dark:hover:bg-gray-600"
-                              onClick={() => setIsFormModalOpen(false)}
+                              onClick={handleCancel}
                             >
                               Hủy
                             </button>
@@ -505,14 +632,13 @@ export default function ProductDetail() {
                   Thêm vào giỏ hàng
                 </button>
 
-                <a
-                  href="#"
-                  title="Buy now"
+                <button
+                  onClick={() => buyNow(plantId, quantity)}
                   className="flex items-center justify-center py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                 >
                   <TiShoppingCart className="text-2xl" />
                   Mua ngay
-                </a>
+                </button>
 
                 {/* Quantity */}
                 <label className="text-gray-900 text-sm dark:text-white ml-4">Số Lượng:</label>
@@ -596,8 +722,8 @@ export default function ProductDetail() {
         <div>
           <h3 className="text-2xl font-semibold mb-6">{ratingSummary.totalReviews} Bình luận</h3>
           <div className="space-y-8">
-            {reviews.length > 0 ? (
-              reviews.map((review) => (
+          {displayedReviews.length > 0 ? (
+          displayedReviews.map((review) => (
                 <div key={review.reviewId} className="flex space-x-4">
                   <img
                     src={review.userImage || "https://via.placeholder.com/40"}
@@ -629,9 +755,7 @@ export default function ProductDetail() {
                       {/* Like button */}
                       <button className="flex items-center text-sm text-blue-500 hover:underline">
                         <AiFillLike className="mr-1" /> Thích
-                      </button>
-                      {/* Reply button */}
-                      <button className="text-sm text-blue-500 hover:underline">Phản hồi</button>
+                      </button>                                  
                     </div>
                   </div>
                 </div>
@@ -640,6 +764,30 @@ export default function ProductDetail() {
               <p className="text-gray-500 dark:text-gray-400">Chưa có review nào về sản phẩm này</p>
             )}
           </div>
+          <div className="w-full flex justify-center mt-4">
+        <ReactPaginate
+          previousLabel={<IoArrowBackCircle />}
+          nextLabel={<IoArrowForwardCircle />}
+          breakLabel={"..."}
+          pageCount={pageCount}
+          onPageChange={handlePageClick}
+          containerClassName={"flex justify-center space-x-4"}
+          pageClassName={
+            "flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-200 cursor-pointer transition duration-300"
+          }
+          activeClassName={"bg-black text-white"}
+          pageLinkClassName={"w-full h-full flex items-center justify-center"}
+          breakClassName={"flex items-center justify-center w-8 h-8"}
+          breakLinkClassName={"w-full h-full flex items-center justify-center"}
+          previousClassName={
+            "flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-200 cursor-pointer transition duration-300"
+          }
+          nextClassName={
+            "flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-200 cursor-pointer transition duration-300"
+          }
+          disabledClassName={"opacity-50 cursor-not-allowed"}
+        />
+        </div>
         </div>
 
         {/* Review Form */}

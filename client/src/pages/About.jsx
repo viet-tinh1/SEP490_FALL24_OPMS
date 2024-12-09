@@ -1,6 +1,7 @@
 import { useState } from "react";
-
+import { useNavigate } from "react-router-dom";
 export default function About() {
+  const navigate = useNavigate();
   const email = localStorage.getItem("email");
   const username = localStorage.getItem("username");
   const userid = localStorage.getItem("userId");
@@ -28,7 +29,11 @@ export default function About() {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    const userId = localStorage.getItem("userId");
+    if (!userId || userId === "undefined") {
+      navigate("/sign-in");
+      return;
+    }
     if (validate()) {
       try {
         const response = await fetch("https://opms1.runasp.net/api/FeebbackAPI/createFeedback", {
@@ -224,16 +229,12 @@ export default function About() {
 
               {/* Nút Gửi */}
               <button
-  type="submit"
-  className={`w-full py-3 rounded font-medium transition duration-300 ${
-    userid
-      ? "bg-green-600 text-white hover:bg-green-700"
-      : "bg-gray-400 text-gray-600 cursor-not-allowed"
-  }`}
-  disabled={!userid} // Nếu userid là null, nút sẽ bị disabled
->
-  Gửi Phản Hồi
-</button>
+                type="submit"
+                className="w-full py-3 rounded font-medium transition duration-300 
+                    bg-green-600 text-white hover:bg-green-700"                                   
+              >
+                Gửi Phản Hồi
+              </button>
             </form>
 
             {/* Map Section */}
