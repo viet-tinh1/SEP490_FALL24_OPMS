@@ -21,6 +21,7 @@
     | 2024-11-03   | TinhNV          | Update database FORUM ( add Table Posts, Comments, LikeReview, RepyReview, LikePost, ReplyComment            |
     | 2024-11-03   | TinhNV          | Update database                                                                                              |
     | 2024-11-20   | TinhNV          | Update database                                                                                              |
+    | 2024-12-04   | TinhNV          | Create table report + follower                                                                               |
     -------------------------------------------------------------------------------------------------------------------------------------------------
      
     Notes:
@@ -178,8 +179,9 @@ CREATE TABLE Follower (
     FollowerId                                  INT NOT NULL,
     UserID                                      INT NOT NULL,
     PRIMARY KEY (FollowerId, UserID),
-    FOREIGN KEY (FollowerId)                    REFERENCES Follower(FollowerId),
-    FOREIGN KEY (UserID)                        REFERENCES Users(UserID)
+    FOREIGN KEY (FollowerId)                    REFERENCES Users(UserID),
+    FOREIGN KEY (UserID)                        REFERENCES Users(UserID),
+    CHECK (FollowerId <> UserID)
 );
 -- feedback
 CREATE TABLE Feedback (
@@ -234,4 +236,18 @@ CREATE TABLE ReplyComment (
     FOREIGN KEY (comment_id)                    REFERENCES Comments(comment_id)  ,
     FOREIGN KEY (UserID)                        REFERENCES Users(UserID)
 );
-
+CREATE TABLE Report(
+	ReportId                                    INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+    UserID                                      INT NOT NULL,
+    PlantID                                     INT NOT NULL,
+    ReasonsId                                   INT NOT NULL,
+    Report_content                              NVARCHAR(255) NULL,
+    CreatedDate                                 DATETIME NULL,
+    FOREIGN KEY (UserID)                        REFERENCES Users(UserID),
+    FOREIGN KEY (ReasonsId)                     REFERENCES Reasons(ReasonsId),
+    FOREIGN KEY (PlantID)                       REFERENCES Plants(PlantID)
+	);
+CREATE TABLE Reasons (
+	ReasonsId                                    INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+    Reasons                                      NVARCHAR(255) NULL,
+	);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -19,7 +20,8 @@ public partial class Db6213Context : DbContext
     public virtual DbSet<ShoppingCart> ShoppingCarts { get; set; }
 
     public virtual DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
-
+    public virtual DbSet<Reason> Reasons { get; set; }
+    public virtual DbSet<Report> Reports { get; set; }
     public virtual DbSet<Category> Categories { get; set; }
     public virtual DbSet<Comment> Comments { get; set; }
 
@@ -76,6 +78,40 @@ public partial class Db6213Context : DbContext
             entity.HasOne(d => d.User).WithMany()
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK__CartUser__UserID__47DBAE45");
+        });
+        modelBuilder.Entity<Reason>(entity =>
+        {
+            entity.HasKey(e => e.ReasonsId).HasName("PK__Reasons__DFA0E0BB8C745EF3");
+
+            entity.Property(e => e.Reasons).HasMaxLength(255);
+        });
+        modelBuilder.Entity<Report>(entity =>
+        {
+            entity.HasKey(e => e.ReportId).HasName("PK__Report__D5BD4805F4CF4E0F");
+
+            entity.ToTable("Report");
+
+            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.PlantId).HasColumnName("PlantID");
+            entity.Property(e => e.ReportContent)
+                .HasMaxLength(255)
+                .HasColumnName("Report_content");
+            entity.Property(e => e.UserId).HasColumnName("UserID");
+
+            entity.HasOne(d => d.Plant).WithMany(p => p.Reports)
+                .HasForeignKey(d => d.PlantId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Report__PlantID__69FBBC1F");
+
+            entity.HasOne(d => d.Reasons).WithMany(p => p.Reports)
+                .HasForeignKey(d => d.ReasonsId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Report__ReasonsI__690797E6");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Reports)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Report__UserID__681373AD");
         });
 
         modelBuilder.Entity<ShoppingCartItem>(entity =>
@@ -430,6 +466,41 @@ public partial class Db6213Context : DbContext
             //    .HasColumnName("IsSellerRequest")
             //    .HasDefaultValue(0);
             entity.Property(e => e.Username).HasMaxLength(100);
+            entity.HasMany(d => d.Followers).WithMany(p => p.Users)
+                .UsingEntity<Dictionary<string, object>>(
+                    "Follower",
+                    r => r.HasOne<User>().WithMany()
+                        .HasForeignKey("FollowerId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__Follower__Follow__6CD828CA"),
+                    l => l.HasOne<User>().WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__Follower__UserID__6DCC4D03"),
+                    j =>
+                    {
+                        j.HasKey("FollowerId", "UserId").HasName("PK__Follower__3921CCD373A4CEED");
+                        j.ToTable("Follower");
+                        j.IndexerProperty<int>("UserId").HasColumnName("UserID");
+                    });
+
+            entity.HasMany(d => d.Users).WithMany(p => p.Followers)
+                .UsingEntity<Dictionary<string, object>>(
+                    "Follower",
+                    r => r.HasOne<User>().WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__Follower__UserID__6DCC4D03"),
+                    l => l.HasOne<User>().WithMany()
+                        .HasForeignKey("FollowerId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__Follower__Follow__6CD828CA"),
+                    j =>
+                    {
+                        j.HasKey("FollowerId", "UserId").HasName("PK__Follower__3921CCD373A4CEED");
+                        j.ToTable("Follower");
+                        j.IndexerProperty<int>("UserId").HasColumnName("UserID");
+                    });
         });
         modelBuilder.Entity<Voucher>(entity =>
         {

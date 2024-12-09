@@ -27,7 +27,7 @@ namespace Web_API_OPMS.Controllers
             return Ok(feedback);
         }
         [HttpGet("getFeedbackById")]
-        public ActionResult<Feedback> GetFêdbackById(int Id)
+        public ActionResult<Feedback> GetFeedbackById(int Id)
         {
             var feedback = _feedbackRepository.GetFeedbackById(Id);
             if (feedback == null)
@@ -63,7 +63,7 @@ namespace Web_API_OPMS.Controllers
 
                 _feedbackRepository.CreateFeedback(feedback);
 
-                return CreatedAtAction(nameof(GetFêdbackById), new { id = feedback.FeedbackId }, feedback);
+                return CreatedAtAction(nameof(GetFeedbackById), new { id = feedback.FeedbackId }, feedback);
             }
             catch (Exception ex)
             {

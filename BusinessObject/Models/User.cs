@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 
 namespace BusinessObject.Models;
@@ -46,5 +47,8 @@ public partial class User
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
     public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
     public virtual ICollection<PostLike> PostLikes { get; set; } = new List<PostLike>();
+    public virtual ICollection<User> Followers { get; set; } = new List<User>();
+    public virtual ICollection<Report> Reports { get; set; } = new List<Report>();
+    public virtual ICollection<User> Users { get; set; } = new List<User>();
     public virtual ICollection<ReplyComment> ReplyComments { get; set; } = new List<ReplyComment>();
 }
