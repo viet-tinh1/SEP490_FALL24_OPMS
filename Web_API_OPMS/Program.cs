@@ -1,4 +1,5 @@
 ﻿using BusinessObject.Models;
+using DataAccess.DAO;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -102,6 +103,9 @@ namespace Web_API_OPMS
             builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
             builder.Services.AddScoped<IReplyCommentRepository, ReplyCommentRepository>();
             builder.Services.AddSingleton<IGeographyRepository, GeographyRepository>();
+            builder.Services.AddScoped<IFollowerRepository, FollowerRepository>();
+            builder.Services.AddScoped<IReportsRepository, ReportsRepository>();
+            builder.Services.AddScoped<FollowerDAO>();
             builder.Services.AddTransient<MailService>();
             var app = builder.Build();
             

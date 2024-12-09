@@ -84,7 +84,7 @@ namespace Web_API_OPMS.Controllers
                 {
                     return NotFound(new { message = "Not enough stock available."});
                 }
-
+                int shoppingCartItemId;
                 // Kiểm tra xem sản phẩm đã có trong giỏ hàng của người dùng chưa
                 var existingCartItem = ShoppingCartItemRepository.GetCartItemByUserAndPlantId(c.UserId, c.PlantId);
 
@@ -98,6 +98,7 @@ namespace Web_API_OPMS.Controllers
 
                     existingCartItem.Quantity += c.Quantity;
                     ShoppingCartItemRepository.UpdateCart(existingCartItem);
+                    shoppingCartItemId = existingCartItem.ShoppingCartItemId;
                 }
                 else
                 {
@@ -117,9 +118,64 @@ namespace Web_API_OPMS.Controllers
                         UserId = c.UserId
                     };
                     ShoppingCartRepository.CreateCartUser(shoppingCart);
+                    shoppingCartItemId = cart.ShoppingCartItemId;
                 }
 
-                return Ok(new { message = "Cart updated successfully." });
+                return Ok(new
+                {
+                    message = "Cart updated successfully.",
+                    shoppingCartItemId = shoppingCartItemId
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+
+        // Mua ngay sản phẩm tại đây
+        [HttpPost("createBuyNowCart")]
+        public IActionResult CreateByNowCartAsync([FromBody] ShoppingCartItemDTO c)
+        {
+            if (c == null)
+            {
+                return BadRequest("Invalid Cart data");
+            }
+
+
+            try
+            {
+                var plant = PlantRepository.getPlantById(c.PlantId);
+
+                if (plant == null)
+                {
+                    return NotFound("Plant not found.");
+                }
+
+                // Check if enough stock is available
+                if (plant.Stock < c.Quantity)
+                {
+                    return BadRequest("Not enough stock available.");
+                }
+
+                // Create the cart item
+                ShoppingCartItem cart = new ShoppingCartItem()
+                {
+                    ShoppingCartItemId = c.ShoppingCartItemId,
+                    PlantId = c.PlantId,
+                    Quantity = c.Quantity
+                };
+                ShoppingCartItemRepository.CreateCart(cart);
+
+                // Create the shopping cart với UserId đã kiểm tra
+                ShoppingCart shoppingCart = new ShoppingCart()
+                {
+                    ShoppingCartItemId = cart.ShoppingCartItemId,
+                    UserId = c.UserId // Gán giá trị UserId đã kiểm tra
+                };
+                ShoppingCartRepository.CreateCartUser(shoppingCart);
+
+                return CreatedAtAction(nameof(GetShoppingCartById), new { id = cart.ShoppingCartItemId }, cart);
             }
             catch (Exception ex)
             {

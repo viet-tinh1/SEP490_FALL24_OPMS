@@ -38,9 +38,17 @@ namespace Web_API_OPMS.Controllers.Authentication
             DateTime utcNow = DateTime.UtcNow;
             DateTime currentVietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
 
-            if (await _context.Users.AnyAsync(u => u.Username == user.Username || u.Email == user.Email))
+            if (await _context.Users.AnyAsync(u => u.Username == user.Username))
             {
-                return BadRequest(new { message = "Username or Email already exists" });
+                return BadRequest(new { message = "Username already exists" });
+            }
+            if (await _context.Users.AnyAsync(u => u.Email == user.Email))
+            {
+                return BadRequest(new { message = "Email already exists" });
+            }
+            if (await _context.Users.AnyAsync(u => u.PhoneNumber == user.PhoneNumber))
+            {
+                return BadRequest(new { message = "Phone already exists" });
             }
 
             // Hash mật khẩu
@@ -56,7 +64,7 @@ namespace Web_API_OPMS.Controllers.Authentication
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             // Tìm người dùng theo tên đăng nhập
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Account || u.PhoneNumber == request.Account);
 
             // Kiểm tra nếu không tìm thấy người dùng hoặc mật khẩu không hợp lệ
             if (user == null || !VerifyPassword(request.Password, user.Password))
@@ -185,7 +193,7 @@ namespace Web_API_OPMS.Controllers.Authentication
     // Lớp LoginRequest để đăng nhập 
     public class LoginRequest
     {
-        public string Email { get; set; } = null!;
+        public string Account { get; set; } = null;       
         public string Password { get; set; } = null!;
     }
 }
