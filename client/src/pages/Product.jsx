@@ -186,7 +186,7 @@ export default function Product() {
           query.push(`limit=100`); // Thêm limit = 100 khi sortOption là 2 (bán chạy nhất)
         }
       }
-  
+
       const finalQuery = query.length ? `?${query.join("&")}` : "";
       const productResponse = await fetch(`https://opms1.runasp.net/api/PlantAPI/searchPlants${finalQuery}`);
       const productsData = await productResponse.json();
@@ -252,7 +252,7 @@ export default function Product() {
       searchPlants(name, selectedCategories, minPrice, maxPrice, sortOption);
     }
   }, [name, selectedCategories, minPrice, maxPrice, priceError, sortOption]);
-  
+
 
   // phân trang
   const pageCount = Math.ceil(products.length / usersPerPage);
@@ -282,17 +282,17 @@ export default function Product() {
     localStorage.removeItem("status");
     localStorage.clear();
     localStorage.setItem("signOut", Date.now());
-    
+
     // Đặt lại trạng thái
     setUserId(null);
     setRole(null);
     setEmail(null);
-    setUserName(null);     
-   
+    setUserName(null);
+
     setShowModal(false);
     navigate("/sign-in");
     window.location.reload(true); // Reload trang sau đăng xuất
-    
+
   };
 
   // thêm sản phẩm vào giỏ hàng 
@@ -308,7 +308,7 @@ export default function Product() {
       }, 3000);
 
       return () => clearTimeout(timer); // Dọn dẹp bộ đếm nếu người dùng bấm nút
-       
+
     }
     if (!userId || userId === "undefined") {
       navigate("/sign-in");
@@ -338,7 +338,7 @@ export default function Product() {
           setSuccessMessage("Đã xảy ra lỗi. Vui lòng thử lại.");
         }
       }
-    }catch (err) {
+    } catch (err) {
       console.error("Lỗi thêm sản phẩm vào giỏ hàng:", err);
       setSuccessMessage("Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.");
     }
@@ -367,7 +367,7 @@ export default function Product() {
     return ratings;
   };
   // Tính rating trung bình
- 
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -376,13 +376,13 @@ export default function Product() {
       </div>
     );
   }
-  
+
   if (error) {
     return <div>Error: {error}</div>;
   }
-  
+
   return (
-    
+
     <main>
       {/* Render Modal nếu trạng thái showModal là true */}
       {showModal && (
@@ -391,7 +391,7 @@ export default function Product() {
             <h3 className="text-lg font-semibold mb-2">Tài khoản của bạn đã bị khóa</h3>
             <p className="text-sm mb-4">Vui lòng đăng xuất hoặc đợi 3 giây để tự động chuyển sang màn hình đăng nhập</p>
             <div className="mt-4 flex justify-around">
-              
+
             </div>
           </div>
         </div>
@@ -537,18 +537,20 @@ export default function Product() {
                   rating.totalReviews > 0
                     ? (rating.totalRating / rating.totalReviews).toFixed(1)
                     : "0.0";
-  
-                    
+
+
                 return (
                   <div
                     key={product.plantId}
-                    className={` mb-4 relative bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto ${product.stock === 0 ? "opacity-98" : ""
+                    className={` mb-4 relative bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto ${product.stock === 0 || product.status === 0 ? "opacity-98" : ""
                       }`}
                   >
                     {/* Hiển thị chữ "Hết hàng" khi stock === 0 */}
-                    {product.stock === 0 && (
+                    {(product.stock === 0 || product.status === 0) && (
                       <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-10">
-                        <span className="text-red-400 font-bold text-lg">Hết hàng</span>
+                        <span className="text-red-400 font-bold text-lg">
+                          {product.stock === 0 ? "Hết hàng" : "Ngừng bán"}
+                        </span>
                       </div>
                     )}
                     {/* Liên kết đến trang chi tiết sản phẩm */}
@@ -599,7 +601,7 @@ export default function Product() {
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
                         <span className="ml-2 rounded bg-cyan-100 px-2 py-0.5 text-xs font-semibold text-cyan-800 dark:bg-cyan-200 dark:text-cyan-800">
-                        {averageRating} ({rating.totalReviews} đánh giá)
+                          {averageRating} ({rating.totalReviews} đánh giá)
                         </span>
                       </div>
                     </Link>

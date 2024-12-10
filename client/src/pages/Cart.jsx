@@ -431,7 +431,7 @@ export default function Cart() {
                   return (
                     <div
                       key={item.shoppingCartItemId}
-                      className={`rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:p-6 ${(item.plantDetails?.stock === 0 || item.plantDetails?.isVerfied === 0) ? "opacity-50 pointer-events-none" : ""
+                      className={`rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:p-6 ${(item.plantDetails?.stock === 0 || item.plantDetails?.isVerfied === 0 || item.plantDetails?.status === 0 ) ? "opacity-50 pointer-events-none" : ""
                         }`}
                         style={{
                           position: "relative", // Quan trọng để hỗ trợ zIndex
@@ -530,6 +530,11 @@ export default function Cart() {
                           {item.plantDetails?.isVerfied === 0 && (
                             <p className="text-sm font-semibold text-yellow-500">
                               Sản phẩm này chưa được xác minh
+                            </p>
+                          )}
+                          {item.plantDetails?.status === 0 && (
+                            <p className="text-sm font-semibold text-red-500">
+                              Sản phẩm này đã ngừng bán
                             </p>
                           )}
 
