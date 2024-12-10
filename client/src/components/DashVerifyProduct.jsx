@@ -169,139 +169,148 @@ export default function DashVerifyProduct() {
     );
   }
   return (
-    <main className="overflow-x-auto md:mx-auto p-4">
-      <div className="shadow-md rounded-lg bg-white dark:bg-gray-800 mb-6 p-6 lg:p-2">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-4">
-            Duyệt sản phẩm
-          </h1>
-          <div className="flex justify-between items-center mb-6">
-            <form className="flex-grow max-w-xs">
-              
-            </form>
-          </div>
-          <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0 mt-4">
-            <button
-              id="1"
-              onClick={() => handleRoleChange(1)}
-              className={`px-5 py-2 rounded-md font-medium  ${activeButton === 1
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}>
-              Sản phẩm đã duyệt
-            </button>
+    <>
+      {role === "1" ? ( // Kiểm tra role
+        <main className="overflow-x-auto md:mx-auto p-4">
+          <div className="shadow-md rounded-lg bg-white dark:bg-gray-800 mb-6 p-6 lg:p-2">
+            <div className="mb-6">
+              <h1 className="text-2xl font-semibold text-gray-900 mb-4">
+                Duyệt sản phẩm
+              </h1>
+              <div className="flex justify-between items-center mb-6">
+                <form className="flex-grow max-w-xs">
+
+                </form>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0 mt-4">
+                <button
+                  id="1"
+                  onClick={() => handleRoleChange(1)}
+                  className={`px-5 py-2 rounded-md font-medium  ${activeButton === 1
+                    ? "bg-green-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}>
+                  Sản phẩm đã duyệt
+                </button>
 
 
-            <button
-              id="2"
-              onClick={() => handleRoleChange(2)}
-              className={`px-5 py-2 rounded-md font-medium ${activeButton === 2
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-            >
-              Sản phẩm chưa duyệt
-            </button>
-          </div>
-        </div>
-      </div>
-      {/* bảng */}
-      <div className="overflow-x-auto w-full shadow-md rounded-lg">
-        <Table hoverable className="min-w-full">
-          <Table.Head>
-            <Table.HeadCell className="w-20">Ảnh</Table.HeadCell>
-            <Table.HeadCell className="w-28">Loại</Table.HeadCell>
-            <Table.HeadCell className="w-32">Tên</Table.HeadCell>
-            <Table.HeadCell className="w-64">Mô tả</Table.HeadCell>
-            <Table.HeadCell className="w-20">Giá</Table.HeadCell>
-            <Table.HeadCell className="w-20 whitespace-nowrap">Số lượng</Table.HeadCell>
-            <Table.HeadCell className="w-20 whitespace-nowrap">Giảm giá</Table.HeadCell>
-            <Table.HeadCell className="w-28 whitespace-nowrap">Trạng thái</Table.HeadCell>
-            <Table.HeadCell className="w-28 whitespace-nowrap">Xác thực</Table.HeadCell>
-            <Table.HeadCell className="w-32 whitespace-nowrap">Hành động</Table.HeadCell>
-          </Table.Head>
-          <Table.Body className="divide-y">
-            {plantsToDisplay.map((plant) => {
-              return (
-                <Table.Row
-                  className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
-                  key={plant.plantId}
+                <button
+                  id="2"
+                  onClick={() => handleRoleChange(2)}
+                  className={`px-5 py-2 rounded-md font-medium ${activeButton === 2
+                    ? "bg-green-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
                 >
-                  <Table.Cell className="p-4 flex items-center justify-center">
-                    <img
-                      src={plant.imageUrl || "https://via.placeholder.com/40"}
-                      alt={plant.name}
-                      className="h-10 w-10 object-cover bg-gray-500 rounded-full"
-                    />
-                  </Table.Cell>
-                  <Table.Cell className="p-4">{getCategoryName(plant.categoryId)}</Table.Cell>
-                  <Table.Cell className="p-4">{plant.plantName}</Table.Cell>
-                  <Table.Cell className="p-4 line-clamp-2" dangerouslySetInnerHTML={{ __html: plant.description }} />
-                  <Table.Cell className="p-4 text-center">{new Intl.NumberFormat("en-US").format(plant.price)}</Table.Cell>
-                  <Table.Cell className="p-4 text-center">{plant.stock}</Table.Cell>
-                  <Table.Cell className="p-4 text-center">{plant.discount || 0}%</Table.Cell>
-                  <Table.Cell className="p-4 text-center">{plant.status === 1 ? "Còn hàng" : "Hết hàng"}</Table.Cell>
-                  <Table.Cell className="p-4 text-center">{plant.isVerfied === 1 ? "Đã xác thực" : "Chưa xác thực"}</Table.Cell>
-                  <Table.Cell className="py-4 flex space-x-2">
-                    <Button
-                      onClick={() => handleVerify(plant)}
-                      className={
-                        plant.isVerfied === 1
-                          ? "bg-red-600 py-0.5 px-1 text-xs font-medium rounded-xl text-white hover:bg-red-700"
-                          : "bg-green-600 py-0.5 px-1 text-xs font-medium rounded-xl text-white hover:bg-green-700"
-                      }
-                    >
-                      {plant.isVerfied === 1 ? (
-                        <AiOutlineClose className="text-white" />
-                      ) : (
-                        <AiOutlineCheck className="text-white" />
-                      )}
-                    </Button>
-                  </Table.Cell>
-                </Table.Row>
-              );
-            })}
-          </Table.Body>
-        </Table>
-      </div>
-
-
-      <div className="mt-6 flex justify-center">
-        <ReactPaginate
-          previousLabel={"← Sau"}
-          nextLabel={"Trước →"}
-          pageCount={pageCount > 0 ? pageCount : 1}
-          onPageChange={handlePageClick}
-          forcePage={pageCount > 0 ? currentPage : 0}
-          containerClassName={
-            "flex flex-wrap justify-center space-x-2 md:space-x-4"
-          }
-          pageLinkClassName={"py-2 px-4 border rounded"}
-          activeClassName={"bg-blue-600 text-white"}
-          disabledClassName={"opacity-50 cursor-not-allowed"}
-        />
-      </div>
-
-      <Modal show={showModal} onClose={handleCancel}>
-        <Modal.Header>Delete Product</Modal.Header>
-        <Modal.Body>
-          <div className="text-center">
-            <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 mb-4 mx-auto" />
-            <h3 className="mb-5 text-lg text-gray-500">
-              Are you sure you want to delete {selectedProduct?.name}?
-            </h3>
-            <div className="flex justify-center gap-4 mt-6">
-              <Button color="failure" onClick={handleConfirmDelete}>
-                Yes
-              </Button>
-              <Button color="gray" onClick={handleCancel}>
-                No
-              </Button>
+                  Sản phẩm chưa duyệt
+                </button>
+              </div>
             </div>
           </div>
-        </Modal.Body>
-      </Modal>
-    </main>
+          {/* bảng */}
+          <div className="overflow-x-auto w-full shadow-md rounded-lg">
+            <Table hoverable className="min-w-full">
+              <Table.Head>
+                <Table.HeadCell className="w-20">Ảnh</Table.HeadCell>
+                <Table.HeadCell className="w-28">Loại</Table.HeadCell>
+                <Table.HeadCell className="w-32">Tên</Table.HeadCell>
+                <Table.HeadCell className="w-64">Mô tả</Table.HeadCell>
+                <Table.HeadCell className="w-20">Giá</Table.HeadCell>
+                <Table.HeadCell className="w-20 whitespace-nowrap">Số lượng</Table.HeadCell>
+                <Table.HeadCell className="w-20 whitespace-nowrap">Giảm giá</Table.HeadCell>
+                <Table.HeadCell className="w-28 whitespace-nowrap">Trạng thái</Table.HeadCell>
+                <Table.HeadCell className="w-28 whitespace-nowrap">Xác thực</Table.HeadCell>
+                <Table.HeadCell className="w-32 whitespace-nowrap">Hành động</Table.HeadCell>
+              </Table.Head>
+              <Table.Body className="divide-y">
+                {plantsToDisplay.map((plant) => {
+                  return (
+                    <Table.Row
+                      className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
+                      key={plant.plantId}
+                    >
+                      <Table.Cell className="p-4 flex items-center justify-center">
+                        <img
+                          src={plant.imageUrl || "https://via.placeholder.com/40"}
+                          alt={plant.name}
+                          className="h-10 w-10 object-cover bg-gray-500 rounded-full"
+                        />
+                      </Table.Cell>
+                      <Table.Cell className="p-4">{getCategoryName(plant.categoryId)}</Table.Cell>
+                      <Table.Cell className="p-4">{plant.plantName}</Table.Cell>
+                      <Table.Cell className="p-4 line-clamp-2" dangerouslySetInnerHTML={{ __html: plant.description }} />
+                      <Table.Cell className="p-4 text-center">{new Intl.NumberFormat("en-US").format(plant.price)}</Table.Cell>
+                      <Table.Cell className="p-4 text-center">{plant.stock}</Table.Cell>
+                      <Table.Cell className="p-4 text-center">{plant.discount || 0}%</Table.Cell>
+                      <Table.Cell className="p-4 text-center">{plant.status === 1 ? "Còn hàng" : "Hết hàng"}</Table.Cell>
+                      <Table.Cell className="p-4 text-center">{plant.isVerfied === 1 ? "Đã xác thực" : "Chưa xác thực"}</Table.Cell>
+                      <Table.Cell className="py-4 flex space-x-2">
+                        <Button
+                          onClick={() => handleVerify(plant)}
+                          className={
+                            plant.isVerfied === 1
+                              ? "bg-red-600 py-0.5 px-1 text-xs font-medium rounded-xl text-white hover:bg-red-700"
+                              : "bg-green-600 py-0.5 px-1 text-xs font-medium rounded-xl text-white hover:bg-green-700"
+                          }
+                        >
+                          {plant.isVerfied === 1 ? (
+                            <AiOutlineClose className="text-white" />
+                          ) : (
+                            <AiOutlineCheck className="text-white" />
+                          )}
+                        </Button>
+                      </Table.Cell>
+                    </Table.Row>
+                  );
+                })}
+              </Table.Body>
+            </Table>
+          </div>
 
+
+          <div className="mt-6 flex justify-center">
+            <ReactPaginate
+              previousLabel={"← Sau"}
+              nextLabel={"Trước →"}
+              pageCount={pageCount > 0 ? pageCount : 1}
+              onPageChange={handlePageClick}
+              forcePage={pageCount > 0 ? currentPage : 0}
+              containerClassName={
+                "flex flex-wrap justify-center space-x-2 md:space-x-4"
+              }
+              pageLinkClassName={"py-2 px-4 border rounded"}
+              activeClassName={"bg-blue-600 text-white"}
+              disabledClassName={"opacity-50 cursor-not-allowed"}
+            />
+          </div>
+
+          <Modal show={showModal} onClose={handleCancel}>
+            <Modal.Header>Delete Product</Modal.Header>
+            <Modal.Body>
+              <div className="text-center">
+                <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 mb-4 mx-auto" />
+                <h3 className="mb-5 text-lg text-gray-500">
+                  Are you sure you want to delete {selectedProduct?.name}?
+                </h3>
+                <div className="flex justify-center gap-4 mt-6">
+                  <Button color="failure" onClick={handleConfirmDelete}>
+                    Yes
+                  </Button>
+                  <Button color="gray" onClick={handleCancel}>
+                    No
+                  </Button>
+                </div>
+              </div>
+            </Modal.Body>
+          </Modal>
+        </main>
+      ) : (
+        <div className="flex items-center justify-center h-full">
+        <p className="text-center text-gray-500 dark:text-gray-400">
+          Bạn không có quyền truy cập vào nội dung này.
+        </p>
+      </div>
+      )}
+    </>
   );
 }

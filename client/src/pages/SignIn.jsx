@@ -77,10 +77,12 @@ export default function SignIn() {
     } 
       // Role-based redirection
       if (data.message === "Login successful") {
+        localStorage.setItem("authToken", data.token);
         localStorage.setItem("userId", data.userId);
         localStorage.setItem("role", data.role); 
         localStorage.setItem("email", data.email);
-        localStorage.setItem("username", data.username);// Store userId in localStorage
+        localStorage.setItem("username", data.username);
+        localStorage.setItem("status", data.status);// Store userId in localStorage
         
         
         // Dispatch a custom event to notify other components of the login state

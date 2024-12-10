@@ -49,6 +49,9 @@ export default function DashProfile() {
   const [successMessage, setSuccessMessage] = useState('');
   const [successMessagep, setSuccessMessageP] = useState('');
   const [otp, setOtp] = useState('');
+  const [usernameError, setUsernameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
   // Hàm lấy dữ liệu người dùng từ API
   useEffect(() => {
     const fetchUserData = async () => {
@@ -132,19 +135,22 @@ export default function DashProfile() {
           password: user.password,
         }),
       });
-
-      if (!response.ok) {
-        if(response.status ===400 && data.message =="ShopName already exists"){
-          setSuccessMessage("Tên cửa hàng đã tồn tại đã tồn tại.");
-        }
-        throw new Error('Failed to update shop name');}
       const data = await response.json();
+      if (!response.ok) {
+
+        if (response.status === 400 && data.message == "ShopName already exists") {
+          setSuccessMessage("Tên cửa hàng đã tồn tại.");
+        } else {
+          setSuccessMessage("Cập nhật thất bại. Vui lòng thử lại.");
+        }
+        return false;
+      }
       setSuccessMessage('Tên shop và địa chỉ đã được cập nhật thành công!'); // Set success message
       setTimeout(() => setSuccessMessage(''), 2000);
       return true;
     } catch (error) {
       console.error('Error updating shop name:', error);
-      setSuccessMessage('Tên cửa hàng đã tồn tại đã tồn tại.');
+      setSuccessMessage('Đã xảy ra lỗi trong quá trình cập nhật. Vui lòng thử lại sau.');
       setTimeout(() => setSuccessMessage(''), 2000);
       return false;
     }
@@ -167,9 +173,14 @@ export default function DashProfile() {
         }),
       });
       const data = await response.json();
-      if (!response.ok) 
-       throw new Error('Failed to update email');
-      
+      if (!response.ok) {
+        if (response.status === 400 && data.message == "Email already exists") {
+          setSuccessMessage("Email đã tồn tại.");
+        } else {
+          setSuccessMessage("Cập nhật thất bại. Vui lòng thử lại.");
+        }
+        return false;
+      }
       setSuccessMessage('Email đã được cập nhật thành công!'); // Set success message
       setTimeout(() => setSuccessMessage(''), 2000);
       return true;
@@ -228,7 +239,7 @@ export default function DashProfile() {
       console.error('Error verifying OTP:', error);
       setSuccessMessage('Lỗi xác thực OTP. Vui lòng thử lại!');
       setTimeout(() => setSuccessMessage(''), 2000);
-      
+
       return false; // Return failure
     }
   };
@@ -281,12 +292,35 @@ export default function DashProfile() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update user');
+        const data = await response.json();
+
+        if (response.status === 400) {
+          switch (data.message) {
+            case "Username already exists":
+              setUsernameError("Tên người dùng đã tồn tại.");
+              break;
+            case "Email already exists":
+              setEmailError("Email đã tồn tại.");
+              break;
+            case "Phone number already exists":
+              setPhoneError("Số điện thoại đã được đăng kí.");
+              break;
+            default:
+              setError("Dữ liệu không hợp lệ.");
+              break;
+          }
+        } else {
+          setError(`API Error: ${response.status}`);
+        }
+        return;
       }
 
       setSuccessMessageP("Thông tin người dùng được cập nhật!");
+      setPhoneError("");
+      setEmailError("");
+      setUsernameError("");
       setTimeout(() => setSuccessMessageP(''), 2000);
-      return;
+
     } catch (error) {
       console.error("Error updating user:", error);
     }
@@ -406,8 +440,8 @@ export default function DashProfile() {
           ...prevUser,
           userImage: data.imageUrl, // Assuming `data.imageUrl` is the new image URL
         }));
-        localStorage.setItem("userImage", data.imageUrl); 
-        window.dispatchEvent(new Event('storage'));      
+        localStorage.setItem("userImage", data.imageUrl);
+        window.dispatchEvent(new Event('storage'));
       } else {
         const errorData = await response.json();
         setSuccessMessageP("Ảnh cập nhật không thành công: " + errorData.message);
@@ -523,8 +557,8 @@ export default function DashProfile() {
                     onClick={handleShowModal} // Hiển thị modal
                     disabled={!user.userImage || !user.username || !user.email} // Điều kiện để kích hoạt nút
                     className={`inline-flex items-center py-2 px-3 text-sm font-medium text-center rounded-lg shadow-md shadow-gray-300 hover:scale-[1.02] transition-transform ${user.userImage && user.username && user.email
-                        ? "text-white bg-gradient-to-br from-pink-500 to-purple-500"
-                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      ? "text-white bg-gradient-to-br from-pink-500 to-purple-500"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
                       }`}
                   >
                     <MdOutlineSell className="mr-2 -ml-1 w-4 h-4" />
@@ -535,10 +569,10 @@ export default function DashProfile() {
 
           </div>
           {successMessagep && (
-                <div className="fixed left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg z-[9999]">
-                  {successMessagep}
-                </div>
-              )}
+            <div className="fixed left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg z-[9999]">
+              {successMessagep}
+            </div>
+          )}
           {/* General Information Form */}
           <div className="col-span-2">
             <div className="bg-white shadow-lg shadow-gray-200 rounded-2xl p-4 mb-6">
@@ -557,6 +591,7 @@ export default function DashProfile() {
                       className="shadow-lg-sm border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-2 focus:ring-pink-100 focus:border-pink-300 block w-full p-2.5"
                       required
                     />
+                    {usernameError && <p style={{ color: 'red' }}>{usernameError}</p>}
                   </div>
                   <div className="col-span-6 sm:col-span-3">
                     <label className="block mb-2 text-sm font-medium text-gray-900">
@@ -621,6 +656,7 @@ export default function DashProfile() {
                         </span>
                       )}
                     </div>
+                    {emailError && <p style={{ color: 'red' }}>{emailError}</p>}
                   </div>
 
                   <div className="col-span-6 sm:col-span-3">
@@ -635,6 +671,7 @@ export default function DashProfile() {
                       className="shadow-lg-sm border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-2 focus:ring-pink-100 focus:border-pink-300 block w-full p-2.5"
                       required
                     />
+                    {phoneError && <p style={{ color: 'red' }}>{phoneError}</p>}
                   </div>
 
                   <div className="col-span-6 sm:col-span-3">
@@ -658,7 +695,7 @@ export default function DashProfile() {
                     <input
                       type="text"
                       name="createdDate"
-                      value={ formatTimeDifference(user.createdDate) || ''}  // Created Date
+                      value={formatTimeDifference(user.createdDate) || ''}  // Created Date
                       onChange={handleChange}
                       className="shadow-lg-sm border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-2 focus:ring-pink-100 focus:border-pink-300 block w-full p-2.5"
                       readOnly

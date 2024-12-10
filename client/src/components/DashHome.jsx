@@ -24,13 +24,13 @@ export default function Dashboard() {
       {/* Header */}
       <header className="bg-white shadow w-full">
         <div className="px-8 py-6">
-        <h1 className="text-2xl font-bold text-gray-800">
-  {role === '3'
-    ? "Bảng điều khiển của Người bán"
-    : role === '1'
-    ? "Bảng điều khiển của Quản trị viên"
-    : "Admin Dashboard"}
-</h1>
+          <h1 className="text-2xl font-bold text-gray-800">
+            {role === '3'
+              ? "Bảng điều khiển của Người bán"
+              : role === '1'
+                ? "Bảng điều khiển của Quản trị viên"
+                : "Admin Dashboard"}
+          </h1>
         </div>
       </header>
 
@@ -57,8 +57,8 @@ export default function Dashboard() {
             </Link>
           )}
           {/* Card 2 */}
-          {/*role === '1' || role === '3'*/ }
-          {(role === '1' ) && (
+          {/*role === '1' || role === '3'*/}
+          {(role === '1') && (
             <Link to="/dashboard?tab=feedback"
               className="p-6 bg-white shadow rounded-lg hover:shadow-lg cursor-pointer"
             >
@@ -68,16 +68,16 @@ export default function Dashboard() {
             </Link>
           )}
           {/* Card 3 */}
-          {/*role === '1' || role === '3'*/ }
-          {(role === '1' && role === '3') && (
-            <Link to="/dashboard?tab=comments"
+          {/*role === '1' || role === '3'*/}
+          {(role === '1' ) && (
+            <Link to="/dashboard?tab=reports"
               className="p-6 bg-white shadow rounded-lg hover:shadow-lg cursor-pointer"
             >
               <FaCommentDots className="text-4xl text-purple-500 mb-4" />
               <h3 className="text-lg font-semibold text-gray-800">
-                Quản lý bình luận
+                Quản lý tố cáo
               </h3>
-              <p className="text-gray-600">Duyệt và quản lý các bình luận.</p>
+              <p className="text-gray-600">Quản lý các tố cáo về sản phẩm từ người dùng.</p>
             </Link>
           )}
           {/* Card 4 */}

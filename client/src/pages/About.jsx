@@ -17,6 +17,7 @@ export default function About() {
     const { id, value } = e.target;
     setFormData({ ...formData, [id]: value });
   };
+  const [showModal, setShowModal] = useState(false);
   const validate = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = "Tên không được để trống.";
@@ -27,9 +28,35 @@ export default function About() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  const handleLogout = () => {
+    // Clear localStorage và trạng thái
+    localStorage.removeItem("status");
+    localStorage.clear();
+    localStorage.setItem("signOut", Date.now());
+    
+ 
+       
+   
+    setShowModal(false);
+    navigate("/sign-in");
+    window.location.reload(true); // Reload trang sau đăng xuất
+    
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const userId = localStorage.getItem("userId");
+      const userId = localStorage.getItem("userId");
+      const status = localStorage.getItem("status");
+      if (status === "0") {
+        setShowModal(true);
+  
+        // Tạo bộ đếm thời gian (timeout) nếu không bấm
+        const timer = setTimeout(() => {
+          handleLogout();
+        }, 3000);
+  
+        return () => clearTimeout(timer); // Dọn dẹp bộ đếm nếu người dùng bấm nút
+         
+      }
     if (!userId || userId === "undefined") {
       navigate("/sign-in");
       return;
@@ -62,6 +89,18 @@ export default function About() {
   };
   return (
     <div className="bg-gray-100 min-h-screen">
+      {/* Render Modal nếu trạng thái showModal là true */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
+            <h3 className="text-lg font-semibold mb-2">Tài khoản của bạn đã bị khóa</h3>
+            <p className="text-sm mb-4">Vui lòng đăng xuất hoặc đợi 3 giây để tự động chuyển sang màn hình đăng nhập</p>
+            <div className="mt-4 flex justify-around">
+              
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <header className="bg-green-600 text-white text-center py-8">
         <h1 className="text-4xl font-bold">Giới Thiệu Về Plant Store</h1>

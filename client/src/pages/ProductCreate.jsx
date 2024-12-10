@@ -22,6 +22,7 @@ export default function ProductCreate() {
     userId: userId,
     discount: "",
   });
+  const [errorStock, setErrorStock] = useState("");
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,7 +34,17 @@ export default function ProductCreate() {
   const handleChange = (e) => {
     const { name, value } = e.target;
   
-    if (name === "price" || name === "discount") {
+    if (name === "stock") {
+      // Chỉ giữ số hợp lệ và giới hạn khoảng từ 1 đến 100
+      let numericValueStock = value === "" ? "" : Number(value);
+     
+      if (!isNaN(numericValueStock) && numericValueStock !== null) {
+        setFormData((prevData) => ({
+          ...prevData,
+          [name]: numericValueStock,
+        }));
+      }   
+    } else if (name === "price" || name === "discount") {
       // Loại bỏ tất cả dấu . khỏi chuỗi nhập
       const numericValue = value.replace(/\./g, "").replace(/,/g, "");
       setFormData((prevData) => ({
@@ -61,6 +72,26 @@ export default function ProductCreate() {
         price: new Intl.NumberFormat("en-US").format(numericValue), // Định dạng giá trị với dấu phẩy
       }));
       setError("");
+    }
+  };
+  const handleStockBlur = () => {
+    const numericValueStock = parseInt(formData.stock, 10);
+  
+   // Nếu ô trống thì không báo lỗi
+  if (formData.stock === "" ) {
+    setErrorStock("");
+    return;
+   // Nếu ô trống thì không báo lỗi
+    } else if ( isNaN(numericValueStock) || numericValueStock <= 0 ) {
+      setErrorStock("Số lượng không hợp lệ.");
+    } else if (numericValueStock < 1 || numericValueStock > 100) {
+      setErrorStock("Số lượng phải nằm trong khoảng từ 1 đến 100.");
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        stock: numericValueStock,
+      }));
+      setErrorStock("");
     }
   };
   const handleImageChange = (e) => {
@@ -275,12 +306,17 @@ export default function ProductCreate() {
                 Số lượng
               </label>
               <input
-                type="number"
+                type="text"
                 name="stock"
                 value={formData.stock}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                onBlur={handleStockBlur}
+                className={`mt-1 block w-full rounded-md shadow-sm sm:text-sm focus:ring-indigo-500 ${error ? "border-red-500 focus:border-red-500" : "border-gray-300"
+                }`}
               />
+              {errorStock  && (
+                <p className="mt-2 text-sm text-red-600">{errorStock }</p>
+              )}
             </div>
             {/* Discount */}
             <div>

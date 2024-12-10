@@ -7,7 +7,7 @@ import { MdDelete, MdEdit } from "react-icons/md";
 import { Spinner } from "flowbite-react";
 import ReactPaginate from "react-paginate";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-
+import { TbLock, TbLockOpen } from "react-icons/tb";
 export default function DashProduct() {
   const [plants, setPlants] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -76,26 +76,34 @@ export default function DashProduct() {
   };
 
 
+  const handleToggle = (plant) => {
+    setSelectedPlant(plant);
+    setShowModal(true);
+  };
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmUdate = async () => {
     if (!selectedPlant) return;
 
     try {
       // API call to delete the plant
-      const response = await fetch(`https://opms1.runasp.net/api/PlantAPI/deletePlant?PlantId=${selectedPlant.plantId}`, {
-        method: "GET",
+      const response = await fetch(`https://opms1.runasp.net/api/PlantAPI/updateStatus?plantId=${selectedPlant.plantId}`, {
+        method: "POST",
       });
 
       if (response.ok) {
         // If successful, remove the plant from local state
-        setPlants((prevPlants) => prevPlants.filter((plant) => plant.id !== selectedPlant.id));
+        setPlants((prevPlants) => 
+          prevPlants.map((plant) => 
+            plant.plantId === selectedPlant.plantId?{ ...plant, status:selectedPlant.status ===0 ? 1 : 0}:plant)
+          );
+        
         setShowModal(false);
       } else {
-        console.error("Failed to delete plant:", response.statusText);
+        console.error("Failed to update plant:", response.statusText);
         // Handle unsuccessful delete (e.g., show an error message)
       }
     } catch (error) {
-      console.error("Error deleting plant:", error);
+      console.error("Error update plant:", error);
       // Handle fetch error
     }
   };
@@ -119,109 +127,136 @@ export default function DashProduct() {
       </div>
     );
   }
-  ///ui
+
   return (
-    <main className="overflow-x-auto md:mx-auto p-4">
-      <div className="shadow-md rounded-lg bg-white dark:bg-gray-800 mb-6 p-4">
-        <div className="mb-4">
-          <h1 className="text-2xl font-semibold text-gray-900">Tất cả sản phẩm</h1>
-          <div className="flex flex-wrap gap-4 justify-between mt-4">
+    <>
+      {role === '3' ? (
+        <main className="overflow-x-auto md:mx-auto p-4">
+          <div className="shadow-md rounded-lg bg-white dark:bg-gray-800 mb-6 p-4">
+            <div className="mb-4">
+              <h1 className="text-2xl font-semibold text-gray-900">Tất cả sản phẩm</h1>
+              <div className="flex flex-wrap gap-4 justify-between mt-4">
 
-            <form className="flex-grow max-w-xs w-full md:w-1/2">
-              
-            </form>
-            <Link to="/ProductCreate">
-              <Button className="w-full md:w-auto">Thêm sản phẩm</Button>
-            </Link>
-          </div>
-        </div>
-      </div>
+                <form className="flex-grow max-w-xs w-full md:w-1/2">
 
-      <div className="overflow-x-auto w-full shadow-md rounded-lg">
-        <Table hoverable className="min-w-full">
-          <Table.Head>
-            <Table.HeadCell className="w-20">Ảnh</Table.HeadCell>
-            <Table.HeadCell className="w-28">Loại</Table.HeadCell>
-            <Table.HeadCell className="w-32">Tên</Table.HeadCell>
-            <Table.HeadCell className="w-64">Mô tả</Table.HeadCell>
-            <Table.HeadCell className="w-20">Giá</Table.HeadCell>
-            <Table.HeadCell className="w-20 whitespace-nowrap">Số lượng</Table.HeadCell>
-            <Table.HeadCell className="w-20 whitespace-nowrap">Giảm giá</Table.HeadCell>
-            <Table.HeadCell className="w-28 whitespace-nowrap">Trạng thái</Table.HeadCell>
-            <Table.HeadCell className="w-28 whitespace-nowrap">Xác thực</Table.HeadCell>
-            <Table.HeadCell className="w-32 whitespace-nowrap">Sửa/Xóa</Table.HeadCell>
-          </Table.Head>
-          <Table.Body className="divide-y">
-            {plantsToDisplay.map((plant) => {
-              return (
-                <Table.Row
-                  className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
-                  key={plant.plantId}
-                >
-
-                  <Table.Cell className="py-4 flex items-center">
-                    <img
-                      src={plant.imageUrl || "https://via.placeholder.com/40"}
-                      alt={plant.name}
-                      className="h-10 w-10 object-cover bg-gray-500 rounded-full"
-                    />
-                  </Table.Cell>
-                  <Table.Cell className="p-4">{getCategoryName(plant.categoryId)}</Table.Cell>
-                  <Table.Cell className="p-4">{plant.plantName}</Table.Cell>
-                  <Table.Cell className="p-4 line-clamp-2" dangerouslySetInnerHTML={{ __html: plant.description }} />
-                  <Table.Cell className="p-4 text-center">{new Intl.NumberFormat("en-US").format(plant.price)}</Table.Cell>
-                  <Table.Cell className="p-4 text-center">{(plant.stock)}</Table.Cell>
-                  <Table.Cell className="p-4 text-center">{(plant.discount) || 0}%</Table.Cell>
-                  <Table.Cell className="p-4 text-center">
-                    {plant.status === 1 ? "Còn hàng" : "Hết hàng"}
-                  </Table.Cell>
-                  <Table.Cell className="p-4 text-center">{plant.isVerfied === 1 ? "Đã xác thực" : "Chưa xác thực"}</Table.Cell>
-                  <Table.Cell className="py-4 flex space-x-2">
-                    <>
-                      <Link to={`/ProductEdit/${plant.plantId}`}>
-                        <MdEdit className="cursor-pointer text-green-600" size={20} />
-                      </Link>
-                      <MdDelete
-                        onClick={() => handleDelete(plant)}
-                        className="cursor-pointer text-red-600"
-                        size={20}
-                      />
-                    </>
-                  </Table.Cell>
-                </Table.Row>
-              )
-            }
-            )}
-          </Table.Body>
-        </Table>
-      </div>
-      <div className="mt-4">
-        <ReactPaginate
-          previousLabel={"← Sau"}
-          nextLabel={"Trước →"}
-          pageCount={pageCount}
-          onPageChange={handlePageClick}
-          containerClassName={"flex flex-wrap justify-center space-x-2 md:space-x-4"}
-          pageLinkClassName={"py-2 px-3 border rounded text-sm"}
-          activeClassName={"bg-blue-600 text-white"}
-          disabledClassName={"opacity-50 cursor-not-allowed"}
-        />
-      </div>
-      <Modal show={showModal} onClose={handleCancel}>
-        <Modal.Header>Xóa sản phẩm</Modal.Header>
-        <Modal.Body>
-          <div className="text-center">
-            <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 mb-4 mx-auto" />
-            <h3 className="mb-5 text-lg text-gray-500">
-              Bạn có chắc chắn muốn xóa sản phẩm {selectedPlant}?
-            </h3>
-            <div className="flex justify-center space-x-4 mt-4">
-              <Button color="failure" onClick={handleConfirmDelete}>Có</Button>
-              <Button color="gray" onClick={handleCancel}>Không</Button>
+                </form>
+                <Link to="/ProductCreate">
+                  <Button className="w-full md:w-auto">Thêm sản phẩm</Button>
+                </Link>
+              </div>
             </div>
           </div>
-        </Modal.Body>
-      </Modal>
-    </main>
+
+          <div className="overflow-x-auto w-full shadow-md rounded-lg">
+            <Table hoverable className="min-w-full">
+              <Table.Head>
+                <Table.HeadCell className="w-20">Ảnh</Table.HeadCell>
+                <Table.HeadCell className="w-28">Loại</Table.HeadCell>
+                <Table.HeadCell className="w-32">Tên</Table.HeadCell>
+                <Table.HeadCell className="w-64">Mô tả</Table.HeadCell>
+                <Table.HeadCell className="w-20">Giá</Table.HeadCell>
+                <Table.HeadCell className="w-20 whitespace-nowrap">Số lượng</Table.HeadCell>
+                <Table.HeadCell className="w-20 whitespace-nowrap">Giảm giá</Table.HeadCell>
+                <Table.HeadCell className="w-28 whitespace-nowrap">Trạng thái</Table.HeadCell>
+                <Table.HeadCell className="w-28 whitespace-nowrap">Xác thực</Table.HeadCell>
+                <Table.HeadCell className="w-32 whitespace-nowrap">Sửa/Xóa</Table.HeadCell>
+              </Table.Head>
+              <Table.Body className="divide-y">
+                {plantsToDisplay.map((plant) => {
+                  return (
+                    <Table.Row
+                      className="bg-white dark:border-gray-700 dark:bg-gray-800 align-middle"
+                      key={plant.plantId}
+                    >
+
+                      <Table.Cell className="py-4 flex items-center">
+                        <img
+                          src={plant.imageUrl || "https://via.placeholder.com/40"}
+                          alt={plant.name}
+                          className="h-10 w-10 object-cover bg-gray-500 rounded-full"
+                        />
+                      </Table.Cell>
+                      <Table.Cell className="p-4">{getCategoryName(plant.categoryId)}</Table.Cell>
+                      <Table.Cell className="p-4">{plant.plantName}</Table.Cell>
+                      <Table.Cell className="p-4 line-clamp-2" dangerouslySetInnerHTML={{ __html: plant.description }} />
+                      <Table.Cell className="p-4 text-center">{new Intl.NumberFormat("en-US").format(plant.price)}</Table.Cell>
+                      <Table.Cell className="p-4 text-center">{(plant.stock)}</Table.Cell>
+                      <Table.Cell className="p-4 text-center">{(plant.discount) || 0}%</Table.Cell>
+                      <Table.Cell className="p-4 text-center">
+                        {plant.status === 1 ? "Còn hàng" : "Hết hàng"}
+                      </Table.Cell>
+                      <Table.Cell className="p-4 text-center">{plant.isVerfied === 1 ? "Đã xác thực" : "Chưa xác thực"}</Table.Cell>
+                      <Table.Cell className="py-4 flex space-x-2">
+                        
+                          <Link to={`/ProductEdit/${plant.plantId}`}>
+                            <MdEdit className="mt-2 cursor-pointer text-green-600" size={20} />
+                          </Link>
+                          <span className="text-2xl hover:underline cursor-pointer">
+                              {plant.status === 0 ? (
+                                <TbLock
+                                  className="inline-block mr-2 text-red-500"
+                                  onClick={() => handleToggle(plant)}
+                                />
+                              ) : (
+                                <TbLockOpen
+                                  className="inline-block mr-2 text-green-500"
+                                  onClick={() => handleToggle(plant)}
+                                />
+                              )}
+                            </span>
+
+                            <input
+                              type="checkbox"
+                              className="sr-only peer"
+                              checked={plant.status === 0} // Lock if status is 0
+                              onChange={() => handleToggle(plant)} // Pass the specific user
+                            />
+                            {/* <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div> */}
+                            <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300"></span>                                                
+                      </Table.Cell>
+                    </Table.Row>
+                  )
+                }
+                )}
+              </Table.Body>
+            </Table>
+          </div>
+          <div className="mt-4">
+            <ReactPaginate
+              previousLabel={"← Sau"}
+              nextLabel={"Trước →"}
+              pageCount={pageCount}
+              onPageChange={handlePageClick}
+              containerClassName={"flex flex-wrap justify-center space-x-2 md:space-x-4"}
+              pageLinkClassName={"py-2 px-3 border rounded text-sm"}
+              activeClassName={"bg-blue-600 text-white"}
+              disabledClassName={"opacity-50 cursor-not-allowed"}
+            />
+          </div>
+          <Modal show={showModal} onClose={handleCancel}>
+            <Modal.Header>Xóa sản phẩm</Modal.Header>
+            <Modal.Body>
+              <div className="text-center">
+                <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 mb-4 mx-auto" />
+                <h3 className="mb-5 text-lg text-gray-500">               
+                  Bạn có muốn {selectedPlant && selectedPlant.status === 0 ? "mở khóa" : "khóa"}{" "}
+                  {selectedPlant && selectedPlant.plantName}?
+                </h3>
+                <div className="flex justify-center space-x-4 mt-4">
+                  <Button color="failure" onClick={handleConfirmUdate}>Có</Button>
+                  <Button color="gray" onClick={handleCancel}>Không</Button>
+                </div>
+              </div>
+            </Modal.Body>
+          </Modal>
+        </main>
+      ) : (
+        <div className="flex items-center justify-center h-full">
+          <p className="text-center text-gray-500 dark:text-gray-400">
+            Bạn không có quyền truy cập vào nội dung này.
+          </p>
+        </div>
+      )}
+    </>
   );
 }

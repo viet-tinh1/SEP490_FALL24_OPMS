@@ -185,10 +185,10 @@ export default function DashSidebar() {
             </Link>
             )}
             {/*role === '1' || role === '3'*/ }
-            {(role === '1' && role === '3') &&(
-            <Link to="/dashboard?tab=comments">
-              <Sidebar.Item active={tab === "comments"} icon={HiAnnotation} as="div">
-              Quản lý bình luận
+            {(role === '1' ) &&(
+            <Link to="/dashboard?tab=reports">
+              <Sidebar.Item active={tab === "reports"} icon={HiAnnotation} as="div">
+              Quản lý tố cáo
               </Sidebar.Item>
             </Link>
             )}

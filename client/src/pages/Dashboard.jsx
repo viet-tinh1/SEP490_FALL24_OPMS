@@ -5,7 +5,7 @@ import DashHome from '../components/DashHome';
 import DashProfile from '../components/DashProfile';
 
 import DashUsers from '../components/DashUsers';
-import DashComments from '../components/DashComments';
+import DashReport from '../components/DashReport';
 import Dashproduct from '../components/Dashproduct';
 import DashRegisterSeller from '../components/DashRegisterSeller';
 import DashVerifyProduct from '../components/DashVerifyProduct';
@@ -36,7 +36,7 @@ export default function Dashboard() {
       {/* users */}
       {tab === "users" && <DashUsers />}
       {/* comments  */}
-      {tab === "comments" && <DashComments />}
+      {tab === "reports" && <DashReport />}
       {/* dashboard Product */}
       {tab === "product" && <Dashproduct />}
       {/* dashboard Product */}

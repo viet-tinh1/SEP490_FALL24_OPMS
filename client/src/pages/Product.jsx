@@ -30,11 +30,13 @@ export default function Product() {
   const [role, setRole] = useState(null);
   const [token, setToken] = useState(null);
   const [email, setEmail] = useState(null);
+  const [status, setStatus] = useState(null);
   const [username, setUserName] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
   const closeTimeoutRef = useRef(null);
   const [ratingData, setRatingData] = useState({});
+  const [showModal, setShowModal] = useState(false);
   //lấy session
   // Lấy thông tin từ URL hoặc localStorage
   useEffect(() => {
@@ -45,6 +47,7 @@ export default function Product() {
     const tokenFromUrl = params.get("token");
     const emailFromUrl = params.get("email");
     const usernameFromUrl = params.get("username");
+    const statusFromUrl = params.get("status");
 
     // Ưu tiên lấy từ URL nếu có, sau đó từ localStorage
     const userId = userIdFromUrl || localStorage.getItem("userId");
@@ -52,6 +55,7 @@ export default function Product() {
     const token = tokenFromUrl || localStorage.getItem("token");
     const email = emailFromUrl || localStorage.getItem("email");
     const username = usernameFromUrl || localStorage.getItem("username");
+    const status = statusFromUrl || localStorage.getItem("status");
 
     // Nếu lấy từ URL, lưu vào localStorage
     if (userIdFromUrl && roleFromUrl && tokenFromUrl) {
@@ -60,6 +64,7 @@ export default function Product() {
       localStorage.setItem("token", tokenFromUrl);
       localStorage.setItem("email", emailFromUrl);
       localStorage.setItem("username", usernameFromUrl);
+      localStorage.setItem("status", statusFromUrl);
     }
 
     // Cập nhật React state
@@ -68,6 +73,7 @@ export default function Product() {
     setToken(token);
     setEmail(email);
     setUserName(username);
+    setStatus(status);
 
     // Điều hướng xóa query parameters sau khi xử lý
     if (userIdFromUrl && roleFromUrl && tokenFromUrl) {
@@ -174,8 +180,13 @@ export default function Product() {
         query.push(selectedCategoryIds.map(id => `categoryId=${id}`).join("&"));
       if (minPrice) query.push(`minPrice=${minPrice}`);
       if (maxPrice) query.push(`maxPrice=${maxPrice}`);
-      if (sortOptionId) query.push(`sortOption=${sortOptionId}`);
-
+      if (sortOptionId) {
+        query.push(`sortOption=${sortOptionId}`);
+        if (sortOptionId === 2) {
+          query.push(`limit=100`); // Thêm limit = 100 khi sortOption là 2 (bán chạy nhất)
+        }
+      }
+  
       const finalQuery = query.length ? `?${query.join("&")}` : "";
       const productResponse = await fetch(`https://opms1.runasp.net/api/PlantAPI/searchPlants${finalQuery}`);
       const productsData = await productResponse.json();
@@ -193,20 +204,12 @@ export default function Product() {
 
   // handel chọn phương thức tìm kiếm 
   const handleSortClick = async (label, id) => {
-    if (id === 2) {
-      setSortOption("most-purchased"); // Assign a unique value for "Most Purchased" sorting
-      try {
-        const response = await fetch("https://opms1.runasp.net/api/PlantAPI/most-purchased?limit=7");
-        const data = await response.json();
-        if (!response.ok) throw new Error("Unable to fetch best-selling products");
-
-        setProducts(data); // Update the product list directly
-      } catch (err) {
-        setError(err.message);
-      }
-    } else {
-      setSortOption(id); // For all other cases, set `sortOption` as id
-      await searchPlants(name, selectedCategories, minPrice, maxPrice, id); // Trigger search with sort option
+    setSortOption(id); // Gán `sortOption` trực tiếp
+    try {
+      // Thay vì gọi API riêng, luôn gọi `searchPlants` với các thông tin tìm kiếm và `sortOption`
+      await searchPlants(name, selectedCategories, minPrice, maxPrice, id);
+    } catch (err) {
+      setError(err.message);
     }
   };
 
@@ -249,6 +252,7 @@ export default function Product() {
       searchPlants(name, selectedCategories, minPrice, maxPrice, sortOption);
     }
   }, [name, selectedCategories, minPrice, maxPrice, priceError, sortOption]);
+  
 
   // phân trang
   const pageCount = Math.ceil(products.length / usersPerPage);
@@ -272,9 +276,40 @@ export default function Product() {
   const toggleShowAll = () => {
     setShowAll(!showAll);
   };
+  /// lock acc
+  const handleLogout = () => {
+    // Clear localStorage và trạng thái
+    localStorage.removeItem("status");
+    localStorage.clear();
+    localStorage.setItem("signOut", Date.now());
+    
+    // Đặt lại trạng thái
+    setUserId(null);
+    setRole(null);
+    setEmail(null);
+    setUserName(null);     
+   
+    setShowModal(false);
+    navigate("/sign-in");
+    window.location.reload(true); // Reload trang sau đăng xuất
+    
+  };
+
   // thêm sản phẩm vào giỏ hàng 
   const addToCart = async (productId, quantity) => {
     const userId = localStorage.getItem("userId");
+    const status = localStorage.getItem("status");
+    if (status === "0") {
+      setShowModal(true);
+
+      // Tạo bộ đếm thời gian (timeout) nếu không bấm
+      const timer = setTimeout(() => {
+        handleLogout();
+      }, 3000);
+
+      return () => clearTimeout(timer); // Dọn dẹp bộ đếm nếu người dùng bấm nút
+       
+    }
     if (!userId || userId === "undefined") {
       navigate("/sign-in");
       return;
@@ -341,13 +376,26 @@ export default function Product() {
       </div>
     );
   }
-
+  
   if (error) {
     return <div>Error: {error}</div>;
   }
-
+  
   return (
+    
     <main>
+      {/* Render Modal nếu trạng thái showModal là true */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
+            <h3 className="text-lg font-semibold mb-2">Tài khoản của bạn đã bị khóa</h3>
+            <p className="text-sm mb-4">Vui lòng đăng xuất hoặc đợi 3 giây để tự động chuyển sang màn hình đăng nhập</p>
+            <div className="mt-4 flex justify-around">
+              
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex flex-col md:flex-row">
         <div className="md:w-56">
           <Sidebar className="w-full md:w-56">
@@ -423,7 +471,7 @@ export default function Product() {
             </button>
             <button
               onClick={() => handleSortClick("Bán Chạy", 2)}
-              className={`px-4 py-2 rounded-md font-medium ${sortOption === "most-purchased" ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>
+              className={`px-4 py-2 rounded-md font-medium ${sortOption === 2 ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>
               Bán Chạy
             </button>
             <div
@@ -490,7 +538,7 @@ export default function Product() {
                     ? (rating.totalRating / rating.totalReviews).toFixed(1)
                     : "0.0";
   
-
+                    
                 return (
                   <div
                     key={product.plantId}
@@ -505,7 +553,13 @@ export default function Product() {
                     )}
                     {/* Liên kết đến trang chi tiết sản phẩm */}
                     <Link
-                      to={product.stock === 0 ? "#" : `/productdetail/${product.plantId}`}
+                      to={localStorage.getItem("status") === "0" ? "#" : (product.stock === 0 ? "#" : `/productdetail/${product.plantId}`)}
+                      onClick={(e) => {
+                        if (localStorage.getItem("status") === "0") {
+                          e.preventDefault(); // Prevent navigation in both cases
+                          addToCart(product.plantId, 1);
+                        }
+                      }}
                       className={`${product.stock === 0 ? "pointer-events-none" : ""}`}
                     >
                       <div className="relative p-2.5 overflow-hidden rounded-xl bg-clip-border">
