@@ -25,8 +25,8 @@ namespace Repositories.Interface
         List<Plant> getPlantByUser(int UserId);
         List<Plant> getPlantByUserIsVerify(int UserId);
         // Lấy list  Plant dựa trên name , category, price    
-        List<Plant> searchPlants(string name = null, List<int> categoryId = null, decimal? minPrice = null, decimal? maxPrice = null, int? sortOption = null);
-        List<Plant> SearchPlantsByShop(int userId, string name = null, List<int> categoryId = null, decimal? minPrice = null, decimal? maxPrice = null, int? sortOption = null);
+        List<PlantDTOS> searchPlants(int? limit = null, string name = null, List<int> categoryId = null, decimal? minPrice = null, decimal? maxPrice = null, int? sortOption = null);
+        List<PlantDTOS> SearchPlantsByShop(int userId, string name = null, List<int> categoryId = null, decimal? minPrice = null, decimal? maxPrice = null, int? sortOption = null, int? limit = null);
         Task<List<PlantDTOS>> GetMostPurchasedPlantsFromShoppingCartAsync(int limit);
         Task<List<PlantDTOS>> GetMostPurchasedPlantsByShopFromShoppingCartAsync(int limit, int userId);
     }

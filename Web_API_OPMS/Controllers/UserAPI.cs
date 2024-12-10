@@ -238,7 +238,33 @@ namespace Web_API_OPMS.Controllers
                 {
                     return NotFound($"User with username {u.Username} not found.");
                 }
+                var isUsernameDuplicate = await _context.Users.AnyAsync(us =>
+                   us.UserId != u.UserId && // Đảm bảo không phải người dùng hiện tại
+                   us.Username == u.Username
+                );
+                if (isUsernameDuplicate)
+                {
+                    return BadRequest(new { message = "Username already exists" });
+                }
+                // Kiểm tra trùng Email
+                var isEmailDuplicate = await _context.Users.AnyAsync(us =>
+                    us.UserId != u.UserId && // Đảm bảo không phải người dùng hiện tại
+                    us.Email == u.Email
+                );
+                if (isEmailDuplicate)
+                {
+                    return BadRequest(new { message = "Email already exists" });
+                }
 
+                // Kiểm tra trùng PhoneNumber
+                var isPhoneDuplicate = await _context.Users.AnyAsync(us =>
+                    us.UserId != u.UserId && // Đảm bảo không phải người dùng hiện tại
+                    us.PhoneNumber == u.PhoneNumber
+                );
+                if (isPhoneDuplicate)
+                {
+                    return BadRequest(new { message = "Phone number already exists" });
+                }
                 // Update user properties
                 existingUser.Username = u.Username;
                 existingUser.Email = u.Email;
@@ -439,6 +465,16 @@ namespace Web_API_OPMS.Controllers
                 if (isDuplicate)
                 {
                     return BadRequest(new { message = "ShopName already exists" });
+                }
+                // Kiểm tra xem Email có bị trùng không
+                var isEmailDuplicate = await _context.Users.AnyAsync(us =>
+                    us.UserId != u.UserId && // Đảm bảo không phải người dùng hiện tại
+                    us.Email == u.Email
+                );
+
+                if (isEmailDuplicate)
+                {
+                    return BadRequest(new { message = "Email already exists" });
                 }
 
                 // Toggle the user's status

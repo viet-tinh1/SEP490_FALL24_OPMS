@@ -48,5 +48,6 @@ namespace DataAccess.DTO
         public int? Status { get; set; }
         public decimal? Discount { get; set; }
         public int TotalPurchased { get; set; }
+        public int? IsVerfied { get; set; }
     }
 }
