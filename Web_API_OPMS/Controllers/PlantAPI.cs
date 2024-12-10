@@ -164,7 +164,7 @@ namespace Web_API_OPMS.Controllers
                 }
 
                 // Set status based on stock
-                existingPlant.Status = existingPlant.Stock > 0 ? 1 : 0;
+                existingPlant.Status = p.Status;
 
                 plantRepository.updatePlant(existingPlant);
 
@@ -241,6 +241,32 @@ namespace Web_API_OPMS.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
+        [HttpPost("updateStatus")]
+        public IActionResult UpdateStatus(int plantId)
+        {
+            try
+            {
+                // Find the existing user by their ID
+                var existingPlant = plantRepository.getPlantById(plantId);
+                if (existingPlant == null)
+                {
+                    return NotFound($"Plant with ID {plantId} not found.");
+                }
+
+                // Toggle the user's status
+                existingPlant.Status = existingPlant.Status == 0 ? 1 : 0;
+
+                // Save changes to the repository
+                plantRepository.updatePlant(existingPlant);
+
+                // Return success message with the new status
+                return Ok($"User '{existingPlant.PlantName}' status has been set to {(existingPlant.Status == 1 ? "verified" : "unverified")}.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
         //Xóa 1 plant 
         [HttpGet("deletePlant")]
         public IActionResult deletePlant(int plantId)
@@ -273,17 +299,17 @@ namespace Web_API_OPMS.Controllers
         
         [HttpGet("searchPlants")]
 
-        public IActionResult SearchPlants([FromQuery] string name = null, [FromQuery] List<int> categoryId = null, [FromQuery] decimal? minPrice = null, [FromQuery] decimal? maxPrice = null, [FromQuery] int? sortOption = null)
+        public IActionResult SearchPlants([FromQuery] int? limit  = null,[FromQuery] string name = null, [FromQuery] List<int> categoryId = null, [FromQuery] decimal? minPrice = null, [FromQuery] decimal? maxPrice = null, [FromQuery] int? sortOption = null)
         {
             categoryId ??= new List<int>();           
-            var plants = plantRepository.searchPlants(name, categoryId, minPrice, maxPrice, sortOption);
+            var plants = plantRepository.searchPlants(limit,name, categoryId, minPrice, maxPrice, sortOption);
             return Ok(plants);
         }
         [HttpGet("searchPlantsByShop")]
-        public IActionResult SearchPlantsByShop([FromQuery] int userId, string name = null, [FromQuery] List<int> categoryId = null, [FromQuery] decimal? minPrice = null, [FromQuery] decimal? maxPrice = null, [FromQuery] int? sortOption = null)
+        public IActionResult SearchPlantsByShop([FromQuery] int userId, string name = null, [FromQuery] List<int> categoryId = null, [FromQuery] decimal? minPrice = null, [FromQuery] decimal? maxPrice = null, [FromQuery] int? sortOption = null,[FromQuery] int? limit = null)
         {
             categoryId ??= new List<int>();
-            var plants = plantRepository.SearchPlantsByShop(userId, name, categoryId, minPrice, maxPrice, sortOption);
+            var plants = plantRepository.SearchPlantsByShop(userId, name, categoryId, minPrice, maxPrice, sortOption,limit);
             return Ok(plants);
         }
 
@@ -294,12 +320,12 @@ namespace Web_API_OPMS.Controllers
             return Ok(plants); // Trả về danh sách PlantDTOS
         }
 
-        [HttpGet("most-purchased-by-shop")]
-        public async Task<IActionResult> GetMostPurchasedPlantsByShop([FromQuery] int limit, int userId)
-        {
-            var plants = await plantRepository.GetMostPurchasedPlantsByShopFromShoppingCartAsync(limit,userId);
-            return Ok(plants); // Trả về danh sách PlantDTOS
-        }
+        //[HttpGet("most-purchased-by-shop")]
+        //public async Task<IActionResult> GetMostPurchasedPlantsByShop([FromQuery] int limit, int userId)
+        //{
+        //    var plants = await plantRepository.GetMostPurchasedPlantsByShopFromShoppingCartAsync(limit,userId);
+        //    return Ok(plants); // Trả về danh sách PlantDTOS
+        //}
         [HttpGet("getPlantByUser")]
         public ActionResult<IEnumerable<Plant>> getPlantByUser(int UserId)
         {

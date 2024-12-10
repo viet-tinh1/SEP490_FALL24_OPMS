@@ -78,7 +78,7 @@ namespace Web_API_OPMS.Controllers.Authentication
             var token = GenerateJwtToken(user);
             HttpContext.Session.SetInt32("UserId", user.UserId);
             HttpContext.Session.SetInt32("UserRole", user.Roles);
-            return Ok(new { message = "Login successful", role = user.Roles, token = token, userId=user.UserId ,email=user.Email,username=user.Username});
+            return Ok(new { message = "Login successful", role = user.Roles, token = token, userId=user.UserId ,email=user.Email,username=user.Username,status=user.Status});
         }
         // login with google
         [HttpGet("google-login")]
@@ -129,7 +129,7 @@ namespace Web_API_OPMS.Controllers.Authentication
             HttpContext.Session.SetInt32("UserId", user.UserId);
             HttpContext.Session.SetInt32("UserRole", user.Roles);
 
-            return Redirect($"https://clientfe.runasp.net/product?userId={user.UserId}&role={user.Roles}&token={token}&username={user.Username}&email={user.Email}");
+            return Redirect($"https://clientfe.runasp.net/product?userId={user.UserId}&role={user.Roles}&token={token}&username={user.Username}&email={user.Email}&status={user.Status}");
         }
 
         [HttpPost("logout")]

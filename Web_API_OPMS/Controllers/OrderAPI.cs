@@ -114,8 +114,7 @@ namespace Web_API_OPMS.Controllers
                         // cập nhật lại trạng thái khi hết hàng 
                         if (plant.Stock <= 0)
                         {
-                            plant.Stock = 0;
-                            plant.Status = 0;
+                            plant.Stock = 0;                          
                         }
                         PlantRepository.updatePlant(plant);
                     }
