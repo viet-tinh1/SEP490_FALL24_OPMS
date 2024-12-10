@@ -21,7 +21,7 @@ export default function Header() {
   const timeoutRef = useRef(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [users, setUsers] = useState([]);
- 
+  const [showModal, setShowModal] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false); // Truy cập vào context
   const INACTIVITY_LIMIT = 1440 * 60 * 1000;
 
@@ -237,11 +237,46 @@ const handleAvatarUpdate = (newImageUrl) => {
       }));
     }
   }, []);
+  const handleLogout = () => {
+    // Clear localStorage và trạng thái
+    localStorage.removeItem("status");
+    localStorage.clear();
+    localStorage.setItem("signOut", Date.now());
+    
+    // Đặt lại trạng thái
+    setUserId(null);
+    setURoles(null);
+    setEmail(null);
+    setUserName(null);     
+    setShowModal(false);
+    navigate("/sign-in");
+    window.location.reload(true); // Reload trang sau đăng xuất
+    
+  };
+  const Block = async () => {   
+    const status = localStorage.getItem("status");
+    if (status === "0") {
+      setShowModal(true);
+
+      // Tạo bộ đếm thời gian (timeout) nếu không bấm
+      const timer = setTimeout(() => {
+        handleLogout();
+      }, 3000);
+
+      return () => clearTimeout(timer); // Dọn dẹp bộ đếm nếu người dùng bấm nút
+       
+    }
+  }
   return (
     <Navbar className="border-b-2 sticky top-0 left-0 w-full bg-white dark:bg-gray-900 shadow-md z-50">
      
       <Link
-        to="/"
+        to={localStorage.getItem("status") === "0" ? "#" : "/"}
+        onClick={(e) => {
+          if (localStorage.getItem("status") === "0") {
+            Block();
+          }
+        }}
         className="self-center text-sm sm:text-xl font-semibold dark:text-white"
       >
         <div className="text-2xl flex items-center gap-2 font-bold font-averia uppercase">
@@ -297,7 +332,14 @@ const handleAvatarUpdate = (newImageUrl) => {
                 {role === "1" ? "Quản trị viên " : role === "2" ? "Người dùng" : role === "3" ? "Người bán" : "Không xác định"}
               </span>
             </Dropdown.Header>
-            <Link to={"/dashboard?tab=profile "}>
+            <Link 
+            to={localStorage.getItem("status") === "0" ? "#" : "/dashboard?tab=profile"}
+            onClick={(e) => {
+              if (localStorage.getItem("status") === "0") {
+                Block();
+              }
+            }}
+            >
               <Dropdown.Item>Hồ sơ</Dropdown.Item>
             </Link>
             <Dropdown.Divider />
@@ -322,36 +364,105 @@ const handleAvatarUpdate = (newImageUrl) => {
 
         <Navbar.Toggle />
       </div>
+      {/* Render Modal nếu trạng thái showModal là true */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
+            <h3 className="text-lg font-semibold mb-2">Tài khoản của bạn đã bị khóa</h3>
+            <p className="text-sm mb-4">Vui lòng đăng xuất hoặc đợi 3 giây để tự động chuyển sang màn hình đăng nhập</p>
+            <div className="mt-4 flex justify-around">
+              
+            </div>
+          </div>
+        </div>
+      )}
       <Navbar.Collapse>
         <Navbar.Link active={path === "/"} as={"div"}>
-          <Link to="/">Trang chủ</Link>
+          <Link 
+          to={localStorage.getItem("status") === "0" ? "#" : "/"}
+          onClick={(e) => {
+            if (localStorage.getItem("status") === "0") {
+              Block();
+            }
+          }}
+          >Trang chủ</Link>
         </Navbar.Link>
         <Navbar.Link active={path === "/about"} as={"div"}>
-          <Link to="/about">Giới thiệu</Link>
+          <Link 
+          to={localStorage.getItem("status") === "0" ? "#" :"/about"}
+          onClick={(e) => {
+            if (localStorage.getItem("status") === "0") {
+              Block();
+            }
+          }}
+          >Giới thiệu</Link>
         </Navbar.Link>
         <Navbar.Link active={path === "/product"} as={"div"}>
-          <Link to="/product">Sản Phẩm</Link>
+          <Link 
+          to={localStorage.getItem("status") === "0" ? "#" :"/product"}
+          onClick={(e) => {
+            if (localStorage.getItem("status") === "0") {
+              Block();
+            }
+          }}
+          >Sản Phẩm</Link>
         </Navbar.Link>
         {(role === "1" || role === "3") && (
           <Navbar.Link active={path === "/dashboard"} as={"div"}>
-            <Link to="/dashboard?tab=dash">Bảng điều khiển</Link>
+            <Link 
+            to={localStorage.getItem("status") === "0" ? "#" :"/dashboard?tab=dash"}
+            onClick={(e) => {
+              if (localStorage.getItem("status") === "0") {
+                Block();
+              }
+            }}
+            >           
+            Bảng điều khiển</Link>
           </Navbar.Link>
         )}
         <Navbar.Link active={path === "/Forum"} as={"div"}>
-          <Link to="/Forum">Diễn đàn</Link>
+          <Link 
+          to={localStorage.getItem("status") === "0" ? "#" :"/Forum"}
+          onClick={(e) => {
+            if (localStorage.getItem("status") === "0") {
+              Block();
+            }
+          }}
+          >Diễn đàn</Link>
         </Navbar.Link>
         {(role === "2") && (
           <Navbar.Link active={path === "/order-success"} as={"div"}>
-            <Link to="/order-success">Đơn Hàng</Link>
+            <Link 
+            to={localStorage.getItem("status") === "0" ? "#" :"/order-success"}
+            onClick={(e) => {
+              if (localStorage.getItem("status") === "0") {
+                Block();
+              }
+            }}
+            >Đơn Hàng</Link>
           </Navbar.Link>
         )}
         {(role === "3") && (
           <Navbar.Link active={path === `/producsSeller/${userId}`} as={"div"}>
-            <Link to={`/producsSeller/${userId}`}>Cửa hàng </Link>
+            <Link 
+            to={localStorage.getItem("status") === "0" ? "#" : `/producsSeller/${userId}`}
+            onClick={(e) => {
+              if (localStorage.getItem("status") === "0") {
+                Block();
+              }
+            }}
+            >Cửa hàng </Link>
           </Navbar.Link>
         )}
         <Navbar.Link active={path === "/cart"} as={"div"}>
-          <Link to="/cart" className="text-2xl">
+          <Link 
+          to={localStorage.getItem("status") === "0" ? "#" :"/cart"} 
+          onClick={(e) => {
+            if (localStorage.getItem("status") === "0") {
+              Block();
+            }
+          }}
+          className="text-2xl">
             <MdOutlineShoppingCart />
           </Link>
         </Navbar.Link>

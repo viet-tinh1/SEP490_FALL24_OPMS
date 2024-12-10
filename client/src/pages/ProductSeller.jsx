@@ -65,6 +65,7 @@ export default function ProductSeller() {
   const [successMessage, setSuccessMessage] = useState('');
   const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0); // State to store follower count
+  const [showModal, setShowModal] = useState(false);
   //lấy session
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -194,65 +195,65 @@ export default function ProductSeller() {
 
   //handle tìm kiếm
   const handleSortClick = async (label, id) => {
-    if (id === 2) {
-      setSortOption("most-purchased"); // Unique value for "Most Purchased"
-      try {
-        const response = await fetch(`https://opms1.runasp.net/api/PlantAPI/most-purchased-by-shop?limit=7&userId=${userIdPlant}`);
-        const data = await response.json();
-        if (!response.ok) throw new Error("Unable to fetch best-selling products");
-
-        setProducts(data); // Update the product list directly for "Most Purchased"
-      } catch (err) {
-        setError(err.message);
-      }
-    } else {
-      setSortOption(id); // For other cases, set `sortOption` to the id
-      await searchPlants(selectedCategories, id); // Trigger search with sort option id
+    setSortOption(id); // Gán `sortOption` trực tiếp
+    try {
+      // Thay vì gọi API riêng, luôn gọi `searchPlants` với các thông tin tìm kiếm và `sortOption`
+      await searchPlants(name, selectedCategories, minPrice, maxPrice, id);
+    } catch (err) {
+      setError(err.message);
     }
   };
 
   // tìm kiếm cây
   const searchPlants = async (selectedCategoryIds = [], sortOptionId = null) => {
     try {
-      // Construct the category query part
-      const categoryIdsQuery = selectedCategoryIds
-        .map((id) => `categoryId=${id}`)
-        .join("&");
-
-      // Initialize the query string with category filters if any
-      let query = categoryIdsQuery ? `${categoryIdsQuery}` : '';
-
-      // Add min and max price to the query if they are set
-      if (minPrice && maxPrice) {
-        query += `&minPrice=${minPrice}&maxPrice=${maxPrice}`;
+      // Khởi tạo chuỗi query
+      const queryParams = [];
+      
+      // Thêm category IDs vào chuỗi query
+      if (selectedCategoryIds?.length) {
+        selectedCategoryIds.forEach(id => queryParams.push(`categoryId=${id}`));
       }
-
-      // Add userId if available
-      if (userIdPlant) {
-        query += `&userId=${userIdPlant}`;
-      }
-
-      // Add sort option if it exists
+  
+      // Thêm khoảng giá nếu có
+      if (minPrice) queryParams.push(`minPrice=${minPrice}`);
+      if (maxPrice) queryParams.push(`maxPrice=${maxPrice}`);
+  
+      // Thêm userId nếu có
+      if (userIdPlant) queryParams.push(`userId=${userIdPlant}`);
+  
+      // Thêm sortOption nếu có
       if (sortOptionId) {
-        query += `&sortOption=${sortOptionId}`;
-      }
-
-      // Fetch the products with the constructed query
-      const productResponses = await fetch(
-        `https://opms1.runasp.net/api/PlantAPI/searchPlantsByShop?${query}`
-      );
-      const productsData = await productResponses.json();
-
-      if (!productResponses.ok) {
-        if (productResponses.status === 404 && productsData.message === "Không có kết quả theo yêu cầu.") {
-          setError("Cây trồng không được tìm thấy hoặc chưa được xác minh.");
+        queryParams.push(`sortOption=${sortOptionId}`);
+        
+        // Gán limit = 100 nếu sortOptionId == 2
+        if (sortOptionId === 2) {
+          queryParams.push(`limit=100`);
         }
-        throw new Error("Không thể lấy cây trồng đã được lọc");
       }
-
-      setProducts(productsData); // Update products state with the fetched data
+  
+      // Kết nối tất cả query string với dấu "&"
+      const finalQuery = queryParams.length ? `?${queryParams.join("&")}` : "";
+  
+      // Gọi API với chuỗi query đã tạo
+      const response = await fetch(
+        `https://opms1.runasp.net/api/PlantAPI/searchPlantsByShop${finalQuery}`
+      );
+  
+      const productsData = await response.json();
+  
+      // Kiểm tra xem request có lỗi
+      if (!response.ok) {
+        if (response.status === 404 && productsData.message === "Không có kết quả theo yêu cầu.") {
+          setError("Không tìm thấy cây trồng hoặc chúng chưa được xác minh.");
+        }
+        throw new Error(productsData.message || "Không thể lấy dữ liệu cây trồng.");
+      }
+  
+      // Gán dữ liệu trả về từ server
+      setProducts(productsData);
     } catch (err) {
-      setError(err.message); // Set the error message if the fetch fails
+      setError(err.message); // Ghi nhận lỗi nếu fetch thất bại
     }
   };
 
@@ -329,10 +330,38 @@ export default function ProductSeller() {
   const toggleShowAll = () => {
     setShowAll(!showAll);
   };
-
+  const handleLogout = () => {
+    // Clear localStorage và trạng thái
+    localStorage.removeItem("status");
+    localStorage.clear();
+    localStorage.setItem("signOut", Date.now());
+    
+    // Đặt lại trạng thái
+    setUserId(null);
+    setRole(null);
+    setEmail(null);
+    setUserName(null);     
+   
+    setShowModal(false);
+    navigate("/sign-in");
+    window.location.reload(true); // Reload trang sau đăng xuất
+    
+  };
   // thêm vào giỏ hàng
   const addToCart = async (productId, quantity) => {
     const userId = localStorage.getItem("userId");
+    const status = localStorage.getItem("status");
+    if (status === "0") {
+      setShowModal(true);
+
+      // Tạo bộ đếm thời gian (timeout) nếu không bấm
+      const timer = setTimeout(() => {
+        handleLogout();
+      }, 3000);
+
+      return () => clearTimeout(timer); // Dọn dẹp bộ đếm nếu người dùng bấm nút
+       
+    }
     if (!userId || userId === "undefined") {
       navigate("/sign-in");
       return;
@@ -487,6 +516,18 @@ export default function ProductSeller() {
 
   return (
     <main>
+      {/* Render Modal nếu trạng thái showModal là true */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
+            <h3 className="text-lg font-semibold mb-2">Tài khoản của bạn đã bị khóa</h3>
+            <p className="text-sm mb-4">Vui lòng đăng xuất hoặc đợi 3 giây để tự động chuyển sang màn hình đăng nhập</p>
+            <div className="mt-4 flex justify-around">
+              
+            </div>
+          </div>
+        </div>
+      )}
       <div className="p-6 h-40 bg-white shadow-lg rounded-md md:py-10 dark:bg-gray-900 shadow-gray-200 antialiased">
         <div className="flex items-center">
           {/* Profile Image and Info Section */}
@@ -612,7 +653,7 @@ export default function ProductSeller() {
             </button>
             <button
               onClick={() => handleSortClick("Bán Chạy", 2)}
-              className={`px-4 py-2 rounded-md font-medium ${sortOption === "most-purchased" ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>
+              className={`px-4 py-2 rounded-md font-medium ${sortOption === 2 ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>
               Bán Chạy
             </button>
             <div
@@ -692,7 +733,13 @@ export default function ProductSeller() {
                     )}
                     {/* Liên kết đến trang chi tiết sản phẩm */}
                     <Link
-                      to={product.stock === 0 ? "#" : `/productdetail/${product.plantId}`}
+                      to={localStorage.getItem("status") === "0" ? "#" : (product.stock === 0 ? "#" : `/productdetail/${product.plantId}`)}
+                      onClick={(e) => {
+                        if (localStorage.getItem("status") === "0") {
+                          e.preventDefault(); // Prevent navigation in both cases
+                          addToCart(product.plantId, 1);
+                        }
+                      }}
                       className={`${product.stock === 0 ? "pointer-events-none" : ""}`}
                     >
                       <div className="relative p-2.5 overflow-hidden rounded-xl bg-clip-border">

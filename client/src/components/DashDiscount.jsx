@@ -53,7 +53,7 @@ export default function DashDiscount() {
 
   const handleConfirmDelete = async () => {
     if (!selectedDiscount) return;
-  
+
     try {
       const response = await fetch(`https://opms1.runasp.net/api/VoucherAPI/deleteVoucher?id=${selectedDiscount.voucherId}`, {
         method: 'DELETE', // Thay đổi phương thức thành DELETE
@@ -61,7 +61,7 @@ export default function DashDiscount() {
           'Content-Type': 'application/json',
         },
       });
-  
+
       if (response.ok) {
         setDiscounts((prevDiscounts) =>
           prevDiscounts.filter((discount) => discount.voucherId !== selectedDiscount.voucherId)
@@ -77,7 +77,7 @@ export default function DashDiscount() {
       alert("Đã xảy ra lỗi khi xóa mã giảm giá: " + error.message);
     }
   };
-  
+
   const handleCancel = () => {
     setShowModal(false);
   };
@@ -91,129 +91,139 @@ export default function DashDiscount() {
     currentPage * discountsPerPage,
     (currentPage + 1) * discountsPerPage
   );
-
+  const role = localStorage.getItem("role");
   return (
-    <main className="overflow-x-auto md:mx-auto p-4">
-      <div className="shadow-md rounded-lg bg-white dark:bg-gray-800 mb-6 p-4">
-        <div className="mb-4">
-          <h1 className="text-2xl font-semibold text-gray-900">
-            Tất cả mã giảm giá
-          </h1>
-          <div className="flex flex-wrap gap-4 justify-between mt-4">
-            <form className="flex-grow max-w-xs w-full md:w-1/2">
-              
-            </form>
-            <Link to="/DiscountUpdate">
-              <Button className="w-full md:w-auto">Thêm mã giảm giá</Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-      <div className="overflow-x-auto shadow-md rounded-lg">
-        <Table hoverable className="w-full">
-          <Table.Head>
-            <Table.HeadCell>Tên mã</Table.HeadCell>
-            <Table.HeadCell>Phần trăm</Table.HeadCell>
-            <Table.HeadCell>Ngày tạo</Table.HeadCell>
-            <Table.HeadCell>Ngày bắt đầu</Table.HeadCell>
-            <Table.HeadCell>Ngày kết thúc</Table.HeadCell>
-            <Table.HeadCell>Số lượng</Table.HeadCell>
-            <Table.HeadCell>Trạng thái</Table.HeadCell>
-            <Table.HeadCell className="text-center">Sửa/Xóa</Table.HeadCell>
-          </Table.Head>
-          <Table.Body className="divide-y">
-            {discountsToDisplay.map((discount) => (
-              <Table.Row key={discount.voucherId} className="align-middle">
-                <Table.Cell className="p-4 text-center">
-                  {discount.voucherName}
-                </Table.Cell>
-                <Table.Cell className="p-4 text-center">
-                  {discount.voucherPercent}%
-                </Table.Cell>
-                <Table.Cell className="p-4 text-center">
-                  {new Date(discount.createDate).toLocaleString('vi-VN', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'         
-                  })}
-                </Table.Cell>
-                <Table.Cell className="p-4 text-center">
-                  {new Date(discount.openDate).toLocaleString('vi-VN', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'                  
-                  })}
-                </Table.Cell>
-                <Table.Cell className="p-4 text-center">
-                  {new Date(discount.closeDate).toLocaleString('vi-VN', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'                    
-                  })}
-                </Table.Cell>
+    <>
+      {role === "3" ? ( // Kiểm tra role
+        <main className="overflow-x-auto md:mx-auto p-4">
+          <div className="shadow-md rounded-lg bg-white dark:bg-gray-800 mb-6 p-4">
+            <div className="mb-4">
+              <h1 className="text-2xl font-semibold text-gray-900">
+                Tất cả mã giảm giá
+              </h1>
+              <div className="flex flex-wrap gap-4 justify-between mt-4">
+                <form className="flex-grow max-w-xs w-full md:w-1/2">
 
-                <Table.Cell className="p-4 text-center">
-                  {discount.amount}
-                </Table.Cell>
-                <Table.Cell className="p-4 text-center">
-                  {discount.status ? "Hoạt động" : "Không hoạt động"}
-                </Table.Cell>
-                <Table.Cell className="p-4 flex space-x-2 justify-center">
-                  <Link
-                    to="/DiscountEdit"
-                    state={{ voucherId: discount.voucherId }}
-                  >
-                    <MdEdit
-                      className="cursor-pointer text-green-600"
-                      size={20}
-                    />
-                  </Link>
-                  <MdDelete
-                    onClick={() => handleDelete(discount)}
-                    className="cursor-pointer text-red-600"
-                    size={20}
-                  />
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table>
-      </div>
-      {/* Pagination */}
-      <div className="mt-6 flex justify-center">
-        <ReactPaginate
-          previousLabel={"← Sau"}
-          nextLabel={"Trước →"}
-          pageCount={pageCount}
-          onPageChange={handlePageClick}
-          containerClassName={
-            "flex flex-wrap justify-center space-x-2 md:space-x-4"
-          }
-          pageLinkClassName={"py-2 px-3 border rounded text-sm"}
-          activeClassName={"bg-blue-600 text-white"}
-          disabledClassName={"opacity-50 cursor-not-allowed"}
-        />
-      </div>
-      {/* Modal for Delete Confirmation */}
-      <Modal show={showModal} onClose={handleCancel}>
-        <Modal.Header>Xóa mã giảm giá</Modal.Header>
-        <Modal.Body>
-          <div className="text-center">
-            <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 mb-4 mx-auto" />
-            <h3 className="mb-5 text-lg text-gray-500">
-              Bạn có chắc chắn muốn xóa mã giảm giá {selectedDiscount?.voucherName}?
-            </h3>
-            <div className="flex justify-center space-x-4 mt-4">
-              <Button color="failure" onClick={handleConfirmDelete}>
-                Có
-              </Button>
-              <Button color="gray" onClick={handleCancel}>
-                Không
-              </Button>
+                </form>
+                <Link to="/DiscountUpdate">
+                  <Button className="w-full md:w-auto">Thêm mã giảm giá</Button>
+                </Link>
+              </div>
             </div>
           </div>
-        </Modal.Body>
-      </Modal>
-    </main>
+          <div className="overflow-x-auto shadow-md rounded-lg">
+            <Table hoverable className="w-full">
+              <Table.Head>
+                <Table.HeadCell>Tên mã</Table.HeadCell>
+                <Table.HeadCell>Phần trăm</Table.HeadCell>
+                <Table.HeadCell>Ngày tạo</Table.HeadCell>
+                <Table.HeadCell>Ngày bắt đầu</Table.HeadCell>
+                <Table.HeadCell>Ngày kết thúc</Table.HeadCell>
+                <Table.HeadCell>Số lượng</Table.HeadCell>
+                <Table.HeadCell>Trạng thái</Table.HeadCell>
+                <Table.HeadCell className="text-center">Sửa/Xóa</Table.HeadCell>
+              </Table.Head>
+              <Table.Body className="divide-y">
+                {discountsToDisplay.map((discount) => (
+                  <Table.Row key={discount.voucherId} className="align-middle">
+                    <Table.Cell className="p-4 text-center">
+                      {discount.voucherName}
+                    </Table.Cell>
+                    <Table.Cell className="p-4 text-center">
+                      {discount.voucherPercent}%
+                    </Table.Cell>
+                    <Table.Cell className="p-4 text-center">
+                      {new Date(discount.createDate).toLocaleString('vi-VN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                      })}
+                    </Table.Cell>
+                    <Table.Cell className="p-4 text-center">
+                      {new Date(discount.openDate).toLocaleString('vi-VN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                      })}
+                    </Table.Cell>
+                    <Table.Cell className="p-4 text-center">
+                      {new Date(discount.closeDate).toLocaleString('vi-VN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                      })}
+                    </Table.Cell>
+
+                    <Table.Cell className="p-4 text-center">
+                      {discount.amount}
+                    </Table.Cell>
+                    <Table.Cell className="p-4 text-center">
+                      {discount.status ? "Hoạt động" : "Không hoạt động"}
+                    </Table.Cell>
+                    <Table.Cell className="p-4 flex space-x-2 justify-center">
+                      <Link
+                        to="/DiscountEdit"
+                        state={{ voucherId: discount.voucherId }}
+                      >
+                        <MdEdit
+                          className="cursor-pointer text-green-600"
+                          size={20}
+                        />
+                      </Link>
+                      <MdDelete
+                        onClick={() => handleDelete(discount)}
+                        className="cursor-pointer text-red-600"
+                        size={20}
+                      />
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table>
+          </div>
+          {/* Pagination */}
+          <div className="mt-6 flex justify-center">
+            <ReactPaginate
+              previousLabel={"← Sau"}
+              nextLabel={"Trước →"}
+              pageCount={pageCount}
+              onPageChange={handlePageClick}
+              containerClassName={
+                "flex flex-wrap justify-center space-x-2 md:space-x-4"
+              }
+              pageLinkClassName={"py-2 px-3 border rounded text-sm"}
+              activeClassName={"bg-blue-600 text-white"}
+              disabledClassName={"opacity-50 cursor-not-allowed"}
+            />
+          </div>
+          {/* Modal for Delete Confirmation */}
+          <Modal show={showModal} onClose={handleCancel}>
+            <Modal.Header>Xóa mã giảm giá</Modal.Header>
+            <Modal.Body>
+              <div className="text-center">
+                <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 mb-4 mx-auto" />
+                <h3 className="mb-5 text-lg text-gray-500">
+                  Bạn có chắc chắn muốn xóa mã giảm giá {selectedDiscount?.voucherName}?
+                </h3>
+                <div className="flex justify-center space-x-4 mt-4">
+                  <Button color="failure" onClick={handleConfirmDelete}>
+                    Có
+                  </Button>
+                  <Button color="gray" onClick={handleCancel}>
+                    Không
+                  </Button>
+                </div>
+              </div>
+            </Modal.Body>
+          </Modal>
+        </main>
+      ) : (
+        <div className="flex items-center justify-center h-full">
+          <p className="text-center text-gray-500 dark:text-gray-400">
+            Bạn không có quyền truy cập vào nội dung này.
+          </p>
+        </div>
+      )}
+    </>
   );
 }

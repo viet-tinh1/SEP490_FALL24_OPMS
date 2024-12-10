@@ -11,7 +11,7 @@ import { FaCloudArrowUp } from 'react-icons/fa6';
 function formatTimeDifference(timestamp) {
   const now = new Date();
   const time = new Date(timestamp);
-  const differenceInSeconds = Math.floor((now - time) / 1000);
+  const differenceInSeconds = Math.abs(Math.floor((now - time) / 1000));
   if (differenceInSeconds < 60) {
     return `${differenceInSeconds} giây trước`;
   } else if (differenceInSeconds < 3600) {
@@ -47,6 +47,7 @@ function CommentSection({ postId, userId, refreshPosts }) {
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyingToUsername, setReplyingToUsername] = useState("");
   const role = localStorage.getItem("role");
+  const [confirmDeleteModalreply, setConfirmDeleteModalReply] = useState(false);
   const [confirmDeleteModal, setConfirmDeleteModal] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState(null);
   const [replyToDelete, setReplyToDelete] = useState(null);
@@ -214,6 +215,7 @@ function CommentSection({ postId, userId, refreshPosts }) {
     setConfirmDeleteModal(true);
   };
   const handleDeleteComment = async () => {
+    console.log(commentToDelete)
     try {
       const response = await fetch(
         `https://opms1.runasp.net/api/CommentAPI/deleteComment?id=${commentToDelete}`,
@@ -266,7 +268,7 @@ function CommentSection({ postId, userId, refreshPosts }) {
   };
   const confirmDeleteReply = (replyCommentId) => {
     setReplyToDelete(replyCommentId);
-    setConfirmDeleteModal(true);
+    setConfirmDeleteModalReply(true);
   };
   const handleDeleteReply = async () => {
     try {
@@ -277,7 +279,7 @@ function CommentSection({ postId, userId, refreshPosts }) {
 
       if (response.ok) {
         refreshPosts();
-        setConfirmDeleteModal(false);
+        setConfirmDeleteModalReply(false);
         setDeleteCommentPopup(true);
         setTimeout(() => setDeleteCommentPopup(false), 2000);
       } else {
@@ -330,19 +332,19 @@ function CommentSection({ postId, userId, refreshPosts }) {
         }
       );
 
-      if (response.ok) { 
-          // Update the local state immediately
-      setComments((prevComments) =>
-        prevComments.map((c) =>
-          c.commentId === comment.commentId
-            ? {
+      if (response.ok) {
+        // Update the local state immediately
+        setComments((prevComments) =>
+          prevComments.map((c) =>
+            c.commentId === comment.commentId
+              ? {
                 ...c,
                 hasLiked: !c.hasLiked, // Toggle the like status
                 likeComment: c.hasLiked ? c.likeComment - 1 : c.likeComment + 1, // Adjust like count
               }
-            : c
-        )
-      );      
+              : c
+          )
+        );
       } else {
         console.error("Failed to update like status");
       }
@@ -412,24 +414,25 @@ function CommentSection({ postId, userId, refreshPosts }) {
                   </div>
                   {/* Reply Input Field */}
                   {replyingTo === comment.commentId && (
-                    <div className="flex items-center mt-2">
+                    <div className="flex items-center mt-4 space-x-2">
                       <textarea
                         value={ReplyCommentContent}
                         onChange={(e) => setReplyCommentContent(e.target.value)}
-                        placeholder={`    Trả lời bình luận của ${replyingToUsername}`}
-                        className="flex-grow p-1.5 border rounded-full bg-gray-100 resize-none overflow-hidden text-sm leading-tight"
+                        placeholder={`Trả lời bình luận của ${replyingToUsername}`}
+                        className="flex-grow max-w-lg p-2 border border-gray-300 rounded-2xl bg-gray-100 resize-none text-sm leading-tight shadow focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                         onInput={(e) => {
                           e.target.style.height = "auto"; // Reset chiều cao để tính toán lại
-                          e.target.style.height = `${e.target.scrollHeight}px`; // Điều chỉnh chiều cao theo nội dung
+                          e.target.style.height = `${Math.min(e.target.scrollHeight, 100)}px`; // Điều chỉnh chiều cao theo nội dung, giới hạn tối đa
                         }}
+                        style={{ maxHeight: "100px", overflowY: "auto" }} // Giới hạn chiều cao và cuộn dọc
                       />
-                      <Button
+                      <button
                         onClick={handleAddReply}
-                        className="ml-2 text-lg"
+                        className="px-3 py-1 text-white bg-blue-500 rounded-2xl hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={!ReplyCommentContent.trim()}
                       >
                         Gửi
-                      </Button>
+                      </button>
                     </div>
                   )}
                 </div>
@@ -469,25 +472,27 @@ function CommentSection({ postId, userId, refreshPosts }) {
                 </Modal.Header>
 
                 <Modal.Footer>
-                  <textarea
-                    name="comment"
-                    value={updateContent}
-                    onChange={(e) => setUpdateContent(e.target.value)}
-                    placeholder="    Chỉnh sửa bình luận"
-                    className="flex-grow p-1.5 border rounded-full bg-gray-100 resize-none overflow-hidden text-sm leading-tight"
-                    onInput={(e) => {
-                      e.target.style.height = "auto";
-                      e.target.style.height = `${e.target.scrollHeight}px`;
-                    }}
-                  />
-
-                  <Button
-                    onClick={handleUpdateComment}
-                    className="ml-2 text-lg"
-                    disabled={!updateContent.trim()}
-                  >
-                    Gửi
-                  </Button>
+                  <div className="flex items-center w-full space-x-2">
+                    <textarea
+                      name="comment"
+                      value={updateContent}
+                      onChange={(e) => setUpdateContent(e.target.value)}
+                      placeholder="Chỉnh sửa bình luận"
+                      className="flex-grow max-w-lg p-2 border border-gray-300 rounded-2xl bg-gray-100 resize-none text-sm leading-tight shadow focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                      onInput={(e) => {
+                        e.target.style.height = "auto"; // Reset chiều cao để tính toán lại
+                        e.target.style.height = `${Math.min(e.target.scrollHeight, 100)}px`; // Điều chỉnh chiều cao theo nội dung, giới hạn tối đa
+                      }}
+                      style={{ maxHeight: "100px", overflowY: "auto" }} // Giới hạn chiều cao và cuộn dọc
+                    />
+                    <button
+                      onClick={handleUpdateComment}
+                      className="px-4 py-2 text-white bg-blue-500 rounded-2xl hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={!updateContent.trim()}
+                    >
+                      Gửi
+                    </button>
+                  </div>
                 </Modal.Footer>
               </Modal>
               <Modal
@@ -569,29 +574,32 @@ function CommentSection({ postId, userId, refreshPosts }) {
                       </Modal.Header>
 
                       <Modal.Footer>
-                        <textarea
-                          name="reply"
-                          value={updateContent}
-                          onChange={(e) => setUpdateContent(e.target.value)}
-                          placeholder="   Chỉnh sửa phản hồi"
-                          className="flex-grow p-1.5 border rounded-full bg-gray-100 resize-none overflow-hidden text-sm leading-tight"
-                          onInput={(e) => {
-                            e.target.style.height = "auto"; // Reset chiều cao để tính toán lại
-                            e.target.style.height = `${e.target.scrollHeight}px`; // Điều chỉnh chiều cao theo nội dung
-                          }}
-                        />
-                        <Button
-                          onClick={handleUpdateReply}
-                          className="ml-2 text-lg"
-                          disabled={!updateContent.trim()}
-                        >
-                          Gửi
-                        </Button>
+                        <div className="flex items-center w-full space-x-2">
+                          <textarea
+                            name="reply"
+                            value={updateContent}
+                            onChange={(e) => setUpdateContent(e.target.value)}
+                            placeholder="Chỉnh sửa phản hồi"
+                            className="flex-grow max-w-lg p-2 border border-gray-300 rounded-2xl bg-gray-100 resize-none text-sm leading-tight shadow focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                            onInput={(e) => {
+                              e.target.style.height = "auto"; // Reset chiều cao để tính toán lại
+                              e.target.style.height = `${Math.min(e.target.scrollHeight, 100)}px`; // Điều chỉnh chiều cao tối đa
+                            }}
+                            style={{ maxHeight: "100px", overflowY: "auto" }} // Giới hạn chiều cao và cuộn dọc
+                          />
+                          <button
+                            onClick={handleUpdateReply}
+                            className="px-4 py-2 text-white bg-blue-500 rounded-2xl hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={!updateContent.trim()}
+                          >
+                            Gửi
+                          </button>
+                        </div>
                       </Modal.Footer>
                     </Modal>
                     <Modal
-                      show={confirmDeleteModal}
-                      onClose={() => setConfirmDeleteModal(false)}
+                      show={confirmDeleteModalreply}
+                      onClose={() => setConfirmDeleteModalReply(false)}
                       size="md"
                       popup={true}
                     >
@@ -604,7 +612,7 @@ function CommentSection({ postId, userId, refreshPosts }) {
                         </p>
                       </Modal.Body>
                       <Modal.Footer>
-                        <Button onClick={() => setConfirmDeleteModal(false)} color="gray">
+                        <Button onClick={() => setConfirmDeleteModalReply(false)} color="gray">
                           Hủy
                         </Button>
                         <Button onClick={handleDeleteReply} color="red">
@@ -636,24 +644,25 @@ function CommentSection({ postId, userId, refreshPosts }) {
       )}
 
       {/* Add New Comment Section */}
-      <div className="flex items-center mt-4">
+      <div className="mt-4 flex items-center space-x-2">
         <textarea
           value={commentContent}
           onChange={(e) => setCommentContent(e.target.value)}
           onInput={(e) => {
             e.target.style.height = "auto"; // Reset chiều cao để tính toán lại
-            e.target.style.height = `${e.target.scrollHeight}px`; // Điều chỉnh chiều cao theo nội dung
+            e.target.style.height = `${Math.min(e.target.scrollHeight, 100)}px`; // Điều chỉnh chiều cao theo nội dung
           }}
-          placeholder={`    Bình luận dưới tên ${userId ? "của bạn" : "Khách"}`}
-          className="flex-grow p-1.5 border rounded-full bg-gray-100 resize-none overflow-hidden text-sm leading-tight"
+          placeholder={`Bình luận dưới tên ${userId ? "của bạn" : "Khách"}`}
+          className="flex-grow max-w-md p-1.5 border border-gray-300 rounded-2xl bg-gray-100 resize-none text-sm leading-tight shadow focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+          style={{ maxHeight: "100px", overflowY: "auto" }} // Giới hạn chiều cao và cuộn dọc
         />
-        <Button
+        <button
           onClick={handleAddComment}
-          className="ml-2 text-lg"
+          className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={!commentContent.trim()}
         >
           Gửi
-        </Button>
+        </button>
       </div>
     </div>
   );
@@ -675,6 +684,7 @@ export default function Forum() {
   const [postToUpdate, setPostToUpdate] = useState(null);
   const [userImage, setUserImage] = useState("https://via.placeholder.com/40");
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
     const fetchUserImage = async () => {
       if (userId) {
@@ -774,6 +784,7 @@ export default function Forum() {
   };
 
   const createPost = async () => {
+    setIsLoading(true); // Vô hiệu hóa nút
     const formData = new FormData();
     formData.append("postId", 0);
     formData.append("userId", userId);
@@ -800,6 +811,9 @@ export default function Forum() {
       }
     } catch (error) {
       console.error("Error creating post:", error);
+    }
+    finally {
+      setIsLoading(false); // Kích hoạt lại sau khi hoàn tất
     }
   };
 
@@ -838,6 +852,7 @@ export default function Forum() {
   };
 
   const handleUpdatePost = async () => {
+    setIsLoading(true); // Vô hiệu hóa nút
     const formData = new FormData();
     formData.append("postId", postToUpdate.postId);
     formData.append("userId", userId);
@@ -864,6 +879,9 @@ export default function Forum() {
       }
     } catch (error) {
       console.error("Error updating post:", error);
+    }
+    finally {
+      setIsLoading(false); // Kích hoạt lại sau khi hoàn tất
     }
   };
 
@@ -994,10 +1012,10 @@ export default function Forum() {
               <Modal.Footer>
                 <Button
                   onClick={postToUpdate ? handleUpdatePost : createPost}
-                  disabled={!content.trim()}
+                  disabled={isLoading || !content.trim()}
                   className="w-full text-lg"
                 >
-                  {postToUpdate ? "Cập nhật" : "Đăng"}
+                  {isLoading ? "Đang xử lý..." : postToUpdate ? "Cập nhật" : "Đăng"}
                 </Button>
               </Modal.Footer>
             </Modal>

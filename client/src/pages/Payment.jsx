@@ -442,9 +442,7 @@ export default function Payment() {
               onChange={handlePaymentMethodChange}
               className="block w-full px-4 py-2 pr-8 leading-tight text-gray-900 bg-white border border-gray-300 rounded-lg shadow appearance-none dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:outline-none focus:border-blue-500"
             >
-              <option value="payOS">payOS</option>
-              <option value="Visa"><FaCcVisa />
-                Visa</option>
+              <option value="payOS">payOS</option>             
               <option value="Thanh toán khi nhận hàng">Thanh toán khi nhận hàng </option>
             </select>
             {/* Dropdown arrow */}

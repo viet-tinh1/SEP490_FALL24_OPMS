@@ -17,7 +17,7 @@ export default function ProductDetail() {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [selectedReason, setSelectedReasonId] = useState("");
   const [selectedReasonText, setSelectedReasonText] = useState("");
-  const [quantity, setQuantity] = useState(0); // Initial quantity
+  const [quantity, setQuantity] = useState(1); // Initial quantity
   const [productData, setProductData] = useState(null); // New state to store product data
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState(null); // Error state
@@ -33,8 +33,9 @@ export default function ProductDetail() {
   const [successMessage, setSuccessMessage] = useState('');
   const [reasons, setReasons] = useState([]);
   const [complaintDetails, setComplaintDetails] = useState(""); // Chi tiết khi gửi form
+  const [showModal, setShowModal] = useState(false);
   // Fetch product data when the component mounts
- 
+
 
 
   useEffect(() => {
@@ -253,7 +254,19 @@ export default function ProductDetail() {
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
 
-    const userId = localStorage.getItem("userId"); // Lấy userId từ localStorage
+    const userId = localStorage.getItem("userId");
+    const status = localStorage.getItem("status");
+    if (status === "0") {
+      setShowModal(true);
+
+      // Tạo bộ đếm thời gian (timeout) nếu không bấm
+      const timer = setTimeout(() => {
+        handleLogout();
+      }, 3000);
+
+      return () => clearTimeout(timer); // Dọn dẹp bộ đếm nếu người dùng bấm nút
+       
+    } // Lấy userId từ localStorage
     if (!userId) {
       setNotification("Bạn cần đăng nhập để gửi đánh giá.");
       return;
@@ -316,9 +329,30 @@ export default function ProductDetail() {
       }, 3000);
     }
   };
-
+  const handleLogout = () => {
+    // Clear localStorage và trạng thái
+    localStorage.removeItem("status");
+    localStorage.clear();
+    localStorage.setItem("signOut", Date.now());    
+    setShowModal(false);
+    navigate("/sign-in");
+    window.location.reload(true); // Reload trang sau đăng xuất
+    
+  };
   const addToCart = async (productId, quantity) => {
     const userId = localStorage.getItem("userId");
+    const status = localStorage.getItem("status");
+    if (status === "0") {
+      setShowModal(true);
+
+      // Tạo bộ đếm thời gian (timeout) nếu không bấm
+      const timer = setTimeout(() => {
+        handleLogout();
+      }, 3000);
+
+      return () => clearTimeout(timer); // Dọn dẹp bộ đếm nếu người dùng bấm nút
+       
+    }
     if (!userId || userId === "undefined") {
       navigate("/sign-in");
       return;
@@ -368,6 +402,18 @@ export default function ProductDetail() {
   };
   const buyNow = async (productId, quantity) => {
     const userId = localStorage.getItem("userId");
+    const status = localStorage.getItem("status");
+    if (status === "0") {
+      setShowModal(true);
+
+      // Tạo bộ đếm thời gian (timeout) nếu không bấm
+      const timer = setTimeout(() => {
+        handleLogout();
+      }, 3000);
+
+      return () => clearTimeout(timer); // Dọn dẹp bộ đếm nếu người dùng bấm nút
+       
+    }
     if (!userId || userId === "undefined") {
       navigate("/sign-in");
       return;
@@ -381,7 +427,7 @@ export default function ProductDetail() {
       const response = await fetch('https://opms1.runasp.net/api/ShoppingCartAPI/createBuyNowCart', {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", 
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           plantId: productId,
@@ -433,14 +479,23 @@ export default function ProductDetail() {
       </div>
     );
   }
-  const pageCount = Math.ceil(reviews.length / commentsPerPage);
-  const displayedReviews = reviews.slice(
-    currentPage * commentsPerPage,
-    (currentPage + 1) * commentsPerPage
-  );
+  // Tính tổng số trang chỉ khi reviews không rỗng
+  const pageCount = reviews.length > 0
+    ? Math.ceil(reviews.length / commentsPerPage)
+    : 0;
 
+  const displayedReviews = reviews.length > 0
+    ? reviews.slice(
+      currentPage * commentsPerPage,
+      (currentPage + 1) * commentsPerPage
+    )
+    : [];
+
+  // Hàm xử lý khi click vào trang
   const handlePageClick = (event) => {
-    setCurrentPage(event.selected);
+    if (reviews.length > 0) {
+      setCurrentPage(event.selected);
+    }
   };
 
   if (error) {
@@ -458,6 +513,18 @@ export default function ProductDetail() {
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="bg-green-500 text-white text-lg font-semibold py-2 px-6 rounded-lg shadow-lg transform -translate-y-60">
             {successMessage}
+          </div>
+        </div>
+      )}
+      {/* Render Modal nếu trạng thái showModal là true */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
+            <h3 className="text-lg font-semibold mb-2">Tài khoản của bạn đã bị khóa</h3>
+            <p className="text-sm mb-4">Vui lòng đăng xuất hoặc đợi 3 giây để tự động chuyển sang màn hình đăng nhập</p>
+            <div className="mt-4 flex justify-around">
+              
+            </div>
           </div>
         </div>
       )}
@@ -722,8 +789,8 @@ export default function ProductDetail() {
         <div>
           <h3 className="text-2xl font-semibold mb-6">{ratingSummary.totalReviews} Bình luận</h3>
           <div className="space-y-8">
-          {displayedReviews.length > 0 ? (
-          displayedReviews.map((review) => (
+            {displayedReviews.length > 0 ? (
+              displayedReviews.map((review) => (
                 <div key={review.reviewId} className="flex space-x-4">
                   <img
                     src={review.userImage || "https://via.placeholder.com/40"}
@@ -755,7 +822,7 @@ export default function ProductDetail() {
                       {/* Like button */}
                       <button className="flex items-center text-sm text-blue-500 hover:underline">
                         <AiFillLike className="mr-1" /> Thích
-                      </button>                                  
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -765,29 +832,33 @@ export default function ProductDetail() {
             )}
           </div>
           <div className="w-full flex justify-center mt-4">
-        <ReactPaginate
-          previousLabel={<IoArrowBackCircle />}
-          nextLabel={<IoArrowForwardCircle />}
-          breakLabel={"..."}
-          pageCount={pageCount}
-          onPageChange={handlePageClick}
-          containerClassName={"flex justify-center space-x-4"}
-          pageClassName={
-            "flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-200 cursor-pointer transition duration-300"
-          }
-          activeClassName={"bg-black text-white"}
-          pageLinkClassName={"w-full h-full flex items-center justify-center"}
-          breakClassName={"flex items-center justify-center w-8 h-8"}
-          breakLinkClassName={"w-full h-full flex items-center justify-center"}
-          previousClassName={
-            "flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-200 cursor-pointer transition duration-300"
-          }
-          nextClassName={
-            "flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-200 cursor-pointer transition duration-300"
-          }
-          disabledClassName={"opacity-50 cursor-not-allowed"}
-        />
-        </div>
+            {reviews.length > 0 ? (
+              <ReactPaginate
+                previousLabel={<IoArrowBackCircle />}
+                nextLabel={<IoArrowForwardCircle />}
+                breakLabel={"..."}
+                pageCount={pageCount}
+                onPageChange={handlePageClick}
+                containerClassName={"flex justify-center space-x-4"}
+                pageClassName={
+                  "flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-200 cursor-pointer transition duration-300"
+                }
+                activeClassName={"bg-black text-white"}
+                pageLinkClassName={"w-full h-full flex items-center justify-center"}
+                breakClassName={"flex items-center justify-center w-8 h-8"}
+                breakLinkClassName={"w-full h-full flex items-center justify-center"}
+                previousClassName={
+                  "flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-200 cursor-pointer transition duration-300"
+                }
+                nextClassName={
+                  "flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-200 cursor-pointer transition duration-300"
+                }
+                disabledClassName={"opacity-50 cursor-not-allowed"}
+              />
+            ) : (
+              <div className="text-gray-500"></div>
+            )}
+          </div>
         </div>
 
         {/* Review Form */}

@@ -15,6 +15,7 @@ export default function UserEdit() {
     roles: 2, // Mặc định là 2 (Người Mua)
     address: "",
     shopName: "",
+    status: "",
   });
   const [showShopName, setShowShopName] = useState(false); // State to control visibility of shopName field
   const [existingUsernames, setExistingUsernames] = useState([]);
@@ -24,7 +25,7 @@ export default function UserEdit() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showPopup, setShowPopup] = useState(false); // State for showing success popup
-
+  const [phoneError, setPhoneError] = useState("");
   // Lấy dữ liệu người dùng hiện tại để hiển thị
   useEffect(() => {
     const fetchUser = async () => {
@@ -56,6 +57,7 @@ export default function UserEdit() {
           roles: data.roles || 2,
           address: data.address || "",
           shopName: data.shopName || "",
+          status: data.status || 0,
         });
 
         setShowShopName(data.roles === 3); // Show shopName field if the role is "Người Bán"
@@ -149,8 +151,8 @@ export default function UserEdit() {
     formDataToSend.append("roles", formData.roles);
     formDataToSend.append("address", formData.address);
     formDataToSend.append("shopName", formData.roles === "3" ? formData.shopName : "");
-    formDataToSend.append("status", 1); // Default status
-    
+    formDataToSend.append("status", formData.status); // Default status
+
     // Append the uploaded image if available
     if (formData.uploadedImage) {
       formDataToSend.append("uploadedImage", formData.uploadedImage);
@@ -159,15 +161,34 @@ export default function UserEdit() {
     try {
       const response = await fetch("https://opms1.runasp.net/api/UserAPI/updateUser", {
         method: "POST",
-        
+
         body: formDataToSend,
       });
 
       if (response.ok) {
-        setShowPopup(true); // Hiển thị popup thành công
+        setShowPopup(true);// Hiển thị popup thành công
+        setPhoneError("")
       } else {
-        const errorData = await response.json();
-        throw new Error("Cập nhật người dùng không thành công: " + (errorData.message || "Lỗi không xác định."));
+        const data = await response.json();
+        if (response.status === 400) {
+          switch (data.message) {
+            case "Username already exists":
+              setUsernameError("Tên người dùng đã tồn tại.");
+              break;
+            case "Email already exists":
+              setEmailError("Email đã tồn tại.");
+              break;
+            case "Phone number already exists":
+              setPhoneError("Số điện thoại đã được đăng kí.");
+              break;
+            default:
+              setError("Dữ liệu không hợp lệ.");
+              break;
+          }
+        } else {
+          setError(`API Error: ${response.status}`);
+        }
+        return;
       }
     } catch (err) {
       console.error("Error:", err);
@@ -263,7 +284,11 @@ export default function UserEdit() {
             onChange={handleChange}
             className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
           />
-          {errors.phoneNumber && <p className="text-red-500 text-sm">{errors.phoneNumber}</p>}
+          {errors.phoneNumber ? (
+            <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
+          ) : phoneError ? (
+            <p className="text-red-500 text-sm">{phoneError}</p>
+          ) : null}
         </div>
         <div className="space-y-1">
           <label htmlFor="roles" className="block text-sm font-medium text-gray-700 dark:text-gray-300">

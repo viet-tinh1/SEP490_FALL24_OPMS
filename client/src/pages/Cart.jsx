@@ -433,6 +433,10 @@ export default function Cart() {
                       key={item.shoppingCartItemId}
                       className={`rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:p-6 ${(item.plantDetails?.stock === 0 || item.plantDetails?.isVerfied === 0) ? "opacity-50 pointer-events-none" : ""
                         }`}
+                        style={{
+                          position: "relative", // Quan trọng để hỗ trợ zIndex
+                          isolation: "isolate", // Ngăn tác động lan tỏa
+                        }}
                     >
                       <div className="space-y-4 md:flex md:items-center md:justify-between md:gap-6 md:space-y-0">
                         <input
@@ -533,6 +537,12 @@ export default function Cart() {
                             <button
                               type="button"
                               className="inline-flex items-center text-sm font-medium text-red-600 hover:underline dark:text-red-500"
+                              style={{
+                                pointerEvents: "auto", // Bật khả năng click
+                                opacity: 1, // Làm sáng
+                                zIndex: 50, // Đảm bảo nút nằm trên nền mờ
+                                position: "relative", // Tách biệt khỏi cha                           
+                              }} // Vẫn bật khả năng click
                               onClick={() => handleShowDeleteModal(item.shoppingCartItemId)}
                             >
                               <svg
