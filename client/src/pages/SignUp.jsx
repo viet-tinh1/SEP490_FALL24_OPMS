@@ -279,7 +279,7 @@ const validatePhone = (phoneNumber) => {
               <Label value="Số diện thoại của bạn " />
               <TextInput
                 type="text"
-                placeholder="Số điện thoái"
+                placeholder="Số điện thoại"
                 id="phoneNumber"
                 value={phoneNumber}
                 onChange={handlePhoneChange}                
