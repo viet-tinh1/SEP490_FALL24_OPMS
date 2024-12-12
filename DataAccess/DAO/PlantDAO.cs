@@ -213,6 +213,7 @@ namespace DataAccess.DAO
                             Discount = p.Discount,
                             UserId = p.UserId,
                             Stock = p.Stock,
+                            Status = p.Status,
                             TotalPurchased = g.TotalQuantity
                         })
                     .OrderByDescending(p => p.TotalPurchased);
@@ -241,6 +242,7 @@ namespace DataAccess.DAO
                 Discount = p.Discount,
                 UserId = p.UserId,
                 Stock = p.Stock,
+                Status = p.Status,
                 TotalPurchased = 0 // Không có dữ liệu bán
             }).ToList();
         }
@@ -297,6 +299,7 @@ namespace DataAccess.DAO
                             Discount = p.Discount,
                             UserId = p.UserId,
                             Stock = p.Stock,
+                            Status = p.Status,
                             TotalPurchased = g.TotalQuantity
                         })
                     .OrderByDescending(p => p.TotalPurchased);
@@ -337,6 +340,7 @@ namespace DataAccess.DAO
                 Discount = p.Discount,
                 UserId = p.UserId,
                 Stock = p.Stock,
+                Status = p.Status,
                 TotalPurchased = 0 // Không có dữ liệu bán
             }).ToList();
         }     
