@@ -11,7 +11,7 @@ export default function ProductEdit() {
   const [formData, setFormData] = useState({
     imageUrl: "", // Store the Base64 image here
     category: "",
-    name: "",
+    plantName: "",
     description: "",
     price: "",
     stock: "",
@@ -273,7 +273,7 @@ export default function ProductEdit() {
               </label>
               <input
                 type="text"
-                name="name"
+                name="plantName"
                 value={formData.plantName}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
