@@ -166,7 +166,7 @@ export default function Product() {
     }
   };
   // Search function 
-  const searchPlants = async (name, selectedCategoryIds = [], minPrice = '', maxPrice = '', sortOptionId = null) => {
+  const searchPlants = async (name='', selectedCategoryIds = [], minPrice = '', maxPrice = '', sortOptionId = null) => {
     try {
       // Tạo query tìm kiếm
       const query = [];
@@ -199,6 +199,8 @@ export default function Product() {
   useEffect(() => {
     if (name === "") {
       fetchProductsAndCategories(); // Khi tên tìm kiếm rỗng, tải lại sản phẩm ban đầu
+    } else {
+      searchPlants(name, selectedCategories, minPrice, maxPrice, sortOption);
     }
   }, [name]);
 

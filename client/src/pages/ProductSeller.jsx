@@ -722,13 +722,15 @@ export default function ProductSeller() {
                 return (
                   <div
                     key={product.plantId}
-                    className={`relative bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto ${product.stock === 0 ? "opacity-98" : ""
-                      }`}
+                    className={` mb-4 relative bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[200px] h-auto ${product.stock === 0 || product.status === 0 ? "opacity-98" : ""
+                    }`}
                   >
                     {/* Hiển thị chữ "Hết hàng" khi stock === 0 */}
-                    {product.stock === 0 && (
+                    {(product.stock === 0 || product.status === 0) && (
                       <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-10">
-                        <span className="text-red-400 font-bold text-lg">Hết hàng</span>
+                        <span className="text-red-400 font-bold text-lg">
+                          {product.stock === 0 ? "Hết hàng" : "Ngừng bán"}
+                        </span>
                       </div>
                     )}
                     {/* Liên kết đến trang chi tiết sản phẩm */}
