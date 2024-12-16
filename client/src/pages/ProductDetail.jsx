@@ -118,7 +118,7 @@ export default function ProductDetail() {
       setIsReasonModalOpen(true);
     } catch (err) {
       console.error(err);
-      alert("Đã xảy ra lỗi khi tải danh sách lý do");
+      setSuccessMessage("Đã xảy ra lỗi khi tải danh sách lý do");
     }
   };
   const handleReasonSelect = (reasonId, reasonText) => {

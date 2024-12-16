@@ -316,7 +316,54 @@ function CommentSection({ postId, userId, refreshPosts }) {
       console.error("Error updating comment:", error);
     }
   };
+  const [totalLikes, setTotalLikes] = useState(0);
+  const [replies, setReplies] = useState([]);
+  const handleLikeReply = (replyId) => {
+    const likedReplies = JSON.parse(localStorage.getItem("likedReplies")) || {};
+    let newTotalLikes = totalLikes;
 
+    if (likedReplies[replyId]) {
+      // Nếu đã like, bỏ like
+      delete likedReplies[replyId];
+      setReplies((prevReplies) =>
+        prevReplies.map((reply) =>
+          reply.replyCommentId === replyId
+            ? { ...reply, likeComment: reply.likeComment - 1 }
+            : reply
+        )
+      );
+      newTotalLikes -= 1; // Giảm tổng số lượt like
+    } else {
+      // Nếu chưa like, thêm like
+      likedReplies[replyId] = true;
+      setReplies((prevReplies) =>
+        prevReplies.map((reply) =>
+          reply.replyCommentId === replyId
+            ? { ...reply, likeComment: reply.likeComment + 1 }
+            : reply
+        )
+      );
+      newTotalLikes += 1; // Tăng tổng số lượt like
+    }
+
+    // Lưu vào localStorage
+    localStorage.setItem("likedReplies", JSON.stringify(likedReplies));
+
+    // Cập nhật tổng số lượt like
+    setTotalLikes(newTotalLikes);
+  };
+  const isReplyLiked = (replyId) => {
+    const likedReplies = JSON.parse(localStorage.getItem("likedReplies")) || {};
+    return !!likedReplies[replyId]; // Kiểm tra replyId có tồn tại trong localStorage không
+  };
+  const calculateTotalLikes = () => {
+    const likedReplies = JSON.parse(localStorage.getItem("likedReplies")) || {};
+  
+    // Tính tổng số lượt thích của các phản hồi đã like
+    return replies
+      .filter((reply) => likedReplies[reply.replyCommentId]) // Lọc phản hồi đã được like
+      .reduce((total, reply) => total + reply.likeComment, 0); // Cộng dồn số lượt thích
+  };
   const handleLikeComment = async (comment) => {
     if (!userId) {
       navigate("/sign-in");
@@ -536,8 +583,28 @@ function CommentSection({ postId, userId, refreshPosts }) {
                         <br />
                         <span className="text-sm">{reply.replyCommentContent}</span>
                       </div>
-                      <div className="mt-1 text-xs text-gray-500">
+                      <div className="mt-1 text-xs text-gray-500 flex items-center space-x-4">
                         <span>{formatTimeDifference(reply.createAt)}</span>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            className={`flex items-center space-x-1 ${isReplyLiked(reply.replyCommentId) ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
+                              }`}
+                            onClick={() => handleLikeReply(reply.replyCommentId)}
+                          >
+                            <FaThumbsUp />
+
+                          </button>
+                          <span className="text-sm text-gray-500">
+                          {isReplyLiked(reply.replyCommentId) ? totalLikes : 0} lượt thích
+                          </span>
+
+                        </div>
+                        <button
+                          className="flex items-center space-x-1 text-gray-600 hover:text-blue-600"
+                        >
+                          <FaComment />
+                          <span>Phản hồi</span>
+                        </button>
                       </div>
                     </div>
                     {(reply.userId === userId || role === "1") && (

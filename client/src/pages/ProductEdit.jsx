@@ -24,7 +24,7 @@ export default function ProductEdit() {
   const [error, setError] = useState(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const [categories, setCategories] = useState([]);
-
+  const [successMessage, setSuccessMessage] = useState('');
   const handleChange = (e) => {
     const { name, value } = e.target;
   
@@ -141,7 +141,10 @@ export default function ProductEdit() {
         throw new Error(errorData.message || "Cập nhật sản phẩm thất bại");
       }
 
-      alert("Sản phẩm đã được cập nhật thành công");
+      setSuccessMessage("Sản phẩm đã được cập nhật thành công");
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 2000);
       navigate("/dashboard?tab=product");
 
     } catch (error) {
@@ -217,6 +220,13 @@ export default function ProductEdit() {
   
   return (
     <div className="max-w-7xl mx-auto p-6 sm:p-8 rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      {successMessage && (
+            <div className="fixed inset-0 flex items-center justify-center z-50">
+              <div className="bg-green-500 text-white text-lg font-semibold py-2 px-6 rounded-lg shadow-lg transform -translate-y-60">
+                {successMessage}
+              </div>
+            </div>
+          )}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="w-full lg:w-1/2 space-y-6">

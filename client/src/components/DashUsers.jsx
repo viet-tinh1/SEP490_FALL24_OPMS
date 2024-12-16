@@ -20,7 +20,7 @@ export default function DashUsers() {
   const [error, setError] = useState(null); // Handle error state
   const usersPerPage = 4;
   const [activeButton, setActiveButton] = useState(1);
-
+  const [successMessage, setSuccessMessage] = useState('');
   // Fetch users from API
   const fetchUsersByRole = async (roleId) => {
     try {
@@ -77,13 +77,18 @@ export default function DashUsers() {
         throw new Error("Không thể phê duyệt yêu cầu người bán.");
       }
 
-      alert("Yêu cầu trở thành người bán đã được phê duyệt!");
+      setSuccessMessage("Yêu cầu trở thành người bán đã được phê duyệt!");
 
       // Refresh the user list
       await fetchUsersByRole(roleId);
     } catch (error) {
       console.error("Lỗi khi phê duyệt yêu cầu người bán:", error);
-      alert("Có lỗi xảy ra khi phê duyệt yêu cầu người bán.");
+      setSuccessMessage("Có lỗi xảy ra khi phê duyệt yêu cầu người bán.");
+    } finally {
+
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 2000);
     }
   };
   ///
@@ -103,13 +108,19 @@ export default function DashUsers() {
         throw new Error("Không thể từ chối yêu cầu người bán.");
       }
 
-      alert("Yêu cầu trở thành người bán đã bị từ chối!");
+      setSuccessMessage("Yêu cầu trở thành người bán đã bị từ chối!");
 
       // Refresh the user list
       await fetchUsersByRole(roleId);
     } catch (error) {
       console.error("Lỗi khi từ chối yêu cầu người bán:", error);
-      alert("Có lỗi xảy ra khi từ chối yêu cầu người bán.");
+      setSuccessMessage("Có lỗi xảy ra khi từ chối yêu cầu người bán.");
+    }
+    finally {
+
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 2000);
     }
   };
 
@@ -188,6 +199,13 @@ export default function DashUsers() {
   const role = localStorage.getItem("role");
   return (
     <>
+    {successMessage && (
+            <div className="fixed inset-0 flex items-center justify-center z-50">
+              <div className="bg-green-500 text-white text-lg font-semibold py-2 px-6 rounded-lg shadow-lg transform -translate-y-60">
+                {successMessage}
+              </div>
+            </div>
+          )}
       {role === "1" ? ( // Kiểm tra role
         <main className="overflow-x-auto md:mx-auto p-4">
           <div className="shadow-md rounded-lg bg-white dark:bg-gray-800 mb-6 p-6 lg:p-2">
