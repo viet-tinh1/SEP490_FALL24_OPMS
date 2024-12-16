@@ -30,7 +30,7 @@ export default function ProductCreate() {
   const [categories, setCategories] = useState([]);
   const [imagePreviewUrl, setImagePreviewUrl] = useState("");
   const navigate = useNavigate();
-
+  const [successMessage, setSuccessMessage] = useState('');
   const handleChange = (e) => {
     const { name, value } = e.target;
   
@@ -118,7 +118,10 @@ export default function ProductCreate() {
         ...prevData,
         description: value.slice(0, 1000), // Cắt ngắn xuống 1000 ký tự
       }));
-      alert("Mô tả không được vượt quá 1000 ký tự.");
+      setSuccessMessage("Mô tả không được vượt quá 1000 ký tự.");
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 2000);
     }
   };
   useEffect(() => {
@@ -175,7 +178,7 @@ export default function ProductCreate() {
         // Try to read as text instead of JSON to capture plain text error message
         const errorText = await response.text();
         console.error("Lôi:", errorText);
-        alert("Lỗi: " + errorText);
+        setSuccessMessage("Lỗi: " + errorText);
       } else {
         setShowPopup(true);
       }
@@ -199,6 +202,13 @@ export default function ProductCreate() {
 
   return (
     <div className="max-w-7xl mx-auto p-6 sm:p-8 rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      {successMessage && (
+            <div className="fixed inset-0 flex items-center justify-center z-50">
+              <div className="bg-green-500 text-white text-lg font-semibold py-2 px-6 rounded-lg shadow-lg transform -translate-y-60">
+                {successMessage}
+              </div>
+            </div>
+          )}
       {showPopup && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-4 rounded shadow-md text-center">

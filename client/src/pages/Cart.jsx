@@ -24,7 +24,7 @@ export default function Cart() {
   const taxRate = 0; // Tax rate of 10%
   const [showModal, setShowModal] = useState(false);
   const [selectedCartId, setSelectedCartId] = useState(null);
-
+  const [users, setUsers] = useState([]);
   useEffect(() => {
     const fetchCartData = async () => {
       const userId = localStorage.getItem("userId");
@@ -100,11 +100,24 @@ export default function Cart() {
           };
         })
       );
+      const UsersResponse = await fetch(
+        "https://opms1.runasp.net/api/UserAPI/getUser"
+      );
+      if (!UsersResponse.ok) {
+        throw new Error("Failed to fetch categories");
+      }
+      const usersData = await UsersResponse.json();
+      console.log(usersData)
+      setUsers(usersData);
       setCartItems(updatedCartItems);
     };
 
     fetchCartData();
   }, []);
+  const getUserName = (userId) => {
+    const user = users.find((u) => u.userId === userId);
+    return user ? user.shopName : "Không tìm thấy người dùng";
+  };
   // Function to reset or clear voucher
   const handleProceedToCheckout = () => {
     // Save selected shoppingCartItemIds to localStorage
@@ -515,12 +528,13 @@ export default function Cart() {
                         </div>
 
                         <div className="w-full min-w-0 flex-1 space-y-4 md:order-2 md:max-w-md">
-                          <a
-                            href="#"
+                          <Link
+                            to={`/productdetail/${item.plantDetails?.plantId}`}
                             className="text-base font-medium text-gray-900 hover:underline dark:text-white"
                           >
                             {item.plantDetails?.plantName || item.plantId}
-                          </a>
+                          </Link>
+                          
                           {/* Hiển thị trạng thái hết hàng */}
                           {item.plantDetails?.stock === 0 && (
                             <p className="text-sm font-semibold text-red-500">
@@ -539,6 +553,9 @@ export default function Cart() {
                           )}
 
                           <div className="flex items-center gap-4">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white hover:underline">
+                            Nhà vườn: {getUserName(item.plantDetails?.userId)} 
+                            </p>
                             <button
                               type="button"
                               className="inline-flex items-center text-sm font-medium text-red-600 hover:underline dark:text-red-500"
@@ -566,6 +583,7 @@ export default function Cart() {
                               </svg>
                               Xóa
                             </button>
+                            
                           </div>
 
                         </div>

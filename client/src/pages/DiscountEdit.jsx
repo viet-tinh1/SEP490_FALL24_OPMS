@@ -38,8 +38,11 @@ export default function DiscountEdit() {
 
         const data = await response.json();
         const namesData = await nameResponse.json();
-         setExistingDiscountNames(namesData.map((voucher) => voucher.voucherName.toLowerCase()));
-
+         const filteredNames = namesData
+         .filter((voucher) => voucher.voucherId !== voucherId)
+         .map((voucher) => voucher.voucherName.toLowerCase());
+     
+       setExistingDiscountNames(filteredNames);
         setFormData({
           discountName: data.voucherName || "",
           discountPercentage: data.voucherPercent || "",

@@ -12,7 +12,7 @@ export default function DashDiscount() {
   const [selectedDiscount, setSelectedDiscount] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
   const discountsPerPage = 3;
-
+  const [successMessage, setSuccessMessage] = useState('');
   useEffect(() => {
     const fetchDiscounts = async () => {
       const userId = localStorage.getItem("userId");
@@ -70,11 +70,16 @@ export default function DashDiscount() {
       } else {
         const errorData = await response.json();
         console.error("Failed to delete voucher:", errorData);
-        alert("Xóa mã giảm giá không thành công: " + (errorData.message || "Lỗi không xác định."));
+        setSuccessMessage("Xóa mã giảm giá không thành công: " + (errorData.message || "Lỗi không xác định."));
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Đã xảy ra lỗi khi xóa mã giảm giá: " + error.message);
+      setSuccessMessage("Đã xảy ra lỗi khi xóa mã giảm giá: " + error.message);
+    }
+    finally {
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 2000);
     }
   };
 
@@ -94,6 +99,13 @@ export default function DashDiscount() {
   const role = localStorage.getItem("role");
   return (
     <>
+    {successMessage && (
+            <div className="fixed inset-0 flex items-center justify-center z-50">
+              <div className="bg-green-500 text-white text-lg font-semibold py-2 px-6 rounded-lg shadow-lg transform -translate-y-60">
+                {successMessage}
+              </div>
+            </div>
+          )}
       {role === "3" ? ( // Kiểm tra role
         <main className="overflow-x-auto md:mx-auto p-4">
           <div className="shadow-md rounded-lg bg-white dark:bg-gray-800 mb-6 p-4">
