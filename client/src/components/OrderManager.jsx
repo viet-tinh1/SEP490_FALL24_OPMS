@@ -199,7 +199,9 @@ export default function OrderManager() {
                                         <Table.Cell className="py-4">
                                             {order.status === "Pending" ? "Đang xử lý"
                                                 : order.status === "Success" ? "Thành công"
-                                                    : order.status === "Cancel" ? "Hủy" : ""
+                                                    : order.status === "Cancel" ? "Hủy" 
+                                                    : order.status === "Shipping" ? "Đang giao" 
+                                                    : ""
                                             }
                                         </Table.Cell>
                                         <Table.Cell className="py-4">{order.isSuccess ? "Đã thanh toán" : "Chưa thanh toán"}</Table.Cell>
@@ -220,6 +222,7 @@ export default function OrderManager() {
 
                                                 <option value="Pending">Đang xử lý</option>
                                                 <option value="Cancel">Hủy</option>
+                                                <option value="Shipping">Giao Hàng</option>
                                                 <option value="Success">Thành công</option>
                                             </select>
                                         </Table.Cell>

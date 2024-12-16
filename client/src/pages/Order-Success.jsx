@@ -259,6 +259,7 @@ export default function OrderSuccess() {
                                     {order.status === "Pending" ? "Đang xử lý"
                                         : order.status === "Success" ? "Thành công"
                                             : order.status === "Cancel" ? "Hủy"
+                                            : order.status === "Shipping" ? "Đang giao"
                                                 : ""}
                                 </Table.Cell>
                                 <Table.Cell className="py-4">{order.isSuccess ? "Đã thanh toán" : "Chưa thanh toán"}</Table.Cell>
@@ -269,7 +270,7 @@ export default function OrderSuccess() {
                                     {order.shippingAddress }
                                 </Table.Cell>
                                 <Table.Cell className="py-4">
-                                    {(order.status === "Success"||order.status === "Cancel" )? (
+                                    {(order.status === "Success"||order.status === "Cancel"|| order.status === "Shipping" )? (
                                         <span></span>
                                     ) : (
                                         <select
