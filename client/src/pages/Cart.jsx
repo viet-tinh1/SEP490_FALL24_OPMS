@@ -316,7 +316,7 @@ export default function Cart() {
     }
   };
   // Function to increment quantity of an item
-  const increment = (itemId) => {
+  const increment = async (itemId) => {
     setCartItems((prevItems) =>
       prevItems.map((item) =>
         item.shoppingCartItemId === itemId
@@ -324,10 +324,49 @@ export default function Cart() {
           : item
       )
     );
+  
+    // Tìm item hiện tại trong cart
+    const currentItem = cartItems.find((item) => item.shoppingCartItemId === itemId);
+    if (!currentItem) return;
+  
+    try {
+      // Gọi API cập nhật giỏ hàng bằng fetch
+      const response = await fetch(
+        "https://opms1.runasp.net/api/ShoppingCartAPI/updateShoppingCart",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            shoppingCartItemId: itemId,
+            plantId: currentItem.plantId,
+            quantity: currentItem.quantity + 1, // Tăng số lượng lên 1
+          }),
+        }
+      );
+  
+      if (!response.ok) {
+        throw new Error(`Lỗi HTTP: ${response.status}`);
+      }
+  
+      console.log("Cập nhật giỏ hàng thành công!");
+    } catch (error) {
+      console.error("Lỗi khi cập nhật giỏ hàng:", error);
+  
+      // Xử lý lỗi: Khôi phục trạng thái cũ nếu API thất bại
+      setCartItems((prevItems) =>
+        prevItems.map((item) =>
+          item.shoppingCartItemId === itemId
+            ? { ...item, quantity: currentItem.quantity }
+            : item
+        )
+      );
+    }
   };
 
   // Function to decrement quantity of an item
-  const decrement = (itemId) => {
+  const decrement = async (itemId) => {
     setCartItems((prevItems) =>
       prevItems.map((item) =>
         item.shoppingCartItemId === itemId && item.quantity > 1
@@ -335,6 +374,45 @@ export default function Cart() {
           : item
       )
     );
+  
+    // Tìm item hiện tại trong cart
+    const currentItem = cartItems.find((item) => item.shoppingCartItemId === itemId);
+    if (!currentItem || currentItem.quantity <= 1) return;
+  
+    try {
+      // Gọi API cập nhật giỏ hàng bằng fetch
+      const response = await fetch(
+        "https://opms1.runasp.net/api/ShoppingCartAPI/updateShoppingCart",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            shoppingCartItemId: itemId,
+            plantId: currentItem.plantId,
+            quantity: currentItem.quantity - 1, // Giảm số lượng đi 1
+          }),
+        }
+      );
+  
+      if (!response.ok) {
+        throw new Error(`Lỗi HTTP: ${response.status}`);
+      }
+  
+      console.log("Cập nhật giỏ hàng thành công!");
+    } catch (error) {
+      console.error("Lỗi khi cập nhật giỏ hàng:", error);
+  
+      // Xử lý lỗi: Khôi phục trạng thái cũ nếu API thất bại
+      setCartItems((prevItems) =>
+        prevItems.map((item) =>
+          item.shoppingCartItemId === itemId
+            ? { ...item, quantity: currentItem.quantity }
+            : item
+        )
+      );
+    }
   };
   const handleShowDeleteModal = (cartId) => {
     setSelectedCartId(cartId); // Lưu lại ID giỏ hàng cần xóa

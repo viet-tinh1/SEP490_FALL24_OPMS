@@ -296,6 +296,47 @@ export default function Product() {
     window.location.reload(true); // Reload trang sau đăng xuất
 
   };
+  useEffect(() => {
+    // Gọi API để lấy status
+    const fetchStatus = async () => {
+      try {
+        const userId = localStorage.getItem("userId"); // Lấy userId từ localStorage
+        if (!userId) {
+          console.error("Không tìm thấy userId trong localStorage.");
+          return;
+        }
+
+        // Gọi API
+        const response = await fetch(`https://opms1.runasp.net/api/UserAPI/getUserById?userId=${userId}`);
+        if (!response.ok) {
+          throw new Error(`Lỗi HTTP: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const userStatus = data.status; // Giả sử API trả về 'status'
+
+        // Lưu status vào state và localStorage
+        setStatus(userStatus);
+        localStorage.setItem("status", userStatus);
+
+        // Kiểm tra và xử lý logic với status
+        if (userStatus === "0") {
+          setShowModal(true);
+
+          // Tạo bộ đếm thời gian (timeout) nếu không bấm
+          const timer = setTimeout(() => {
+            handleLogout();
+          }, 3000);
+
+          return () => clearTimeout(timer); // Dọn dẹp bộ đếm thời gian
+        }
+      } catch (error) {
+        console.error("Lỗi khi gọi API:", error.message);
+      }
+    };
+
+    fetchStatus();
+  }, []);
 
   // thêm sản phẩm vào giỏ hàng 
   const addToCart = async (productId, quantity) => {
@@ -576,7 +617,7 @@ export default function Product() {
 
                       <div className="p-2 flex flex-col gap-2 w-full">
                         <div className="flex items-center gap-1">
-                          <p className="text-sm font-medium text-gray-600 line-clamp-2 w-full">
+                          <p className="text-sm font-medium text-gray-600 line-clamp-1 w-full">
                             {product.plantName}
                           </p>
                         </div>

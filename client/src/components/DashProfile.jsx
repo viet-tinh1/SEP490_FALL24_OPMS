@@ -113,9 +113,9 @@ export default function DashProfile() {
     if (currentStep === 4) {
       const sellerRequested = await requestSeller(); // Call the API here
       if (!sellerRequested) return;
-      setSuccessMessage('Yêu cầu trở thành người bán đã được gửi thành công!');
+      setSuccessMessageP('Yêu cầu của bạn đã được gửi thành công. Vui lòng chờ quản trị viên phê duyệt trong vài ngày tới!');
     }
-    setTimeout(() => setSuccessMessage(''), 2000);
+    setTimeout(() => setSuccessMessageP(''), 2000);
     setCurrentStep((prev) => prev + 1);
   };
 
@@ -252,8 +252,8 @@ export default function DashProfile() {
       if (!response.ok) throw new Error('Failed to request seller status');
 
       const data = await response.json();
-      setSuccessMessage('Yêu cầu trở thành người bán đã được gửi thành công!');
-      setTimeout(() => setSuccessMessage(''), 2000); // Auto-hide message after 2 seconds
+      setSuccessMessageP('Yêu cầu của bạn đã được gửi thành công. Vui lòng chờ quản trị viên phê duyệt trong vài ngày tới!');
+      setTimeout(() => setSuccessMessageP(''), 2000); // Auto-hide message after 2 seconds
       return true; // Success
     } catch (error) {
       console.error('Error requesting seller:', error);

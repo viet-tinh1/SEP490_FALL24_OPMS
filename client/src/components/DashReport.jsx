@@ -4,6 +4,7 @@ import { HiOutlineExclamationCircle } from "react-icons/hi";
 import { TextInput } from "flowbite-react";
 import { AiOutlineSearch } from "react-icons/ai";
 import ReactPaginate from "react-paginate"; // Import the pagination library
+import { Spinner } from "flowbite-react";
 
 export default function DashReport() {
   const [reports, setReports] = useState([]); // State để lưu danh sách tố cáo
@@ -82,8 +83,15 @@ export default function DashReport() {
     (currentPage + 1) * reportsPerPage
   );
   if (loading) {
-    return <div className="text-center">Đang tải...</div>;
-  }
+      return (
+        <div className="flex items-center justify-center h-screen w-screen">
+          <div className="flex flex-col items-center">
+            <Spinner aria-label="Loading spinner" size="xl" />
+            <span className="mt-3 text-lg">Đang tải...</span>
+          </div>
+        </div>
+      );
+    }
 
   if (error) {
     return <div className="text-red-500 text-center">{error}</div>;
@@ -137,8 +145,8 @@ export default function DashReport() {
         {/* Pagination Component */}
         <div className="mt-4">
           <ReactPaginate
-            previousLabel={"← Previous"}
-            nextLabel={"Next →"}
+            previousLabel={"← Trước"}
+            nextLabel={"Sau →"}
             pageCount={pageCount}
             onPageChange={handlePageClick}
             containerClassName={"flex justify-center space-x-4"}
