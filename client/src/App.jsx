@@ -1,4 +1,5 @@
 import {BrowserRouter, Route, Routes} from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import Home from './pages/Home'
 import SignIn from './pages/SignIn'
 import SignUp from './pages/SignUp'
@@ -28,6 +29,60 @@ import ProductSeller from './pages/ProductSeller';
 
 
 export default function App() {
+  const [status, setStatus] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  // Hàm xử lý đăng xuất
+  const handleLogout = () => {
+    localStorage.removeItem("status");
+    localStorage.clear();
+    window.location.href = "/sign-in"; // Chuyển hướng về trang đăng nhập
+  };
+
+  // Hàm gọi API để lấy status
+  const fetchStatus = async () => {
+    try {
+      const userId = localStorage.getItem("userId"); // Lấy userId từ localStorage
+      if (!userId) {
+        console.error("Không tìm thấy userId trong localStorage.");
+        return;
+      }
+
+      const response = await fetch(`https://opms1.runasp.net/api/UserAPI/getUserById?userId=${userId}`);
+      if (!response.ok) {
+        throw new Error(`Lỗi HTTP: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const newStatus = data.status;
+
+      // Kiểm tra nếu status thay đổi
+      if (newStatus !== status) {
+        setStatus(newStatus);
+        localStorage.setItem("status", newStatus);
+
+        // Nếu status là "0", xử lý hiển thị Modal
+        if (newStatus == 0) {
+          setShowModal(true);
+
+          // Tự động đăng xuất sau 3 giây
+          const timer = setTimeout(() => {
+            handleLogout();
+          }, 3000);
+
+          return () => clearTimeout(timer); // Dọn dẹp timeout nếu cần
+        }
+      }
+    } catch (error) {
+      console.error("Lỗi khi gọi API:", error.message);
+    }
+  };
+
+  // Gọi API mỗi 2 giây
+  useEffect(() => {
+    const intervalId = setInterval(fetchStatus, 2000);
+    return () => clearInterval(intervalId); // Dọn dẹp interval khi component bị unmount
+  }, [status]);
   return (   
     <BrowserRouter>
     <Header/>
@@ -59,6 +114,17 @@ export default function App() {
           <Route path="/order-success" element={<OrderSuccess/>}/>
     </Routes>
     <Footer/>
+    {/* Modal */}
+    {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
+            <h3 className="text-lg font-semibold mb-2">Tài khoản của bạn đã bị khóa</h3>
+            <p className="text-sm mb-4">
+              Bạn sẽ được đăng xuất sau 3 giây. Vui lòng liên hệ quản trị viên để được hỗ trợ.
+            </p>
+          </div>
+        </div>
+      )}
    </BrowserRouter>  
   )
 }
